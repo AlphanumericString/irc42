@@ -121,6 +121,12 @@ void	Server::setUpServer()
 	inet_ntop(theirAddr.ss_family, getInAddr((struct sockaddr*)&theirAddr), s, sizeof(s));
 	std::cout << "server: got connection from " << s << std::endl;
 
+	//CAP handling
+	std::string	cap_ls = "CAP * LS :multi-prefix sasl\r\n";
+	send(newFD, cap_ls.c_str(), sizeof(cap_ls), 0);
+	std::string	cap_ack = "CAP * ACK multi-prefix\r\n";
+	send(newFD, cap_ack.c_str(), sizeof(cap_ack), 0);
+
 	while (1)
 	{
 		bzero(buffer,sizeof(buffer));
@@ -129,7 +135,10 @@ void	Server::setUpServer()
 		buffer[numbytes] = 0;
 
 		if (buffer[0] != '\0')
+		{
 			std::cout << "Server received: " << buffer << std::endl;
+			send(newFD, buffer, sizeof(buffer), 0);
+		}
 	}
 }
 
