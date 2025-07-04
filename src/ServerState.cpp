@@ -1,0 +1,53 @@
+#include "ServerState.hpp"
+
+///CONSTRUCTORS/////////////////////////////////////////////////////////////////
+ServerState::ServerState()
+{
+
+}
+
+ServerState::ServerState(const ServerState &original)
+{
+
+}
+
+ServerState::ServerState(int port, const std::string password) : _port(port), _password(password)
+{
+
+}
+
+///DESTRUCTORS//////////////////////////////////////////////////////////////////
+ServerState::~ServerState()
+{
+
+}
+
+///OPERATOR OVERLOADS///////////////////////////////////////////////////////////
+ServerState	&ServerState::operator=(const ServerState &original)
+{
+	return (*this);
+}
+
+///GETTERS//////////////////////////////////////////////////////////////////////
+std::string const	&ServerState::getName() const
+{
+	return (this->_name);
+}
+
+std::string const	&ServerState::getPassword() const
+{
+	return (this->_password);
+}
+
+int const			&ServerState::getPort() const
+{
+	return (this->_port);
+}
+
+///SETTERS//////////////////////////////////////////////////////////////////////
+
+///MEMBER FUNCTIONS/////////////////////////////////////////////////////////////
+
+///EXCEPTIONS///////////////////////////////////////////////////////////////////
+
+

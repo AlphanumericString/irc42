@@ -18,11 +18,12 @@ private:
 public:
 	// Constructors
 	Server();
-	Server(Server const &original);
+	Server(const Server &original);
+	Server(int port, const std::string password);
 	// Destructors
 	~Server();
 	// Operator overloads
-	Server	&operator=(Server const &original);
+	Server	&operator=(const Server&original);
 	// Getters
 	// Setters
 	// Member functions
