@@ -1,3 +1,4 @@
+#include <strings.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
@@ -109,27 +110,26 @@ void	Server::setUpServer()
 
 	char	buffer[1024];
 	int numbytes;
+	memset(buffer, 0, sizeof(buffer));
+	sinSize = sizeof(theirAddr);
+	newFD = accept(sockFD, (struct sockaddr*)&theirAddr, &sinSize);
+	if (newFD == -1)
+	{
+		perror("accept");
+	}
+
+	inet_ntop(theirAddr.ss_family, getInAddr((struct sockaddr*)&theirAddr), s, sizeof(s));
+	std::cout << "server: got connection from " << s << std::endl;
+
 	while (1)
 	{
-		memset(buffer, 0, sizeof(buffer));
-		sinSize = sizeof(theirAddr);
-		newFD = accept(sockFD, (struct sockaddr*)&theirAddr, &sinSize);
-		if (newFD == -1)
-		{
-			perror("accept");
-			continue;
-		}
-
-		inet_ntop(theirAddr.ss_family, getInAddr((struct sockaddr*)&theirAddr), s, sizeof(s));
-		std::cout << "server: got connection from " << s << std::endl;
-
+		bzero(buffer,sizeof(buffer));
 		if ((numbytes = recv(newFD, buffer, sizeof(buffer) - 1, 0)) == -1)
 			perror("recv");
 		buffer[numbytes] = 0;
 
-		std::cout << "Server received: " << buffer << std::endl;
-
-		sleep(3);
+		if (buffer[0] != '\0')
+			std::cout << "Server received: " << buffer << std::endl;
 	}
 }
 
