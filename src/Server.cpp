@@ -13,8 +13,9 @@
 #include "Server.hpp"
 
 ///CONSTRUCTORS/////////////////////////////////////////////////////////////////
-Server::Server() : _serverPort(2106), _serverSocketFD(-1)
+Server::Server() : _serverPort(std::atoi(SERV_PORT)), _serverSocketFD(-1)
 {
+
 }
 
 ///DESTRUCTORS//////////////////////////////////////////////////////////////////
@@ -61,7 +62,7 @@ void	Server::setUpServer()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
-	
+
 	if ((rv = getaddrinfo(NULL, SERV_PORT, &hints, &servInfo)) != 0)
 	{
 		std::cerr << "getaddrinfo: " << gai_strerror(rv) << std::endl;
@@ -122,11 +123,8 @@ void	Server::setUpServer()
 		inet_ntop(theirAddr.ss_family, getInAddr((struct sockaddr*)&theirAddr), s, sizeof(s));
 		std::cout << "server: got connection from " << s << std::endl;
 
-		if (!fork())
-		{
-			if ((numbytes = recv(newFD, buffer, sizeof(buffer) - 1, 0)) == -1)
-				perror("recv");
-		}
+		if ((numbytes = recv(newFD, buffer, sizeof(buffer) - 1, 0)) == -1)
+			perror("recv");
 		buffer[numbytes] = 0;
 
 		std::cout << "Server received: " << buffer << std::endl;

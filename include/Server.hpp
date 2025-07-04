@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#define SERV_PORT "8080"
+#define SERV_PORT "2106"
 #define BACKLOG 10
 
 class Server
