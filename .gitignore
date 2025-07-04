@@ -39,3 +39,7 @@
 
 # debug information files
 *.dwo
+
+# Temporary files
+.clangd
+.cache_exists
