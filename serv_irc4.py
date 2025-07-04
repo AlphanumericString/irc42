@@ -168,6 +168,7 @@ class IRCServer:
 
     def process_message(self, client, message):
         """Process IRC message from client"""
+        print(f"[log] Received message: {message} from {client.address}")  # Debug
         parts = message.split(' ')
         command = parts[0].upper()
 
