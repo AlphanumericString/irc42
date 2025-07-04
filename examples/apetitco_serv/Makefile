@@ -1,4 +1,4 @@
-NAME		=	irc_serv
+NAME		=	irc_serv.out
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
 CXXFLAGS	+=	-g3

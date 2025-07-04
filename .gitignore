@@ -43,3 +43,4 @@
 # Temporary files
 .cache_exists
 .clangd
+tags
