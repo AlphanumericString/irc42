@@ -1,22 +1,31 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
+/*   Updated: 2025/07/07 12:58:32 by bgoulard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#pragma once
 
 class	Client
 {
-private:
+	private:
 
-public:
-	// Constructors
-	Client();
-	Client(Client const &original);
-	// Destructors
-	~Client();
-	// Operator overloads
-	Client	&operator=(Client const &original);
-	// Getters
-	// Setters
-	// Member functions
-	// Exceptions
+	public:
+		// Constructors
+		Client() {};
+		Client(Client const &original){(void)original;}; // when are we gonna use this ?!
+		// Destructors
+		~Client() {};
+		// Operator overloads
+		Client	&operator=(Client const &original){(void)original; return (*this);};
+		// Getters
+		// Setters
+		// Member functions
+		// Exceptions
 };
-
-#endif // !CLIENT_HPP

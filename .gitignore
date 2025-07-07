@@ -43,3 +43,7 @@
 # Temporary files
 .clangd
 .cache_exists
+compile_commands.json
+tags
+ircserv
+.cache/
