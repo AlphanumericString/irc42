@@ -10,38 +10,78 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 #include "Server.hpp"
+#include "generics.hpp"
 
-static bool	parse_args(char *argv[], int argc)
-{
-	if (argc < 2)
-		std::cout 
-			<< "Using default value for port of:" << SERVER_PORT_DFLT << std::endl
-			<< "Using default value for password of:" << SERVER_PWD_DFLT << std::endl;
-	for (size_t i = 0; argv[1][i] ; i++)
-	{
-		if (argv[1][i] < '0' || argv[1][i] > '9')
-			return false;
+static int version_handl(std::vector< std::string >::iterator *it) {
+	std::cout << "Version " << IRC_SERVER_VERSION << " by "
+			  << IRC_SERVER_AUTHORS << "." << std::endl;
+	*it = (*it)++;
+	return (0);
+}
+
+static int help_handl(std::vector< std::string >::iterator *it) {
+	std::cerr << "Use: ./ircserv <port> <password>" << std::endl;
+	*it = (*it)++;
+	return (0);
+}
+
+#define ALNUM	"qwertyuiplkjhgfdsazxcvbnm""QWERTYUIPLKJHGFDSAZXCVBNM""0123456789"
+
+static bool parse_args(std::vector< std::string > &args, std::string *pwd,
+					   std::string *p) {
+	std::vector< std::string >::iterator it;
+	std::pair< std::string, int (*)(std::vector< std::string >::iterator *) >
+		opts[] = {
+			std::make_pair("--version", version_handl),
+			std::make_pair("--help", help_handl),
+		};
+
+	// maybe in parse arg ? + what is the use of default values if this is here?
+	if (args.size() < 3)
+		return (std::cerr << "Use: ./ircserv <port> <password>" << std::endl,
+				false);
+	if (args.size() < 2) {
+		std::cout << "Using default value for port of:" << SERVER_PORT_DFLT
+				  << std::endl
+				  << "Using default value for password of:" << SERVER_PWD_DFLT
+				  << std::endl;
+		args.push_back(to_string(SERVER_PORT_DFLT));
+		args.push_back(SERVER_PWD_DFLT);
 	}
+	it = args.begin();
+	it++;
+	for (; it != args.end() - 2; it++) {
+		for (size_t i = 0; i < CTAB_SIZE(opts); i++)
+			if (opts[i].first.compare(*it) != 0)
+				opts[i].second(&it);
+	}
+	*p = *(it++);
+	*pwd = *(it++);
 
-	// TODO: Check for correct password (no white spaces for instance)
-
+	//	check first char -> only ALPHA
+	//	-> check following char bellong to [printable set] && [ascii set]
 	return (true);
 }
 
-int	main(int argc, char *argv[])
-{
-	Server	*server;
+int main(int argc, char *argv[]) {
+	std::vector< std::string > args(argv, argv + argc);
+	std::string				   passwd;
+	std::string				   port;
 
-	// maybe in parse arg ? + what is the use of default values if this is here?
-	if (argc != 3)
-		return (std::cerr << "Use: ./ircserv <port> <password>" << std::endl, 1);
-
-	if (parse_args(argv, argc) == false)
-		return (1);
-	server = new Server(std::atoi(argv[1]), argv[2]);
-	delete server;
+	if (parse_args(args, &passwd, &port) == false)
+		return (EXIT_FAILURE);
+	Server server(std::atoi(port.c_str()), passwd);
+	try {
+		server.run();
+		return (server.exit_state());
+	} catch (...) {
+		std::cerr << "unhandled critical error in server :(" << std::endl;
+	}
+	return (EXIT_FAILURE);
 }

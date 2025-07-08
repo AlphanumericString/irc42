@@ -11,57 +11,74 @@
 /* ************************************************************************** */
 
 #include "ServerState.hpp"
+
+#include <list>
+#include <ostream>
+#include <sstream>
+
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
-#include <list>
 
-///CONSTRUCTORS/////////////////////////////////////////////////////////////////
-ServerState::ServerState(const ServerState &original)
-{
-	(void) original;
-}
-
-ServerState::ServerState(int p, const std::string pwd, Server &m) : _password(pwd), _port(p)
-{
+ServerState::ServerState(int p, const std::string pwd, Server &m)
+	: _password(pwd), _port(p) {
 	this->_master = &m;
-	this->_channels = std::list<Channel>();
-	this->_clients	= std::list<Client>();
+	this->_channels = std::list< Channel >();
+	this->_clients = std::list< Client >();
+	this->_name = SERVER_NAME_DFLT;
+	this->_port = (p);
+	this->_status = STARTING;
 }
 
-///DESTRUCTORS//////////////////////////////////////////////////////////////////
-ServerState::~ServerState()
+ServerState	&ServerState::operator=(const ServerState &st)
 {
-
-}
-
-///OPERATOR OVERLOADS///////////////////////////////////////////////////////////
-ServerState	&ServerState::operator=(const ServerState &original)
-{
-	(void) original;
+	this->_master = st._master;
+	this->_status = st._status;
+	this->_name = st._name;
+	this->_password = st._password;
+	this->_port = st._port;
+	this->_clients = st._clients;
+	this->_channels = st._channels;
 	return (*this);
 }
 
-///GETTERS//////////////////////////////////////////////////////////////////////
-std::string const	&ServerState::getName() const
-{
+bool ServerState::operator==(const ServerState &st) const {
+	return (this->_name == st._name && this->_port == st._port &&
+			this->_password == st._password && this->_status == st._status);
+}
+bool ServerState::operator!=(const ServerState &st) const {
+	return (!(*this == st));
+}
+
+void ServerState::setStatus(ServerState::Status status) {
+	this->_status = status;
+}
+
+ServerState::Status ServerState::getStatus(void) const {
+	return (this->_status);
+}
+
+ServerState::~ServerState() {}
+
+std::string const &ServerState::getName() const {
 	return (this->_name);
 }
 
-std::string const	&ServerState::getPassword() const
-{
+std::string const &ServerState::getPassword() const {
 	return (this->_password);
 }
 
-int const			&ServerState::getPort() const
-{
+int const &ServerState::getPort() const {
 	return (this->_port);
 }
 
-///SETTERS//////////////////////////////////////////////////////////////////////
+std::string ServerState::getMinimalInfo(void) const {
+	std::stringstream ss;
+	ss << "[" << this->getName() << "] at 127.0.0.1 : " << this->getPort();
+	return (ss.str());
+}
 
-///MEMBER FUNCTIONS/////////////////////////////////////////////////////////////
-
-///EXCEPTIONS///////////////////////////////////////////////////////////////////
-
-
+std::ostream &operator<<(std::ostream &os, const ServerState sst) {
+	os << sst.getMinimalInfo();
+	return (os);
+}

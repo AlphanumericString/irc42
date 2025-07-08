@@ -13,6 +13,8 @@
 # add version by git tag
 NAME		:=	ircserv
 VERSION		:= $(shell git describe --tags --dirty 2> /dev/null || echo "0.0.0")
+AUTHORS		:= "Baptiste GOULARD, Alessandro PETICO"
+DEPLOYMENT	:=	dev
 CXX			:=	c++
 
 .DEFAULT_GOAL	:= $(NAME)
@@ -20,6 +22,8 @@ CXX			:=	c++
 INC_DIR		:=	include
 SRC_DIR		:=	src
 OBJ_DIR		:=	build
+
+IS_PROD = $(if $(filter prod,$(DEPLOYMENT)),true,false)
 
 # warnings
 42FLAGS		:=	-Wall -Wextra -Werror -std=c++98
@@ -37,15 +41,26 @@ WFLAGS		:= $(42FLAGS) $(WFLAGS_EXTRA)
 # 			-> object files												[.o]
 # 		-> link															[.exe||.out]
 # pre-processor stuff
-VARFLAGS	:=	-DIRC_SERVER_VERSION="$(VERSION)"
-CPPFLAGS	:=	$(addprefix -I, $(INC_DIR)) -MMD -MP $(VARFLAGS)
 
-DEV_FLAGS	:=	-g3 -glldb -O0	\
-				-fno-inline -fno-inline-functions
+VARFLAGS	:=	-DIRC_SERVER_VERSION=\"$(VERSION)\"	\
+				-DIRC_SERVER_AUTHORS=\"$(AUTHORS)\"
+
+ifeq ($(IS_PROD), false)
+	VARFLAGS	:=	$(VARFLAGS)	-DTESTS	-DDEV
+endif
+CPPFLAGS	:=	$(addprefix -I, $(INC_DIR)) -MMD -MP $(VARFLAGS)
+# $(DEV_FLAGS) -> dev flags | debug info, no inlining, no optimizations
+DEV_FLAGS	:=	-g3 -glldb -O0 -fno-inline -fno-inline-functions \
+				-fsanitize=address -fsanitize=undefined
+# $(PROD_FLAGS) -> prod flags | o2 (speed, stability), lto (link time optimization)
+PROD_FLAGS	:=	-O2 -flto
 
 CXXFLAGS	:=	$(WFLAGS) $(CPPFLAGS)
-# todo - rm lin bellow for submition
-CXXFLAGS	+=	$(DEV_FLAGS)
+ifeq ($(IS_PROD), false)
+	CXXFLAGS	+=	$(DEV_FLAGS)
+else
+	CXXFLAGS	+=	$(PROD_FLAGS)
+endif
 
 SRCS		=	$(shell find $(SRC_DIR) -name '*\.cpp')
 SRCS		:=	$(sort $(SRCS))
@@ -54,7 +69,7 @@ OBJS		:=	$(patsubst %.cpp, %.o, $(addprefix $(OBJ_DIR)/,$(SRCS)))
 # Rules
 # Default rule for 'normal' objects
 $(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@echo -n "making" $@ "from" $<						
+	@echo -n "making" $@ "from" $<
 	@mkdir -p $(dir $@)								&& \
 	$(CXX) $(CXXFLAGS) -c $< -o $@					&& \
 	echo -e	"\tSuccess!"							|| \
@@ -86,7 +101,7 @@ $(NAME): $(OBJS)
 tags: Makefile $(SRCS)
 	ctags	-Ra
 
-# compile_commands.json config file auto-gen - even better diagnostics 
+# compile_commands.json config file auto-gen - even better diagnostics
 # 	- slow to update
 compile_commands.json: Makefile $(SRCS)
 	bear	--append -- make	re

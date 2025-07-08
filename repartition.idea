@@ -21,71 +21,71 @@ The flow would be: ConnectionManager detects socket activity via epoll, Server i
 ---
 rep:
 Baptiste:
-**Server** - The main orchestrator 
-	owns the epoll file descriptor 
-	runs the event loop. 
+**Server** - The main orchestrator
+	owns the epoll file descriptor
+	runs the event loop.
 	maintains collections of all clients (ref / pointer)
-	channels, 
-	handles the core server lifecycle. 
+	channels,
+	handles the core server lifecycle.
 	This class processes epoll events and delegates to appropriate handlers.
 	-> -init function separated
 
-**Client** - Represents a connected user 
+**Client** - Represents a connected user
 	socket file descriptor,
 	connection state,
 	authentication status,
 	nickname,
 	username,
-	hostname, 
-	and current channels. 
+	hostname,
+	and current channels.
 	It manages partial message buffering since non-blocking reads might receive incomplete IRC messages.
 	Each client has input/output buffers and tracks registration state.
 
-**Channel** - Manages a chat room 
-	name, 
-	topic, 
-	modes, 
-	member list with their privileges (operator, voice, etc.), 
-	and channel-specific settings like user limits or keys. 
+**Channel** - Manages a chat room
+	name,
+	topic,
+	modes,
+	member list with their privileges (operator, voice, etc.),
+	and channel-specific settings like user limits or keys.
 	It handles message broadcasting to all members and enforces channel modes.
 
 **Message** - Parses and represents IRC protocol messages
-	command, 
-	parameters, 
-	prefix, 
-	trailing text. 
+	command,
+	parameters,
+	prefix,
+	trailing text.
 	It handles the IRC message format parsing and validation
 	converting between raw socket data and structured message objects.
 
 **ServerState** - Maintains global server information
-	server name, 
+	server name,
 		- string
-	network settings, 
-		- ?string? port/adress 
-	operator credentials, 
+	network settings,
+		- ?string? port/adress
+	operator credentials,
 		- list of operators
-	configuration. 
-		- bool : running 
+	configuration.
+		- bool : running
 		- list of clients
 		- list of chanels
-		- others (unknown yet) 
+		- others (unknown yet)
 		It might also track server statistics and manage global bans or connection limits.
 
 Alessandro:
 init function separated from server - (bind, socket, ...)
 
-**ConnectionManager** - Manages the epoll instance and socket operations. 
-	handles adding/removing file descriptors from epoll, 
-	managing connection timeouts, 
+**ConnectionManager** - Manages the epoll instance and socket operations.
+	handles adding/removing file descriptors from epoll,
+	managing connection timeouts,
 	coordinating between the raw socket events into the higher-level client objects.
 
 
 FIRST TO FINISH / merge of work
 
-**CommandHandler** - Processes specific IRC commands 
-	(JOIN, PRIVMSG, QUIT, etc.). 
+**CommandHandler** - Processes specific IRC commands
+	(JOIN, PRIVMSG, QUIT, etc.).
 	This could be a base class with derived handlers for each command type,
-	or a single class with command dispatch. 
+	or a single class with command dispatch.
 	It validates parameters,
 		checks permissions,
 		executes the appropriate server actions.
@@ -104,5 +104,3 @@ https://beej.us/guide/bgnet/html/split-wide/
 https://www.geeksforgeeks.org/cpp/socket-programming-in-cpp/
 irc client (irssi):
 https://quadpoint.org/articles/irssi/
-
-
