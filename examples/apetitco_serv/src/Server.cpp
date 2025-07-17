@@ -45,6 +45,11 @@ void	*getInAddr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+void	Server::capHandling()
+{
+		//
+}
+
 void	Server::setUpServer()
 {
 	int	sockFD, newFD;
@@ -122,6 +127,7 @@ void	Server::setUpServer()
 	std::cout << "server: got connection from " << s << std::endl;
 
 	//CAP handling
+	capHandling();
 	std::string	cap_ls = "CAP * LS :multi-prefix sasl\r\n";
 	send(newFD, cap_ls.c_str(), sizeof(cap_ls), 0);
 	std::string	cap_ack = "CAP * ACK multi-prefix\r\n";

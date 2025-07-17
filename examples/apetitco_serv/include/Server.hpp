@@ -28,6 +28,7 @@ public:
 		int const	&getServerSocketFD() const;
 	// Setters
 	// Member functions
+		void	capHandling();
 		void	setUpServer();
 		void	work();
 	// Exceptions
