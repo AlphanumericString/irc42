@@ -10,7 +10,8 @@ SRC_DIR		=	src/
 
 SRC_FIL		=	\
 				main \
-				Server
+				Server \
+				ServerState
 
 SRC			=	$(addprefix $(SRC_DIR), $(addsuffix .cpp, $(SRC_FIL)))
 OBJ			=	$(addprefix $(BUI_DIR), $(addsuffix .o, $(SRC_FIL)))

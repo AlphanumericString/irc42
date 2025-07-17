@@ -1,20 +1,19 @@
-#include <strings.h>
-#include <unistd.h>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
+#include <cstdlib>
 #include <iostream>
-#include <poll.h>
 #include <netdb.h>
-#include <sys/poll.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include "Server.hpp"
+#include "ServerState.hpp"
 
 ///CONSTRUCTORS/////////////////////////////////////////////////////////////////
-Server::Server() : _serverPort(std::atoi(SERV_PORT)), _serverSocketFD(-1)
+Server::Server() : _epollFD(-1)
 {
 
 }
@@ -25,14 +24,36 @@ Server::~Server()
 
 ///OPERATOR OVERLOADS///////////////////////////////////////////////////////////
 ///GETTERS//////////////////////////////////////////////////////////////////////
-int const	&Server::getServerSocketFD() const
+int const	&Server::getEpollFD() const
 {
-	return (this->_serverSocketFD);
+	return (this->_epollFD);
 }
+
 ///SETTERS//////////////////////////////////////////////////////////////////////
-///MEMBER FUNCTIONS/////////////////////////////////////////////////////////////
-void	Server::hintsSetUp()
+void	Server::setEpollFD(int epollFD)
 {
+	this->_epollFD = epollFD;
+}
+
+///MEMBER FUNCTIONS/////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief
+/// Sets up hints for the socket.
+/// @param hints
+/// Pointer to the hints structure that we want to set up.
+/// @details
+/// Sets up the preffered protocol family for the socket (IPv4, IPv6 or both),
+/// as well as the socket type (SOCK_STREAM or SOCK_DGRAM) and the input flags.
+////////////////////////////////////////////////////////////////////////////////
+void	Server::hintsSetUp(struct addrinfo *hints)
+{
+	std::cout << "Setting up hints" << std::endl;
+
+	memset(hints, 0, sizeof(*hints));
+	hints->ai_family = AF_INET;
+	hints->ai_socktype = SOCK_STREAM;
+	hints->ai_flags = AI_PASSIVE;
 }
 
 void	*getInAddr(struct sockaddr *sa)
@@ -50,74 +71,59 @@ void	Server::capHandling()
 		//
 }
 
+void	Server::bindAddress()
+{
+	struct sockaddr_in sock_add;
+
+	sock_add.sin_family = AF_INET;
+	sock_add.sin_port = htons(std::atoi(this->_serverState->getPort().c_str()));
+	sock_add.sin_addr.s_addr = INADDR_ANY;
+
+	std::cout << "Looking for a bind-able socket address..." << std::endl;
+
+	if (bind(this->getEpollFD(), (struct sockaddr *)&sock_add, sizeof(sock_add)) == -1)
+	{
+		close(this->getEpollFD());
+		perror("server: bind");
+		return;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief
+/// Sets the server up.
+/// @details
+////////////////////////////////////////////////////////////////////////////////
 void	Server::setUpServer()
 {
-	int	sockFD, newFD;
-	struct addrinfo	hints, *servInfo, *p;
-	struct sockaddr_storage	theirAddr;
-	socklen_t	sinSize;
-	int yes = 1;
-	char	s[INET_ADDRSTRLEN];
-	int	rv;
 
 	std::cout << "Setting server up..." << std::endl;
 
-	std::cout << "Setting up hints" << std::endl;
+	bindAddress();
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	if ((rv = getaddrinfo(NULL, SERV_PORT, &hints, &servInfo)) != 0)
-	{
-		std::cerr << "getaddrinfo: " << gai_strerror(rv) << std::endl;
-		//throw
-	}
-
-	for (p = servInfo ; p != NULL ; p = p->ai_next)
-	{
-		if ((sockFD = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == 1)
-		{
-			perror("server: socket");
-			continue;
-		}
-		if (setsockopt(sockFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-		{
-			perror("setsockopt");
-			std::exit(1);
-		}
-		if (bind(sockFD, p->ai_addr, p->ai_addrlen) == -1)
-		{
-			close(sockFD);
-			perror("server: bind");
-			continue;
-		}
-		break ;
-	}
-
-	freeaddrinfo(servInfo);
-
-	if (p == NULL)
-	{
-		std::cerr << "server: failed to bind" << std::endl;
-		std::exit(1);
-	}
-
-	if (listen(sockFD, BACKLOG) == -1)
+	if (listen(this->getEpollFD(), BACKLOG) == -1)
 	{
 		perror("listen");
 		std::exit(1);
 	}
 
 	std::cout << "Server is up!" << std::endl;
+
+}
+
+void	Server::woINpr()
+{
+	int	newFD;
+	struct sockaddr_storage	theirAddr;
+	socklen_t	sinSize;
+	char	s[INET_ADDRSTRLEN];
 	std::cout << "Waiting for connections..." << std::endl;
 
 	char	buffer[1024];
 	int numbytes;
 	memset(buffer, 0, sizeof(buffer));
 	sinSize = sizeof(theirAddr);
-	newFD = accept(sockFD, (struct sockaddr*)&theirAddr, &sinSize);
+	newFD = accept(this->getEpollFD(), (struct sockaddr*)&theirAddr, &sinSize);
 	if (newFD == -1)
 	{
 		perror("accept");

@@ -1,14 +1,13 @@
+#include <iostream>
+
 #include "ANSI.hpp"
 #include "Server.hpp"
-#include <iostream>
-#include <ostream>
-#include <sys/socket.h>
 
 #define BUF_SIZE 1024
 
 void	splash_screen()
 {
-	std::cout << CYAN "\rWelcome to the Death Stranding!" RESET <<  std::endl;
+	std::cout << ANSI_CYAN "\rWelcome to the Death Stranding!" ANSI_RESET <<  std::endl;
 }
 
 int	main()
