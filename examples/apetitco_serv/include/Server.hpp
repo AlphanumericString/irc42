@@ -1,46 +1,111 @@
+/**
+ * @file Server.hpp
+ * @brief Header for the Server class
+ * @ingroup ServerGroup
+ * @todo Define and document server-specific exception types if needed.
+ */
+
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <string>
+#include <sys/epoll.h>
 
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "ServerState.hpp"
 
-#define SERVER_PORT_DFLT	"2106"
-#define SERVER_PWD_DFLT		"password"
-#define SERVER_NAME_DFLT	"42irc_server_apbg"
+/// @brief Maximum number of pending connections in the queue.
 #define BACKLOG 10
 
+/**
+ * @class Server
+ * @brief Represents the core IRC server managing clients, channels, and network events.
+ *
+ * The Server class encapsulates the setup and lifecycle management of an IRC server
+ * using epoll for multiplexing I/O events. It manages clients and channels through
+ * pointers to its ServerState object.
+ */
 class Server
 {
 private:
-	int			_epollFD;		//-> FD for the listened port.
-	Client		*_clients;		//-> Pointer to _serverState's list of clients.
-	Channel		*_channels;		//-> Pointer to _serverState's list of channels.
-	ServerState	*_serverState;	//-> Pointer to _serverState.
-
-	void	hintsSetUp(struct addrinfo *hints);
+	/// @brief File descriptor for the server's listening socket.
+	int			_serverFD;
+	/// @brief File descriptor for the epoll instance used in event multiplexing.
+	int			_epollFD;
+	/// @brief Array of epoll events to monitor for incoming I/O.
+	epoll_event	_events[64];
+	/// @brief Pointer to the list of connected clients, managed by ServerState.
+	Client		*_clients;
+	/// @brief Pointer to the list of active channels, managed by ServerState.
+	Channel		*_channels;
+	/// @brief Pointer to the internal server state container.
+	ServerState	*_serverState;
 
 public:
-	// Constructors
+		/**
+		 * @brief Default constructor. Initializes the server object without starting it.
+		 */
 		Server();
-		Server(const Server &);
-	// Destructors
+
+		/**
+		 * @brief Copy constructor.
+		 * @param other The server object to copy.
+		 */
+		Server(const Server &other);
+
+		/**
+		 * @brief Destructor. Cleans up resources and closes sockets if needed.
+		 */
 		~Server();
-	// Operator overloads
-		Server &operator=(const Server &);
-	// Getters
+
+		/**
+		 * @brief Assignment operator overload.
+		 * @param other The server object to assign.
+		 * @return A reference to the modified server.
+		 */
+		Server &operator=(const Server &other);
+
+		/**
+		 * @brief Gets the file descriptor for the epoll instance.
+		 * @return A constant reference to the epoll FD.
+		 */
 		int const	&getEpollFD() const;
-	// Setters
-		void	setEpollFD(int epollFD);
-	// Member functions
-		void	capHandling();
-		void	bindAddress();
+
+		/**
+		 * @brief Gets the server's listening socket file descriptor.
+		 * @return A constant reference to the server FD.
+		 */
+		int	const	&getServerFD() const;
+
+		/**
+		 * @brief Sets the epoll instance file descriptor.
+		 * @param epollFD fd The new epoll FD.
+		 */
+		void	setEpollFD(int fd);
+
+		/**
+		 * @brief Sets the server's listening socket file descriptor.
+		 * @param fd The new server FD.
+		 */
+		void	setServerFD(int fd);
+
+		/**
+		 * @brief Binds the server socket to the server's port and prepares it
+		 * for listening.
+		 */
+		void	bindSocket();
+
+		/**
+		 * @brief Initializes the epoll instance and adds the server socket to
+		 * watch list.
+		 */
+		void	initiateMultiplexing();
+
+		/**
+		 * @brief Sets up the entire server: socket, epoll, state, etc.
+		 */
 		void	setUpServer();
-		void	work();
-		void	woINpr();
-	// Exceptions
+
 };
 
 #endif // !SERVER_HPP
