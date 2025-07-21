@@ -11,6 +11,10 @@ ServerState::ServerState(std::string port, const std::string password, std::stri
 ServerState::~ServerState() {
 }
 
+std::list< Client >	ServerState::getClients() {
+	return (this->_clients);
+}
+
 std::string const	&ServerState::getPort() const
 {
 	return (this->_port);

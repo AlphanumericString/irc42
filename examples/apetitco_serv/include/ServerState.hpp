@@ -75,22 +75,19 @@ public:
 	/// @param master Reference to the master Server object owning this state.
 	ServerState(std::string port = SERVER_PORT_DFLT, const std::string password = SERVER_PWD_DFLT, std::string name = SERVER_NAME_DFLT, Server* master = NULL);
 
-	/**
-	 * @brief Destructor. Cleans up internal state.
-	 */
+	/// @brief Destructor. Cleans up internal state.
 	~ServerState();
 
-	/**
-	 * @brief Assignment operator.
-	 * @param other The ServerState to copy.
-	 * @return A reference to the current ServerState.
-	 */
+	/// @brief Assignment operator.
+	/// @param other The ServerState to copy.
+	/// @return A reference to the current ServerState.
 	ServerState &operator=(const ServerState &other);
 
-	/**
-	 * @brief Retrieves the name of the server.
-	 * @return Constant reference to the server name.
-	 */
+	/// @brief
+	std::list< Client >	getClients();
+
+	/// @brief Retrieves the name of the server.
+	/// @return Constant reference to the server name.
 	std::string const &getName() const;
 
 	/**

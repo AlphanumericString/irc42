@@ -7,6 +7,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -15,10 +16,13 @@
 #include <iostream>
 
 #include "Server.hpp"
+#include "Client.hpp"
 #include "ServerState.hpp"
 
 Server::Server() : _epollFD(-1) {
 	_serverState = new ServerState();
+
+	this.setClients()
 }
 
 Server::~Server() {
@@ -33,6 +37,10 @@ Server &Server::operator=(const Server &other)
 
 	}
 	return (*this);
+}
+
+std::list< Client >*	Server::getClients() {
+	return (this->_clients);
 }
 
 int const&	Server::getEpollFD() const
@@ -75,6 +83,7 @@ void	Server::handleEvent() {
 
 		for (int n = 0 ; n < nfds ; ++n) {
 			if (events[n].data.fd == listen_sock) {
+				handleNewUser(events[n].data.fd);
 				conn_sock = accept(listen_sock, (struct sockaddr*) &addr, &addrlen);
 				if (conn_sock == -1) {
 					return ;
@@ -93,18 +102,42 @@ void	Server::handleEvent() {
 	}
 }
 
-void	Server::setEpollFD(int fd)
-{
+
+void	Server::handleNewUser(const int fd) {
+	char	buffer[BUFSIZ];
+	int		nbytes;
+	Client	*newClient = new Client;
+
+	this->getClients()->insert();
+
+	std::cout << "NEW USER" << std::endl;
+	nbytes = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	if (nbytes == -1)
+		return ;
+
+	std::string	cap_ls = "CAP * LS: multi-prefix sasl";
+	send(fd, cap_ls.c_str(), cap_ls.size(), 0);
+
+	// cap_ls = "CAP * LS :multi-prefix sasl\r\n";
+	// send(fd, cap_ls.c_str(), sizeof(cap_ls), 0);
+	// std::string	cap_ack = "CAP * ACK multi-prefix\r\n";
+	// send(fd, cap_ack.c_str(), sizeof(cap_ack), 0);
+
+	// std::string	cap_ls = "CAP * LS :multi-prefix sasl\r\n";
+	// send(newFD, cap_ls.c_str(), sizeof(cap_ls), 0);
+	// 	std::string	cap_ack = "CAP * ACK multi-prefix\r\n";
+	// 	send(newFD, cap_ack.c_str(), sizeof(cap_ack), 0);
+}
+
+void	Server::setEpollFD(int fd) {
 	this->_epollFD = fd;
 }
 
-void	Server::setServerFD(int fd)
-{
+void	Server::setServerFD(int fd) {
 	this->_serverFD = fd;
 }
 
-void	Server::bindSocket()
-{
+void	Server::bindSocket() {
 	struct sockaddr_in sock_add;
 
 	sock_add.sin_family = AF_INET;
@@ -129,6 +162,10 @@ void	Server::initiateMultiplexing()
 	if (this->getEpollFD() == -1) {
 		return ;
 	}
+}
+
+void			Server::setClients(const std::list< Client >* list) {
+	this->_clients = (std::list< Client>*)list;
 }
 
 void	Server::setUpServer() {

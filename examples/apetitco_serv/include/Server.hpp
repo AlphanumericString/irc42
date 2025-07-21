@@ -21,12 +21,12 @@
 class Server
 {
 private:
-	int			_serverFD;		///< File descriptor for the server's listening socket.
-	int			_epollFD;		///< File descriptor for the epoll instance used in event multiplexing.
-	epoll_event	_events[64];	///< Array of epoll events to monitor for incoming I/O.
-	Client		*_clients;		///< Pointer to the list of connected clients, managed by ServerState.
-	Channel		*_channels;		///< Pointer to the list of active channels, managed by ServerState.
-	ServerState	*_serverState;	///< Pointer to the internal server state container.
+	int						_serverFD;		///< File descriptor for the server's listening socket.
+	int						_epollFD;		///< File descriptor for the epoll instance used in event multiplexing.
+	epoll_event				_events[64];	///< Array of epoll events to monitor for incoming I/O.
+	std::list< Client >*	_clients;		///< Pointer to the list of connected clients, managed by ServerState.
+	std::list< Channel>*	_channels;		///< Pointer to the list of active channels, managed by ServerState.
+	ServerState*			_serverState;	///< Pointer to the internal server state container.
 
 public:
 	/// @brief Default constructor. Initializes the server object without starting it.
@@ -48,6 +48,9 @@ public:
 	/// for listening.
 	void			bindSocket();
 
+	/// @brief
+	std::list< Client >*			getClients();
+
 	/// @brief Gets the file descriptor for the epoll instance.
 	/// @return A constant reference to the epoll FD.
 	int const&		getEpollFD() const;
@@ -63,9 +66,15 @@ public:
 	/// @brief
 	void			handleEvent();
 
+	/// @brief
+	void			handleNewUser(const int fd);
+
 	/// @brief Initializes the epoll instance and adds the server socket to
 	/// watch list.
 	void			initiateMultiplexing();
+
+	/// @brief
+	void			setClients(const std::list< Client >* list);
 
 	/// @brief Sets the epoll instance file descriptor.
 	/// @param epollFD fd The new epoll FD.
