@@ -1,50 +1,31 @@
-/**
- * @file
- * @ingroup ServerGroup
- * @brief Implementation of the Server class' methods.
- */
+/// @file
+/// @ingroup ServerGroup
+/// @brief Implementation of the Server class' methods.
 
-/**
- * @defgroup ServerGroup Module Server.
- * @brief Everything touching to the IRC server.
- */
+/// @defgroup ServerGroup Module Server.
+/// @brief Everything touching to the IRC server.
 
-#include <cstring>
-#include <cstdlib>
 #include <fcntl.h>
-#include <iostream>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/epoll.h>
-#include <sys/socket.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <netinet/in.h>
+
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 #include "Server.hpp"
 #include "ServerState.hpp"
 
-/**
- * @brief Default constructor for the Server class.
- */
-Server::Server() : _epollFD(-1)
-{
-
+Server::Server() : _epollFD(-1) {
+	_serverState = new ServerState();
 }
 
-/**
- * @brief Default destructor for the Server class.
- */
-Server::~Server()
-{}
+Server::~Server() {
+	if (_serverState)
+		delete _serverState;
+}
 
-/**
- * @brief Server's operator overload for the equal operator.
- *
- * @param original The Server instance we want to assign from.
- * @return A reference to the assigned Server instance.
- */
 Server &Server::operator=(const Server &other)
 {
 	if (this != &other)
@@ -54,56 +35,82 @@ Server &Server::operator=(const Server &other)
 	return (*this);
 }
 
-/**
- * @brief The getter for the _epollFD field.
- *
- * @return The value of this->_epollFD.
- */
-int const	&Server::getEpollFD() const
+int const&	Server::getEpollFD() const
 {
 	return (this->_epollFD);
 }
 
-/**
- * @brief The getter for the _serverFD field.
- *
- * @return The value of this->serverFD.
- */
-int	const	&Server::getServerFD() const
+int	const&	Server::getServerFD() const
 {
 	return (this->_serverFD);
 }
 
-/**
- * @brief The setter for the _epollFD field.
- *
- * @param fd The file descriptor we want to assign to this->_epollFD.
- */
+ServerState*	Server::getServerState() const {
+	if (this->_serverState == NULL) /// @todo Exception
+		std::cerr << "Warning, this->_serverState == NULL" << std::endl;
+	return (this->_serverState);
+}
+
+#define MAX_EVENT 10
+void	Server::handleEvent() {
+	struct epoll_event	ev, events[MAX_EVENT];
+	int	epollfd = this->getEpollFD();
+	int	listen_sock	= this->getServerFD();
+	int					conn_sock, nfds;
+	sockaddr_storage	addr;
+	socklen_t			addrlen;
+	char				buf[1024];
+
+	ev.events = EPOLLIN;
+	ev.data.fd = listen_sock;
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
+		return ;
+	}
+
+	for (;;) {
+		nfds = epoll_wait(epollfd, events, MAX_EVENT, -1);
+		if (nfds == -1) {
+			return ;
+		}
+
+		for (int n = 0 ; n < nfds ; ++n) {
+			if (events[n].data.fd == listen_sock) {
+				conn_sock = accept(listen_sock, (struct sockaddr*) &addr, &addrlen);
+				if (conn_sock == -1) {
+					return ;
+				}
+				ev.events = EPOLLIN | EPOLLET;
+				ev.data.fd = conn_sock;
+				if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
+					return ;
+				}
+			} else {
+				memset(buf, 0, sizeof(buf));
+				recv(events[n].data.fd, buf, sizeof(buf) - 1, 0);
+				std::cout << buf << std::endl;
+			}
+		}
+	}
+}
+
 void	Server::setEpollFD(int fd)
 {
 	this->_epollFD = fd;
 }
 
-/**
- * @brief The setter for the _serverFD field.
- *
- * @param fd The file descriptor we want to assign to this->_serverFD.
- */
 void	Server::setServerFD(int fd)
 {
 	this->_serverFD = fd;
 }
 
-/**
- * @brief Binds this->_serverFD to any inbound address.
- */
 void	Server::bindSocket()
 {
 	struct sockaddr_in sock_add;
 
 	sock_add.sin_family = AF_INET;
 	sock_add.sin_addr.s_addr = INADDR_ANY;
-	sock_add.sin_port = htons(std::atoi(this->_serverState->getPort().c_str()));
+	const char	*tmp = this->_serverState->getPort().c_str();
+	sock_add.sin_port = htons(std::atoi(tmp));
 
 	std::cout << "Looking for a bind-able socket address..." << std::endl;
 
@@ -113,92 +120,29 @@ void	Server::bindSocket()
 		perror("server: bind");
 		return;
 	}
+	std::cout << "Binded address to socket" << std::endl;
 }
 
-/**
- * @brief Initiate multiplexing for this->_epollFD.
- */
 void	Server::initiateMultiplexing()
 {
 	this->setEpollFD(epoll_create1(0));
-
-	epoll_event	ev;
-	ev.events = EPOLLIN;
-	ev.data.fd = this->getServerFD();
-	epoll_ctl(this->getEpollFD(), EPOLL_CTL_ADD, this->getServerFD(), &ev);
-
-	epoll_event	events[64];
+	if (this->getEpollFD() == -1) {
+		return ;
+	}
 }
 
-/**
- * @brief Sets the server up.
- */
-void	Server::setUpServer()
-{
-
+void	Server::setUpServer() {
 	std::cout << "Setting server up..." << std::endl;
-
-	//Create socket
 	this->setServerFD(socket(AF_INET, SOCK_STREAM, 0));
-
-	//Bind socket
 	bindSocket();
-
-	// Listen
-	if (listen(this->getServerFD(), BACKLOG) == -1)
-	{
+	if (listen(this->getServerFD(), BACKLOG) == -1) {
 		perror("listen");
 		std::exit(1);
 	}
-
 	int	flags = fcntl(this->getServerFD(), F_GETFL, 0);
 	fcntl(this->getServerFD(), F_SETFL, flags | O_NONBLOCK);
-
+	this->getServerState()->setStatus(ServerState::RUNNING);
+	std::cout << "Server state: RUNNING" << std::endl;
 	initiateMultiplexing();
-
-	std::cout << "Server is up!" << std::endl;
 }
-
-// void	Server::woINpr()
-// {
-// 	int	newFD;
-// 	struct sockaddr_storage	theirAddr;
-// 	socklen_t	sinSize;
-// 	char	s[INET_ADDRSTRLEN];
-// 	std::cout << "Waiting for connections..." << std::endl;
-//
-// 	char	buffer[1024];
-// 	int numbytes;
-// 	memset(buffer, 0, sizeof(buffer));
-// 	sinSize = sizeof(theirAddr);
-// 	newFD = accept(this->getEpollFD(), (struct sockaddr*)&theirAddr, &sinSize);
-// 	if (newFD == -1)
-// 	{
-// 		perror("accept");
-// 	}
-//
-// 	inet_ntop(theirAddr.ss_family, getInAddr((struct sockaddr*)&theirAddr), s, sizeof(s));
-// 	std::cout << "server: got connection from " << s << std::endl;
-//
-// 	//CAP handling
-// 	capHandling();
-// 	std::string	cap_ls = "CAP * LS :multi-prefix sasl\r\n";
-// 	send(newFD, cap_ls.c_str(), sizeof(cap_ls), 0);
-// 	std::string	cap_ack = "CAP * ACK multi-prefix\r\n";
-// 	send(newFD, cap_ack.c_str(), sizeof(cap_ack), 0);
-//
-// 	while (1)
-// 	{
-// 		bzero(buffer,sizeof(buffer));
-// 		if ((numbytes = recv(newFD, buffer, sizeof(buffer) - 1, 0)) == -1)
-// 			perror("recv");
-// 		buffer[numbytes] = 0;
-//
-// 		if (buffer[0] != '\0')
-// 		{
-// 			std::cout << "Server received: " << buffer << std::endl;
-// 			send(newFD, buffer, sizeof(buffer), 0);
-// 		}
-// 	}
-// }
 
