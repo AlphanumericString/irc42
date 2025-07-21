@@ -1,17 +1,15 @@
-/**
- * @file ServerState.hpp
- * @brief Defines the ServerState class, which tracks the runtime state of the
- * IRC server.
- *
- * This file is part of the core logic of the IRC server implementation.
- * It provides the ServerState class that encapsulates connected clients,
- * active channels, and the server's status. ServerState acts as a state
- * container, facilitating access to core data during server runtime.
- *
- * @ingroup ServerGroup
- * @author
- * apetitco
- */
+/// @file ServerState.hpp
+/// @brief Defines the ServerState class, which tracks the runtime state of the
+/// IRC server.
+///
+/// This file is part of the core logic of the IRC server implementation.
+/// It provides the ServerState class that encapsulates connected clients,
+/// active channels, and the server's status. ServerState acts as a state
+/// container, facilitating access to core data during server runtime.
+///
+/// @ingroup ServerGroup
+/// @author
+/// apetitco
 
 #ifndef SERVERSTATE_HPP
 #define SERVERSTATE_HPP
@@ -46,10 +44,8 @@ class Server;
 class ServerState
 {
 public:
-	/**
-	* @enum Status
-	* @brief Represents the current lifecycle stage of the server.
-	*/
+	/// @enum Status
+	/// @brief Represents the current lifecycle stage of the server.
 	typedef enum
 	{
 		STARTING,	///< Server is booting up
@@ -60,36 +56,24 @@ public:
 	} Status;
 
   private:
-	/// @brief Current operational status of the server.
-	ServerState::Status	 _status;
-
-	/// @brief Server name.
-	std::string			 _name;
-
-	/// @brief Server password.
-	std::string			 _password;
-
-	/// @brief Port on which the server is listening.
-	std::string			 _port;
-
-	/// @brief List of currently connected clients.
-	std::list< Client >	 _clients;
-
-	/// @brief List of active IRC channels.
-	std::list< Channel > _channels;
-
-	/// @brief Pointer to the Server instance that owns this ServerState.
-	Server				*_master;
+	ServerState::Status	 _status;	///< Current operational status of the server.
+	std::string			 _name;		///< Server name.
+	std::string			 _password;	///< Server password.
+	std::string			 _port;		///< Port on which the server is listening.
+	std::list< Client >	 _clients;	///< List of currently connected clients.
+	std::list< Channel > _channels;	///< List of active IRC channels.
+	Server				*_master;	///< Pointer to the Server instance that owns this ServerState.
 
 public:
 
-	/**
-	 * @brief Constructs a ServerState instance.
-	 * @param port Port number on which the server is running.
-	 * @param password Password required to join the server.
-	 * @param master Reference to the master Server object owning this state.
-	 */
-	ServerState(int port, const std::string password, Server &master);
+	/// @brief
+	// ServerState();
+
+	/// @brief Constructs a ServerState instance.
+	/// @param port Port number on which the server is running.
+	/// @param password Password required to join the server.
+	/// @param master Reference to the master Server object owning this state.
+	ServerState(std::string port = SERVER_PORT_DFLT, const std::string password = SERVER_PWD_DFLT, std::string name = SERVER_NAME_DFLT, Server* master = NULL);
 
 	/**
 	 * @brief Destructor. Cleans up internal state.
@@ -127,16 +111,12 @@ public:
 	 */
 	std::string		   getMinimalInfo(void) const;
 
-	/**
-	 * @brief Gets the current server status.
-	 * @return The server's operational status.
-	 */
+	/// @brief Gets the current server status.
+	/// @return The server's operational status.
 	Status getStatus(void) const;
 
-	/**
-	 * @brief Sets the current server status.
-	 * @param status The new status to apply.
-	 */
+	/// @brief Sets the current server status.
+	/// @param status The new status to apply.
 	void setStatus(Status status);
 };
 
