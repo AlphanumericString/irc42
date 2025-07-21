@@ -10,7 +10,7 @@ class Channel
 		MODE_UNKNOWN,
 		MODE_L,
 		MODE_T,
-		MODE_I,
+		MODE_I
 	} ChanMod;
 
 	std::string name;  // name,
@@ -23,17 +23,13 @@ class Channel
 	// channel-specific settings like user limits or keys.
 
   public:
-	// Constructors
+	/// @brief
 	Channel();
 	Channel(Channel const &original); // when are we gonna use this ?!
-	// Destructors
+	/// @brief
 	~Channel();
-	// Operator overloads
+	/// @brief
 	Channel &operator=(Channel const &original);
-	// Getters
-	// Setters
-	// Member functions
-	// Exceptions
 };
 
 #endif // !CHANNEL_HPP
