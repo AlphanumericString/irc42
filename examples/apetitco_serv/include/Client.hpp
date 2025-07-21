@@ -6,23 +6,21 @@
 class Client
 {
   private:
-	int sock_fd;	//socket file descriptor,
-	std::string	nick;	//nickname,
-	std::string name;	//username,
-	std::string	host;	//hostname,
+	int			_sock_fd;	///< Socket file descriptor.
+	std::string	_nick;		///< Nickname.
+	std::string _name;		///< Username.
+	std::string	_host;		///< Hostname.
 
   public:
-	// Constructors
+	/// @brief
 	Client();
+	/// @brief
+	/// @param original
 	Client(Client const &original); // when are we gonna use this ?!
-	// Destructors
+	/// @brief
 	~Client();
-	// Operator overloads
+	/// @brief
 	Client &operator=(Client const &original);
-	// Getters
-	// Setters
-	// Member functions
-	// Exceptions
 };
 
 #endif // !CLIENT_HPP
