@@ -41,11 +41,9 @@ static void sig_hdl(int sig) {
 
 Server::Server(int port, const std::string password)
 	: _serverState(port, password, *this) {
-	this->_epollFD = -1;	   // not set
-	this->_clients = NULLPTR;  // not set
-	this->_channels = NULLPTR; // not set
-	// this->_channels = _serverState.getChannelsPtr();
-	// this->_clients = _serverState.getClientsPtr();
+	this->_epollFD = -1;										 // not set
+	this->_clientsPtr = _serverState.getClients(); // not set
+	this->_channelsPtr = _serverState.getChanels();// not set
 }
 
 Server::~Server() {}
@@ -66,8 +64,8 @@ const ServerState &Server::getServerState(void) const {
 void Server::run(void) {
 	// if shell-server is dropped this display serv info when change occur
 	// ServerState prev = this->_serverState;
-	bool							   stop = false;
-	int								   flgs;
+	bool stop = false;
+	int	 flgs;
 
 	// -- move to init
 	flgs = fcntl(STDIN_FILENO, F_GETFL);
@@ -79,6 +77,9 @@ void Server::run(void) {
 	// -- move to init
 
 	setServerState(ServerState::RUNNING);
+	std::cout << "Server is launched on " << _serverState.getHost() << ":"
+			  << _serverState.getPort()
+			  << " with password: " << _serverState.getPassword() << std::endl;
 	std::cout << "$> ";
 	while (ServerState::RUNNING == this->_serverState.getStatus()) {
 		ShellServerHandler::cmdHandler(*this);

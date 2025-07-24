@@ -15,6 +15,10 @@
 #define UNUSED __attribute__((unused))
 
 #include <string>
+#define MAX_NAME_LEN   200
+#define PREFIX_CHARS   "#&"
+#define DEFAULT_PREFIX PREFIX_CHARS[0]
+
 class Channel {
   private:
 	typedef enum { // need to read doc, make these more explicit
@@ -24,7 +28,11 @@ class Channel {
 		MODE_I,
 	} ChanMod;
 
-	UNUSED std::string name;  // name,
+	UNUSED char name[200]; // name, // max 200 chars.
+	//							cant contain spaces,
+	//							cant contain commas.
+	//							can contain ^G || ascii 7,
+
 	UNUSED std::string topic; // topic,
 	UNUSED ChanMod	   mode;  // modes,
 	// member list with their privileges (operator, voice, etc.),

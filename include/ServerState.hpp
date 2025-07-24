@@ -12,11 +12,13 @@
 
 #pragma once
 
+#include <fstream>
 #include <list>
 #include <string>
 
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "smart_ptr.hpp"
 
 class Server;
 
@@ -32,25 +34,36 @@ class ServerState {
 
 	ServerState(int port, const std::string password, Server &master);
 	ServerState &operator=(const ServerState &original);
-	bool operator==(const ServerState &original) const;
-	bool operator!=(const ServerState &original) const;
+	bool		 operator==(const ServerState &original) const;
+	bool		 operator!=(const ServerState &original) const;
 	~ServerState();
 
 	std::string const &getName() const;
 	std::string const &getPassword() const;
 	int const		  &getPort() const;
+	const std::string &getHost() const;
 	std::string		   getMinimalInfo(void) const;
 
-	void setStatus(Status status);
+	void   setStatus(Status status);
 	Status getStatus(void) const;
 
+	std::list< ShrdSmartPtr< Client > > &getClients(void);
+	std::list< ShrdSmartPtr< Channel > > &getChanels(void);
+
   private:
-	ServerState::Status	 _status;
-	std::string			 _name;
-	std::string			 _password;
-	int					 _port;
-	std::list< Client >	 _clients;
-	std::list< Channel > _channels;
-	Server				*_master;
+	std::ofstream	  _logfile;
+	// general infos
+	std::string		  _name;
+	std::string		  _password;
+	int				  _port;
+	const std::string _host;
+
+	// server utils infos
+	std::list< ShrdSmartPtr< Client > >	 _clients;
+	std::list< ShrdSmartPtr< Channel > > _channels;
+
+	// server state
+	ServerState::Status _status;
+	Server			   *_master;
 };
-std::ostream &operator<<(std::ostream &os, const ServerState sst);
+std::ostream &operator<<(std::ostream &os, const ServerState &sst);

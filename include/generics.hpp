@@ -24,3 +24,11 @@ std::string	to_string(const t &var)
 #define _stringify(x) #x
 #define stringiy(x) _stringify(#x)
 #define CTAB_SIZE(tab)	(sizeof(tab) / sizeof(tab[0]))
+#define DBG_LOG(x)		std::cerr << "[LOG]" << x << std::endl
+
+#define AL_LOW "abcdefghijklmnopqrstuvwxyz"
+#define AL_CAP "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ALPHA  AL_LOW AL_CAP
+#define NUM	   "0123456789"
+#define ALNUM  ALPHA NUM
+

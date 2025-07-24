@@ -51,7 +51,7 @@ endif
 CPPFLAGS	:=	$(addprefix -I, $(INC_DIR)) -MMD -MP $(VARFLAGS)
 # $(DEV_FLAGS) -> dev flags | debug info, no inlining, no optimizations
 DEV_FLAGS	:=	-g3 -glldb -O0 -fno-inline -fno-inline-functions \
-				-fsanitize=address -fsanitize=undefined
+
 # $(PROD_FLAGS) -> prod flags | o2 (speed, stability), lto (link time optimization)
 PROD_FLAGS	:=	-O2 -flto
 
