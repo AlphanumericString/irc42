@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/07 13:14:31 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/24 22:59:36 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,10 @@ ServerState::Status ServerState::getStatus(void) const {
 }
 
 ServerState::~ServerState() {}
+
+std::list< Client >const&	ServerState::getClients() const {
+	return _clients;
+}
 
 std::string const &ServerState::getName() const {
 	return (this->_name);
