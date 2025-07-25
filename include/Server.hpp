@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/24 23:07:08 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:28:58 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,6 @@
 /// @class Server
 /// @brief
 class Server {
-  private:
-	int			_serverFD;		///<
-	int			_epollFD;		///<
-	Client	   *_clients;		///< Pointer to _serverState's list of clients.
-	Channel	   *_channels;		///< Pointer to _serverState's list of channels.
-	ServerState _serverState;	///< Self-explanatory
-								/// Event Loop
-								/// Main loop
-
   public:
 	/// @brief
 	/// @param port
@@ -65,7 +56,12 @@ class Server {
 	void	handleNewUser(const int fd);
 
 	/// @brief
-	void	init();
+	/// @param buffer
+	/// @param fd
+	void	handleMessage(char* buffer, int fd);
+
+	/// @brief
+	void	init(int *flgs);
 
 	/// @brief
 	void	initiateMultiplexing();
@@ -76,4 +72,16 @@ class Server {
 	/// @brief
 	/// @param state
 	void	setServerState(ServerState::Status state);
+
+  private:
+	/// @brief
+	int	makeSocketNonBlocking(int fd);
+
+	int			_serverFD;		///<
+	int			_epollFD;		///<
+	Client	   *_clients;		///< Pointer to _serverState's list of clients.
+	Channel	   *_channels;		///< Pointer to _serverState's list of channels.
+	ServerState _serverState;	///< Self-explanatory
+								/// Event Loop
+								/// Main loop
 };

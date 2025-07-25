@@ -6,24 +6,26 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/24 23:08:12 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:44:08 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-#include <cstring>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 #include "ServerState.hpp"
@@ -85,53 +87,105 @@ void	Server::bindSocket() {
 }
 
 #define MAX_EVENT 10
-void	Server::handleEvent() {
-	struct	epoll_event	ev, events[MAX_EVENT];
-	int					conn_sock, nfds;
-	sockaddr_storage	addr;
-	socklen_t			addrlen;
-	char				buf[1024];
+void Server::handleEvent() {
+	struct epoll_event ev, events[MAX_EVENT];
+	char buf[1024];
 
-	ev.events = EPOLLIN;
+	ev.events = EPOLLIN | EPOLLET;
 	ev.data.fd = this->_serverFD;
+
 	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, this->_serverFD, &ev) == -1) {
-		return ;
+		perror("epoll_ctl: serverFD");
+		return;
 	}
 
-	for (;;) {
-		nfds = epoll_wait(this->_epollFD, events, MAX_EVENT, -1);
+	if (makeSocketNonBlocking(this->_serverFD) == -1) {
+		perror("makeSocketNonBlocking: serverFD");
+		return;
+	}
+
+	while (true) {
+		int nfds = epoll_wait(this->_epollFD, events, MAX_EVENT, -1);
 		if (nfds == -1) {
-			return ;
+			perror("epoll_wait");
+			break;
 		}
-		for (int n = 0 ; n < nfds ; ++n) {
-			if (events[n].data.fd == this->_serverFD) {
-				handleNewUser(events[n].data.fd);
-				conn_sock = accept(this->_serverFD, (struct sockaddr*)&addr, &addrlen);
-				if (conn_sock == -1) {
-					return ;
+
+		for (int n = 0; n < nfds; ++n) {
+			int fd = events[n].data.fd;
+
+			if (fd == this->_serverFD) {
+				while (true) {
+					struct sockaddr_in addr;
+					socklen_t addrlen = sizeof(addr);
+					int conn_sock = accept(this->_serverFD, (struct sockaddr *)&addr, &addrlen);
+					if (conn_sock == -1) {
+						if (errno == EAGAIN || errno == EWOULDBLOCK) {
+							// All connections handled
+							break;
+						} else {
+							perror("accept");
+							break;
+						}
+					}
+					char*	ip_str = inet_ntoa(addr.sin_addr);
+					std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
+					if (makeSocketNonBlocking(conn_sock) == -1) {
+						perror("makeSocketNonBlocking: conn_sock");
+						close(conn_sock);
+						continue;
+					}
+					ev.events = EPOLLIN | EPOLLET;
+					ev.data.fd = conn_sock;
+					if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
+						perror("epoll_ctl: conn_sock");
+						close(conn_sock);
+						continue;
+					}
+					handleNewUser(conn_sock);
 				}
-				ev.events = EPOLLIN | EPOLLET;
-				ev.data.fd = conn_sock;
-				if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
-					return ;
+			}
+			else {
+				while (true) {
+					ssize_t count = recv(fd, buf, sizeof(buf) - 1, 0);
+					if (count == -1) {
+						if (errno == EAGAIN || errno == EWOULDBLOCK) {
+							std::cout << "No more data to read" << std::endl;
+							break;
+						}
+						perror("recv");
+						close(fd);
+						break;
+					} else if (count == 0) {
+						std::cout << "Client disconnected: fd " << fd << std::endl;
+						close(fd);
+						break;
+					} else {
+						buf[count] = '\0';
+						handleMessage(buf, fd);
+					}
 				}
-			} else {
-				memset(buf, 0, sizeof(buf));
-				recv(events[n].data.fd, buf, sizeof(buf) -1, 0);
-				std::cout << buf << std::endl;
 			}
 		}
 	}
 }
 
+void	Server::handleMessage(char* buffer, int fd) {
+	Client	*sender = this->_serverState.idClient(fd);
+	std::cout << "Received from Client (" << sender << "): " << buffer << std::endl;
+	/// @todo Handle messages
+}
+
 void	Server::handleNewUser(const int fd) {
 	char	buf[1024];
 	int		nbytes;
-	Client*	newClient = new Client;
+	Client	newClient;
 
-	/// @todo insert correctly into list.
-	this->getServerState().getClients().insert();
+	/// @todo Fill Client object info.
+	newClient.setSockFD(fd);
+	this->_serverState.getClients().push_back(newClient);
 
+	memset(buf, 0, sizeof(buf));
 	nbytes = recv(fd, buf, sizeof(buf) - 1, 0);
 	if (nbytes == -1) {
 		return ;
@@ -140,12 +194,11 @@ void	Server::handleNewUser(const int fd) {
 	/// @todo handle CAP command
 }
 
-void	Server::init() {
+void	Server::init(int *flgs) {
 	bool	stop = false;
-	int		flgs;
 
-	flgs = fcntl(STDIN_FILENO, F_GETFL);
-	fcntl(STDIN_FILENO, F_SETFL, flgs | O_NONBLOCK);
+	*flgs = fcntl(STDIN_FILENO, F_GETFL);
+	fcntl(STDIN_FILENO, F_SETFL, *flgs | O_NONBLOCK);
 	sig::stop = &stop;
 	signal(SIGINT, sig_hdl);
 	signal(SIGTERM, sig_hdl);
@@ -157,7 +210,7 @@ void	Server::init() {
 		std::cerr << "Couldn't listen" << std::endl;
 		std::exit(1);
 	}
-	fcntl(this->_serverFD, F_SETFL, flgs);
+	fcntl(this->_serverFD, F_SETFL, *flgs);
 	initiateMultiplexing();
 }
 
@@ -168,21 +221,18 @@ void	Server::initiateMultiplexing() {
 	}
 }
 
-void Server::run(void) {
-	// if shell-server is dropped this display serv info when change occur
-	// ServerState prev = this->_serverState;
-	bool							   stop = false;
-	int								   flgs;
+int	Server::makeSocketNonBlocking(int fd) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1) {
+		return (-1);
+	}
+	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
+}
 
-	this->init();
-	// -- move to init
-	// flgs = fcntl(STDIN_FILENO, F_GETFL);
-	// fcntl(STDIN_FILENO, F_SETFL, flgs | O_NONBLOCK);
-	// sig::stop = &stop;
-	// signal(SIGINT, sig_hdl);
-	// signal(SIGTERM, sig_hdl);
-	// signal(SIGQUIT, sig_hdl);
-	// -- move to init
+void Server::run(void) {
+	int	flgs;
+
+	this->init(&flgs);
 
 	setServerState(ServerState::RUNNING);
 	std::cout << "$> ";
@@ -196,7 +246,7 @@ void Server::run(void) {
 		// if (prev != this->_serverState)
 		// 	std::cout << _serverState << std::endl;
 		// prev = this->_serverState;
-		if (stop) {
+		if (sig::stop) {
 			setServerState(ServerState::STOPPING);
 		}
 	}
