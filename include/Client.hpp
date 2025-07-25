@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 21:25:03 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 22:07:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,11 @@
 
 #define UNUSED __attribute__((unused))
 
+/// @class Client
+/// @brief
 class Client {
   public:
+	/// @brief
 	Client();
 	Client(Client const &original); // when are we gonna use this ?!
 	~Client();
@@ -34,7 +37,7 @@ class Client {
 	void	setSockFD(int fd);
 
   private:
-	int			sockFD_;	///< Socket file descriptor
+	int			sockFD_;	///< Socket file descriptor, -1 if not set.
 	UNUSED t_conState	connectionState;	///< Connection state
 	UNUSED t_authState	authState;	///< Authentication status
 	UNUSED std::string	nick;	///< Nickname

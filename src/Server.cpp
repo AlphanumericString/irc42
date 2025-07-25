@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 21:44:08 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 22:08:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 
 #include "ServerState.hpp"
 #include "ShellServerHandler.hpp"
+#include "smart_ptr.hpp"
 
 namespace sig {
 bool *stop = NULLPTR;

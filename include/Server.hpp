@@ -6,16 +6,18 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 21:28:58 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 22:08:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/// @file Server.hpp
+/// @brief
 
 #pragma once
 
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "ServerState.hpp"
-#include "smart_ptr.hpp"
 
 #define SERVER_PORT_DFLT	8080
 #define SERVER_PWD_DFLT		"password"
@@ -35,6 +37,7 @@ class Server {
 
 	/// @brief
 	/// @param original
+	/// @return
 	Server	&operator=(const Server &original);
 
 	/// @brief
@@ -61,6 +64,7 @@ class Server {
 	void	handleMessage(char* buffer, int fd);
 
 	/// @brief
+	/// @param flgs
 	void	init(int *flgs);
 
 	/// @brief

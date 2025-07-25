@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 21:43:18 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 22:08:32 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ Client*	ServerState::idClient(int fd) {
 		}
 		++nav;
 	}
-	return (nullptr);
+	return (NULL);
 }
 
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
