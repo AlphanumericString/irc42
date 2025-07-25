@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/24 22:59:28 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:39:18 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,13 @@ class ServerState {
 	bool operator!=(const ServerState &original) const;
 	~ServerState();
 
-	std::list< Client > const& getClients() const;
+	std::list< Client >& getClients();
 	std::string const &getName() const;
 	std::string const &getPassword() const;
 	int const		  &getPort() const;
 	std::string		   getMinimalInfo(void) const;
+
+	Client*	idClient(int fd);
 
 	void setStatus(Status status);
 	Status getStatus(void) const;

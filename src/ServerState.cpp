@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/24 22:59:36 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:43:18 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ ServerState::Status ServerState::getStatus(void) const {
 
 ServerState::~ServerState() {}
 
-std::list< Client >const&	ServerState::getClients() const {
+std::list< Client >&	ServerState::getClients() {
 	return _clients;
 }
 
@@ -80,6 +80,18 @@ std::string ServerState::getMinimalInfo(void) const {
 	std::stringstream ss;
 	ss << "[" << this->getName() << "] at 127.0.0.1 : " << this->getPort();
 	return (ss.str());
+}
+
+Client*	ServerState::idClient(int fd) {
+	std::list< Client >::iterator	nav = this->_clients.begin();
+
+	while (nav != this->_clients.end()) {
+		if (nav->getSockFD() == fd) {
+			return (&(*nav));	// What the fuck is that ??? (I hate iterators so much).
+		}
+		++nav;
+	}
+	return (nullptr);
 }
 
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
