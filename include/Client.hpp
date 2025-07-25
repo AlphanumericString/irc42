@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/07 12:58:32 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:25:03 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,28 +19,29 @@
 #define UNUSED __attribute__((unused))
 
 class Client {
-  private:
-	UNUSED int sock_fd;	//socket file descriptor,
-	UNUSED t_conState connectionState;	//connection state,
-	UNUSED t_authState authState;	//authentication status,
-	UNUSED std::string	nick;	//nickname,
-	UNUSED std::string name;	//username,
-	UNUSED std::string	host;	//hostname,
-	//and current channels. todo! --> ?shared pointer?
-	//	- maybe a secondary list for chanels he has mod power into?
-
   public:
-	// Constructors
 	Client();
 	Client(Client const &original); // when are we gonna use this ?!
-	// Destructors
 	~Client();
-	// Operator overloads
 	Client &operator=(Client const &original);
-	// Getters
-	// Setters
-	// Member functions
-	// Exceptions
+
+	/// @brief
+	/// @return
+	int		getSockFD();
+
+	/// @brief
+	/// @param
+	void	setSockFD(int fd);
+
+  private:
+	int			sockFD_;	///< Socket file descriptor
+	UNUSED t_conState	connectionState;	///< Connection state
+	UNUSED t_authState	authState;	///< Authentication status
+	UNUSED std::string	nick;	///< Nickname
+	UNUSED std::string	name;	///< Username
+	UNUSED std::string	host;	///< Hostname
+	//and current channels. todo! --> ?shared pointer?
+	//	- maybe a secondary list for chanels he has mod power into?
 };
 
 #undef UNUSED
