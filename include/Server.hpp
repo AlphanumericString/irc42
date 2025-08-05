@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 22:08:11 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/05 17:21:15 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 /// @brief
 
 #pragma once
+
+#include <vector>
 
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -23,13 +25,23 @@
 #define SERVER_PWD_DFLT		"password"
 #define SERVER_NAME_DFLT	"42irc_server_apbg"
 
+/// @enum e_event_type
+/// @brief
+typedef enum e_event_type {
+	EVENT_READ,
+	EVENT_WRITE,
+	EVENT_HANGUP,
+} t_event_type;
+
+typedef std::vector<std::pair<int, t_event_type> > vecEvent;
+
 /// @class Server
 /// @brief
 class Server {
   public:
-	/// @brief
-	/// @param port
-	/// @param password
+	/// @brief Default constructor.
+	/// @param port The port on which the server will listen for inbounds connections.
+	/// @param password The password to be able to access the server.
 	Server(int port = SERVER_PORT_DFLT, std::string password = SERVER_PWD_DFLT);
 
 	/// @brief
@@ -52,7 +64,7 @@ class Server {
 	const ServerState	&getServerState(void) const;
 
 	/// @brief
-	void	handleEvent();
+	void	handleEvent(Client& client);
 
 	/// @brief
 	/// @param fd
@@ -70,8 +82,19 @@ class Server {
 	/// @brief
 	void	initiateMultiplexing();
 
+	/// @brief Main loop of the server.
+	void	mainLoop(void);
+
 	/// @brief
-	void	run(void);
+	void	newUser(void);
+
+	/// @brief Stores the pending events in a buffer implemented as a vector.
+	///
+	/// This function calls epoll_wait() and populate a local epoll_event array
+	/// with the pending events. Then it iterates through this array to add
+	/// those events to a vector of pairs of fd (int) and t_event_type (enum).
+	/// @return Returns a vector of pairs of fd (int) and t_event_type (enum).
+	vecEvent	polling(void);
 
 	/// @brief
 	/// @param state

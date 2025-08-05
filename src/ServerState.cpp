@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 22:08:32 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/05 17:26:20 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,10 @@ bool ServerState::operator==(const ServerState &st) const {
 }
 bool ServerState::operator!=(const ServerState &st) const {
 	return (!(*this == st));
+}
+
+void	ServerState::deleteClient(Client &client) {
+	(void)client;
 }
 
 void ServerState::setStatus(ServerState::Status status) {
@@ -97,4 +101,8 @@ Client*	ServerState::idClient(int fd) {
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
 	os << sst.getMinimalInfo();
 	return (os);
+}
+
+void	ServerState::newClient(int fd) {
+	(void)fd;
 }

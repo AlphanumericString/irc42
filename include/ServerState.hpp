@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 21:39:18 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/05 17:05:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,20 @@ class ServerState {
 	int const		  &getPort() const;
 	std::string		   getMinimalInfo(void) const;
 
+	/// @brief
+	/// @param client The client we want to disconnect and delete.
+	void	deleteClient(Client& client);
+
+	/// @brief
+	/// @param fd The file descriptor we are looking for to be associated to
+	/// a client.
+	/// @return NULL if no Client matched. Otherwise the address of the Client
+	/// that matched.
 	Client*	idClient(int fd);
+
+	/// @brief
+	/// @param fd The file descriptor of the new Client.
+	void	newClient(int fd);
 
 	void setStatus(Status status);
 	Status getStatus(void) const;

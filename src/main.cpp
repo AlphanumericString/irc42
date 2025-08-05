@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:36 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/07 13:14:36 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/05 14:59:33 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 #include "generics.hpp"
 
 static int version_handl(std::vector< std::string >::iterator *it) {
-	std::cout << "Version " << IRC_SERVER_VERSION << " by "
-			  << IRC_SERVER_AUTHORS << "." << std::endl;
+	std::cout << "Version " << "00" << " by "
+			  << "blabla" << "." << std::endl;
 	*it = (*it)++;
 	return (0);
 }
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 		return (EXIT_FAILURE);
 	Server server(std::atoi(port.c_str()), passwd);
 	try {
-		server.run();
+		server.mainLoop();
 		return (server.exit_state());
 	} catch (...) {
 		std::cerr << "unhandled critical error in server :(" << std::endl;

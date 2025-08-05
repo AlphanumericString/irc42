@@ -6,14 +6,14 @@
 #    By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/07 12:34:46 by bgoulard          #+#    #+#              #
-#    Updated: 2025/07/24 18:25:27 by bgoulard         ###   ########.fr        #
+#    Updated: 2025/08/05 17:32:03 by apetitco         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # add version by git tag
 NAME		:=	ircserv
 VERSION		:= $(shell git describe --tags --dirty 2> /dev/null || echo "0.0.0")
-AUTHORS		:= "Baptiste GOULARD, Alessandro PETITCO"
+AUTHORS		:= "Baptiste GOULARD, Alessandro PETITCOLLIN"
 DEPLOYMENT	:=	dev
 CXX			:=	c++
 
@@ -26,7 +26,7 @@ OBJ_DIR		:=	build
 IS_PROD = $(if $(filter prod,$(DEPLOYMENT)),true,false)
 
 # warnings
-42FLAGS		:=	-Wall -Wextra -Werror -std=c++98
+42FLAGS		:=	-Wall -Wextra -Werror -Wunused -std=c++98
 WFLAGS_EXTRA:=
 WFLAGS		:= $(42FLAGS) $(WFLAGS_EXTRA)
 # IFLags -> include flag -> (not good as naming scheme, we dont only want

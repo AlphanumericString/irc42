@@ -6,13 +6,16 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/25 22:08:11 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/05 17:41:44 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
+#include <exception>
 #include <fcntl.h>
+#include <list>
+#include <stdexcept>
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -87,87 +90,26 @@ void	Server::bindSocket() {
 	}
 }
 
-#define MAX_EVENT 10
-void Server::handleEvent() {
-	struct epoll_event ev, events[MAX_EVENT];
-	char buf[1024];
+int Server::exit_state(void) {
+	// todo :: not impl ->
+	// _serverState -> get_status
+	//	-> set status when parsing commands ?
+	return (_serverState.getStatus() == ServerState::STOPPING ? 0 : 1);
+}
 
-	ev.events = EPOLLIN | EPOLLET;
-	ev.data.fd = this->_serverFD;
+void Server::handleEvent(Client& client) {
+	char buffer[1024];
 
-	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, this->_serverFD, &ev) == -1) {
-		perror("epoll_ctl: serverFD");
-		return;
-	}
-
-	if (makeSocketNonBlocking(this->_serverFD) == -1) {
-		perror("makeSocketNonBlocking: serverFD");
-		return;
-	}
-
-	while (true) {
-		int nfds = epoll_wait(this->_epollFD, events, MAX_EVENT, -1);
-		if (nfds == -1) {
-			perror("epoll_wait");
-			break;
-		}
-
-		for (int n = 0; n < nfds; ++n) {
-			int fd = events[n].data.fd;
-
-			if (fd == this->_serverFD) {
-				while (true) {
-					struct sockaddr_in addr;
-					socklen_t addrlen = sizeof(addr);
-					int conn_sock = accept(this->_serverFD, (struct sockaddr *)&addr, &addrlen);
-					if (conn_sock == -1) {
-						if (errno == EAGAIN || errno == EWOULDBLOCK) {
-							// All connections handled
-							break;
-						} else {
-							perror("accept");
-							break;
-						}
-					}
-					char*	ip_str = inet_ntoa(addr.sin_addr);
-					std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
-					if (makeSocketNonBlocking(conn_sock) == -1) {
-						perror("makeSocketNonBlocking: conn_sock");
-						close(conn_sock);
-						continue;
-					}
-					ev.events = EPOLLIN | EPOLLET;
-					ev.data.fd = conn_sock;
-					if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
-						perror("epoll_ctl: conn_sock");
-						close(conn_sock);
-						continue;
-					}
-					handleNewUser(conn_sock);
-				}
-			}
-			else {
-				while (true) {
-					ssize_t count = recv(fd, buf, sizeof(buf) - 1, 0);
-					if (count == -1) {
-						if (errno == EAGAIN || errno == EWOULDBLOCK) {
-							std::cout << "No more data to read" << std::endl;
-							break;
-						}
-						perror("recv");
-						close(fd);
-						break;
-					} else if (count == 0) {
-						std::cout << "Client disconnected: fd " << fd << std::endl;
-						close(fd);
-						break;
-					} else {
-						buf[count] = '\0';
-						handleMessage(buf, fd);
-					}
-				}
-			}
-		}
+	ssize_t count = recv(client.getSockFD(), buffer, sizeof(buffer) - 1, 0);
+	if (count == -1) {
+		throw std::runtime_error("recv");
+	} else if (count == 0) {
+		std::cout << "Client disconnected: fd " << client.getSockFD() << std::endl;
+		close(client.getSockFD());
+		/// @todo pop Client of the list;
+	} else {
+		buffer[count] = '\0';
+		handleMessage(buffer, client.getSockFD());
 	}
 }
 
@@ -216,7 +158,7 @@ void	Server::init(int *flgs) {
 }
 
 void	Server::initiateMultiplexing() {
-	this->_epollFD = epoll_create1(0);
+	this->_epollFD = epoll_create(1);	// Passing 1 as size because parameter is ignored
 	if (this->_epollFD == -1) {
 		return ;
 	}
@@ -230,18 +172,83 @@ int	Server::makeSocketNonBlocking(int fd) {
 	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
 }
 
-void Server::run(void) {
-	int	flgs;
 
-	this->init(&flgs);
+#define BUFFER_LEN 8192
+
+void Server::mainLoop(void) {
+	int	flags;
+
+	this->init(&flags);
 
 	setServerState(ServerState::RUNNING);
 	std::cout << "$> ";
 	while (ServerState::RUNNING == this->_serverState.getStatus()) {
 		ShellServerHandler::cmdHandler(*this);
 
-		/// @todo
-		handleEvent();
+		vecEvent events = this->polling();
+
+		for (vecEvent::iterator it = events.begin(); it != events.end(); it++)
+		{
+			int				fd = it->first;
+			t_event_type	ev = it->second;
+
+			if (fd == this->_serverFD && ev == EVENT_READ)
+			{
+				sockaddr_in	peerSockAddr;
+				socklen_t	addrlen = sizeof(peerSockAddr);
+
+				int new_clientFD = accept(this->_serverFD, (struct sockaddr*)&peerSockAddr, &addrlen);
+				this->_serverState.newClient(new_clientFD);
+			}
+			else {
+				Client *client = this->_serverState.idClient(fd);
+				if (client == NULL) {
+					close(fd);
+					continue;
+				}
+				static char BUFFER[BUFFER_LEN];
+
+				if (ev == EVENT_READ)
+				{
+					int res;
+					res = recv(fd, BUFFER, BUFFER_LEN, 0);
+					if (res < 0)
+					{
+						epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+						close(fd);
+						this->_serverState.deleteClient(*client);
+						continue;
+					}
+					client->appendInputBuffer(BUFFER, res);
+				}
+				if (ev == EVENT_WRITE)
+				{
+					// ask to fill the BUFFER with at most BUFFER_LEN; return the number of bytes written
+					int len = client->setOutputBuffer(BUFFER, BUFFER_LEN);
+					int res;
+					res = send(fd, BUFFER, len, 0);
+					if (res < 0)
+					{
+						epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+						close(fd);
+						this->_serverState.deleteClient(*client);
+					}
+					// say that `res` has been sent, please delete them from the output buffer
+					client->advanceOutputBuffer(res);
+				}
+				if (ev == EVENT_HANGUP)
+				{
+					epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+					close(fd);
+					this->_serverState.deleteClient(*client);
+				}
+			}
+		}
+		for (std::list<Client>::iterator it = this->_serverState.getClients().begin() ;
+			it != this->_serverState.getClients().end();
+			it++) {
+			it->processInput();
+		}
 
 		// if shell-server is dropped this display serv info when change occur
 		// if (prev != this->_serverState)
@@ -252,13 +259,54 @@ void Server::run(void) {
 		}
 	}
 	std::cout << "Server is stopping..." << std::endl;
-	fcntl(STDIN_FILENO, F_SETFL, flgs);
+	fcntl(STDIN_FILENO, F_SETFL, flags);
 	return;
 }
 
-int Server::exit_state(void) {
-	// todo :: not impl ->
-	// _serverState -> get_status
-	//	-> set status when parsing commands ?
-	return (_serverState.getStatus() == ServerState::STOPPING ? 0 : 1);
+void	Server::newUser() {
+	struct	epoll_event	currentEvent;
+	struct sockaddr_in	peerSockAddr;
+	socklen_t			addrlen = sizeof(peerSockAddr);
+
+	int conn_sock = accept(this->_serverFD, (struct sockaddr*)&peerSockAddr, &addrlen);
+	if (conn_sock == -1) {
+		throw std::runtime_error("accept() error");
+	}
+	char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
+	std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
+	if (makeSocketNonBlocking(conn_sock) == -1) {
+		close(conn_sock);
+		throw std::runtime_error("couldn't make socket non blocking");
+	}
+	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.data.fd = conn_sock;
+	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, conn_sock, &currentEvent) == -1) {
+		perror("epoll_ctl: conn_sock");
+		close(conn_sock);
+	}
+	handleNewUser(conn_sock);
 }
+
+#define MAX_BACKLOG 20
+
+vecEvent	Server::polling() {
+	struct epoll_event events[MAX_BACKLOG];
+
+	int nfds = epoll_wait(this->_epollFD, events, MAX_BACKLOG, 1000);
+	if (nfds == -1) {
+		/// @todo throw specific error ?
+		throw std::runtime_error("epoll_wait");
+	}
+	vecEvent ret;
+	for (int i = 0 ; i < nfds ; i++) {
+		int fd = events[i].data.fd;
+		if (events[i].events & EPOLLIN)
+			ret.push_back(std::make_pair(fd, EVENT_READ));
+		if (events[i].events & EPOLLOUT)
+			ret.push_back(std::make_pair(fd, EVENT_WRITE));
+		if (events[i].events & (EPOLLHUP | EPOLLRDHUP))
+			ret.push_back(std::make_pair(fd, EVENT_HANGUP));
+	}
+	return (ret);
+}
+
