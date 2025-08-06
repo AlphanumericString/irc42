@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:16:03 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:52:27 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,6 @@ Client::Client(Client const &original) {
 Client::~Client() {
 }
 
-/// @todo Implement this function.
-Client &Client::operator=(Client const &original) {
-	if (this != &original) {
-		this->sockFD_ = original.getSockFD();
-		this->ipAddress_ = original.getIPAddress();
-	}
-	return (*this);
-}
 
 void	Client::advanceOutputBuffer(unsigned int length) {
 	this->outputBuffer_.erase(length);
@@ -68,6 +60,15 @@ std::string&	Client::getOutputBuffer() {
 
 int	Client::getSockFD() const {
 	return (sockFD_);
+}
+
+/// @todo Implement this function.
+Client &Client::operator=(Client const &original) {
+	if (this != &original) {
+		this->sockFD_ = original.getSockFD();
+		this->ipAddress_ = original.getIPAddress();
+	}
+	return (*this);
 }
 
 /// @todo Implement this function.
