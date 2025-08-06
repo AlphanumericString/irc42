@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:51:07 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:20:54 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 
 #include <vector>
 
-#include "Channel.hpp"
-#include "Client.hpp"
 #include "ServerState.hpp"
 
 #define SERVER_PORT_DFLT	8080

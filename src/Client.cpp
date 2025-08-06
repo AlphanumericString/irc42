@@ -6,15 +6,11 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:52:27 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:19:13 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
-
-#include <cstdlib>
-#include <string.h>
-#include <stdlib.h>
 
 #include <cstring>
 #include <iostream>

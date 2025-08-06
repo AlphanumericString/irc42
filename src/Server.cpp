@@ -6,32 +6,19 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:49:27 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:21:25 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 #include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <sys/epoll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 
-#include <cerrno>
 #include <csignal>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <exception>
 #include <iostream>
-#include <list>
-#include <stdexcept>
 
-#include "ServerState.hpp"
 #include "ShellServerHandler.hpp"
 #include "smart_ptr.hpp"
 

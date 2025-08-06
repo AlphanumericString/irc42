@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:18:29 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:21:08 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #pragma once
 
 #include <list>
-#include <string>
 
 #include "Channel.hpp"
 #include "Client.hpp"

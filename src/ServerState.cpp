@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:14:53 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:22:09 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,11 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/epoll.h>
 
-#include <list>
 #include <iostream>
-#include <ostream>
 #include <sstream>
 
-#include "Channel.hpp"
-#include "Client.hpp"
 #include "Server.hpp"
 
 ServerState::ServerState(int p, const std::string pwd, Server &m)
