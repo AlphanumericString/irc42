@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:34:36 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:25:53 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <string>
 
 #include "AuthState.hpp"
-#include "ConectionState.hpp"
+#include "ConnectionState.hpp"
 
 #define UNUSED __attribute__((unused))
 
