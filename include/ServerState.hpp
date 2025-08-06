@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 13:19:34 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 16:22:46 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,9 @@ class ServerState {
 
 	/// @brief Creates a new client associated with the file descriptor fd
 	/// and fills its fields.
-	/// @param fd The file descriptor of the new Client.
-	void newClient(int fd);
+	/// @param fd The file descriptor of the new client.
+	/// @param ipAddress The IPv4 address of the new client.
+	void newClient(int fd, char* ipAddress);
 
 	void   setStatus(Status status);
 	Status getStatus(void) const;

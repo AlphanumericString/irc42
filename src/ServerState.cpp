@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 13:12:29 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 16:39:46 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,8 @@ bool ServerState::operator!=(const ServerState &st) const {
 
 /// @todo Implement function
 void	ServerState::deleteClient(Client &client) {
-	(void)client;
+	std::cout << "Client " << client.getHost() << " [" << client.getIPAddress() <<
+	"]: has disconnected." << std::endl;
 }
 
 void ServerState::setStatus(ServerState::Status status) {
@@ -124,9 +125,9 @@ std::ostream &operator<<(std::ostream &os, const ServerState sst) {
 	return (os);
 }
 
-void	ServerState::newClient(int fd) {
+void	ServerState::newClient(int fd, char* ipAddress) {
 	struct	epoll_event	currentEvent;
-	Client				newClient(fd);
+	Client				newClient(fd, ipAddress);
 
 
 	if (makeSocketNonBlocking(fd) == -1) {

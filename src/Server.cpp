@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 13:50:00 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:02:06 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,11 @@ void	Server::initiateMultiplexing() {
 	if (this->_epollFD == -1) {
 		return ;
 	}
+	struct	epoll_event	currentEvent;
+
+	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.data.fd = this->_serverFD;
+	epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, this->_serverFD, &currentEvent);
 }
 
 #define BUFFER_LEN 8192
@@ -198,7 +203,7 @@ void Server::mainLoop(void) {
 				}
 				char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
 				std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
-				this->_serverState.newClient(new_clientFD);
+				this->_serverState.newClient(new_clientFD, ip_str);
 			} else if (fd == STDIN_FILENO) {
 				/// @todo Handle STDIN
 				ShellServerHandler::cmdHandler(*this);

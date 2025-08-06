@@ -6,9 +6,11 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:36 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/05 14:59:33 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 16:00:17 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <unistd.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -79,6 +81,7 @@ int main(int argc, char *argv[]) {
 	Server server(std::atoi(port.c_str()), passwd);
 	try {
 		server.mainLoop();
+		close(server.getServerFD());
 		return (server.exit_state());
 	} catch (...) {
 		std::cerr << "unhandled critical error in server :(" << std::endl;
