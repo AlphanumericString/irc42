@@ -34,6 +34,7 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 	this->_name = SERVER_NAME_DFLT;
 	this->_port = (p);
 	this->_status = STARTING;
+	this->_stop = false;
 }
 
 ServerState::~ServerState() {
@@ -41,6 +42,7 @@ ServerState::~ServerState() {
 
 ServerState	&ServerState::operator=(const ServerState &st)
 {
+	this->_stop = st._stop;
 	this->_master = st._master;
 	this->_status = st._status;
 	this->_name = st._name;
@@ -92,6 +94,9 @@ std::string ServerState::getMinimalInfo(void) const {
 	std::stringstream ss;
 	ss << "[" << this->getName() << "] at 127.0.0.1 : " << this->getPort();
 	return (ss.str());
+}
+bool				*ServerState::getStopPtr(void) {
+	return &(this->_stop);
 }
 
 Client*	ServerState::idClient(int fd) {

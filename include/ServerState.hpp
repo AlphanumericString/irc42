@@ -35,39 +35,41 @@ class ServerState {
 
 	ServerState(int port, const std::string password, Server &master);
 	ServerState &operator=(const ServerState &original);
-	bool operator==(const ServerState &original) const;
-	bool operator!=(const ServerState &original) const;
+	bool		 operator==(const ServerState &original) const;
+	bool		 operator!=(const ServerState &original) const;
 	~ServerState();
 
-	std::list< Client >& getClients();
-	std::string const &getName() const;
-	std::string const &getPassword() const;
-	int const		  &getPort() const;
-	std::string		   getMinimalInfo(void) const;
+	std::list< Client > &getClients();
+	std::string const	&getName() const;
+	std::string const	&getPassword() const;
+	int const			&getPort() const;
+	std::string			 getMinimalInfo(void) const;
+	bool				*getStopPtr(void);
 
 	/// @brief
 	/// @param client The client we want to disconnect and delete.
-	void	deleteClient(Client& client);
+	void deleteClient(Client &client);
 
 	/// @brief
 	/// @param fd The file descriptor we are looking for to be associated to
 	/// a client.
 	/// @return NULL if no Client matched. Otherwise the address of the Client
 	/// that matched.
-	Client*	idClient(int fd);
+	Client *idClient(int fd);
 
 	/// @brief
-	static int	makeSocketNonBlocking(int fd);
+	static int makeSocketNonBlocking(int fd);
 
 	/// @brief Creates a new client associated with the file descriptor fd
 	/// and fills its fields.
 	/// @param fd The file descriptor of the new Client.
-	void	newClient(int fd);
+	void newClient(int fd);
 
-	void setStatus(Status status);
+	void   setStatus(Status status);
 	Status getStatus(void) const;
 
   private:
+	bool				 _stop;
 	ServerState::Status	 _status;
 	std::string			 _name;
 	std::string			 _password;
