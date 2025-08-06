@@ -143,11 +143,9 @@ void	Server::handleMessage(char* buffer, int fd) {
 }
 
 void	Server::init(int *flgs) {
-	bool	stop = false;
-
 	*flgs = fcntl(STDIN_FILENO, F_GETFL);
 	fcntl(STDIN_FILENO, F_SETFL, *flgs | O_NONBLOCK);
-	sig::stop = &stop;
+	sig::stop = this->_serverState.getStopPtr();
 	signal(SIGINT, sig_hdl);
 	signal(SIGTERM, sig_hdl);
 	signal(SIGQUIT, sig_hdl);
@@ -256,7 +254,7 @@ void Server::mainLoop(void) {
 		// if (prev != this->_serverState)
 		// 	std::cout << _serverState << std::endl;
 		// prev = this->_serverState;
-		if (sig::stop) {
+		if (*sig::stop) {
 			setServerState(ServerState::STOPPING);
 		}
 	}
