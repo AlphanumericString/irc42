@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/07 12:58:52 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/06 11:56:33 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 #define UNUSED __attribute__((unused))
 
 #include <string>
+
+/// @class Channel
+/// @brief Represents a single channel.
 class Channel {
   private:
 	typedef enum { // need to read doc, make these more explicit

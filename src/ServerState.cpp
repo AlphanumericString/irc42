@@ -6,13 +6,19 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/05 17:26:20 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:12:29 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerState.hpp"
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/epoll.h>
+
 #include <list>
+#include <iostream>
 #include <ostream>
 #include <sstream>
 
@@ -28,6 +34,9 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 	this->_name = SERVER_NAME_DFLT;
 	this->_port = (p);
 	this->_status = STARTING;
+}
+
+ServerState::~ServerState() {
 }
 
 ServerState	&ServerState::operator=(const ServerState &st)
@@ -50,6 +59,7 @@ bool ServerState::operator!=(const ServerState &st) const {
 	return (!(*this == st));
 }
 
+/// @todo Implement function
 void	ServerState::deleteClient(Client &client) {
 	(void)client;
 }
@@ -62,10 +72,8 @@ ServerState::Status ServerState::getStatus(void) const {
 	return (this->_status);
 }
 
-ServerState::~ServerState() {}
-
 std::list< Client >&	ServerState::getClients() {
-	return _clients;
+	return (_clients);
 }
 
 std::string const &ServerState::getName() const {
@@ -98,11 +106,33 @@ Client*	ServerState::idClient(int fd) {
 	return (NULL);
 }
 
+int	ServerState::makeSocketNonBlocking(int fd) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1) {
+		return (-1);
+	}
+	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
+}
+
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
 	os << sst.getMinimalInfo();
 	return (os);
 }
 
 void	ServerState::newClient(int fd) {
-	(void)fd;
+	struct	epoll_event	currentEvent;
+	Client				newClient(fd);
+
+
+	if (makeSocketNonBlocking(fd) == -1) {
+		close(fd);
+		throw std::runtime_error("couldn't make socket non blocking");
+	}
+	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.data.fd = fd;
+	if (epoll_ctl(this->_master->getEpollFD(), EPOLL_CTL_ADD, fd, &currentEvent) == -1) {
+		close(fd);
+		throw std::runtime_error("epoll_ctl");
+	}
+	this->_clients.push_back(newClient);
 }

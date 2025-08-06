@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/05 17:21:15 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:16:59 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ typedef enum e_event_type {
 typedef std::vector<std::pair<int, t_event_type> > vecEvent;
 
 /// @class Server
-/// @brief
+/// @brief Represents the server. Is the main class.
 class Server {
   public:
 	/// @brief Default constructor.
@@ -53,22 +53,29 @@ class Server {
 	Server	&operator=(const Server &original);
 
 	/// @brief
+	void	addStdInToMultiplexing();
+
+	/// @brief
 	void	bindSocket();
 
 	/// @brief
 	/// @return
 	int	exit_state(void);
 
+	/// @brief Accessor for the epollFD_ field.
+	/// @return The value of epollFD_.
+	int	getEpollFD() const;
+
 	/// @brief
 	/// @return
 	const ServerState	&getServerState(void) const;
 
-	/// @brief
-	void	handleEvent(Client& client);
+	/// @brief Accessor for the serverFD_ attribute.
+	/// @return The value of serverFD_.
+	int		getServerFD() const;
 
 	/// @brief
-	/// @param fd
-	void	handleNewUser(const int fd);
+	void	handleEvent(Client& client);
 
 	/// @brief
 	/// @param buffer
@@ -101,9 +108,6 @@ class Server {
 	void	setServerState(ServerState::Status state);
 
   private:
-	/// @brief
-	int	makeSocketNonBlocking(int fd);
-
 	int			_serverFD;		///<
 	int			_epollFD;		///<
 	Client	   *_clients;		///< Pointer to _serverState's list of clients.

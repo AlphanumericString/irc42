@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/05 17:05:11 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:19:34 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@
 
 class Server;
 
+/// @class ServerState
+/// @brief Holds data reprensenting the server status as well as current users
+/// and channels.
 class ServerState {
   public:
 	typedef enum {
@@ -54,6 +57,10 @@ class ServerState {
 	Client*	idClient(int fd);
 
 	/// @brief
+	static int	makeSocketNonBlocking(int fd);
+
+	/// @brief Creates a new client associated with the file descriptor fd
+	/// and fills its fields.
 	/// @param fd The file descriptor of the new Client.
 	void	newClient(int fd);
 

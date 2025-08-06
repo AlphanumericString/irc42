@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/05 17:41:44 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:34:56 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,21 @@ Server &Server::operator=(Server const &original) {
 	return (*this);
 }
 
+void	Server::addStdInToMultiplexing() {
+	struct	epoll_event	currentEvent;
+
+	if (ServerState::makeSocketNonBlocking(STDIN_FILENO) == -1) {
+		close(STDIN_FILENO);
+		throw std::runtime_error("couldn't make socket non blocking");
+	}
+	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.data.fd = STDIN_FILENO;
+	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) == -1) {
+		close(STDIN_FILENO);
+		throw std::runtime_error("epoll_ctl");
+	}
+}
+
 void Server::setServerState(ServerState::Status state) {
 	this->_serverState.setStatus(state);
 }
@@ -97,6 +112,14 @@ int Server::exit_state(void) {
 	return (_serverState.getStatus() == ServerState::STOPPING ? 0 : 1);
 }
 
+int	Server::getEpollFD() const {
+	return (this->_epollFD);
+}
+
+int	Server::getServerFD() const {
+	return (this->_serverFD);
+}
+
 void Server::handleEvent(Client& client) {
 	char buffer[1024];
 
@@ -117,24 +140,6 @@ void	Server::handleMessage(char* buffer, int fd) {
 	Client	*sender = this->_serverState.idClient(fd);
 	std::cout << "Received from Client (" << sender << "): " << buffer << std::endl;
 	/// @todo Handle messages
-}
-
-void	Server::handleNewUser(const int fd) {
-	char	buf[1024];
-	int		nbytes;
-	Client	newClient;
-
-	/// @todo Fill Client object info.
-	newClient.setSockFD(fd);
-	this->_serverState.getClients().push_back(newClient);
-
-	memset(buf, 0, sizeof(buf));
-	nbytes = recv(fd, buf, sizeof(buf) - 1, 0);
-	if (nbytes == -1) {
-		return ;
-	}
-
-	/// @todo handle CAP command
 }
 
 void	Server::init(int *flgs) {
@@ -164,15 +169,6 @@ void	Server::initiateMultiplexing() {
 	}
 }
 
-int	Server::makeSocketNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		return (-1);
-	}
-	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
-}
-
-
 #define BUFFER_LEN 8192
 
 void Server::mainLoop(void) {
@@ -181,6 +177,7 @@ void Server::mainLoop(void) {
 	this->init(&flags);
 
 	setServerState(ServerState::RUNNING);
+	addStdInToMultiplexing();
 	std::cout << "$> ";
 	while (ServerState::RUNNING == this->_serverState.getStatus()) {
 		ShellServerHandler::cmdHandler(*this);
@@ -198,9 +195,16 @@ void Server::mainLoop(void) {
 				socklen_t	addrlen = sizeof(peerSockAddr);
 
 				int new_clientFD = accept(this->_serverFD, (struct sockaddr*)&peerSockAddr, &addrlen);
+				if (new_clientFD == -1) {
+					throw std::runtime_error("accept() error");
+				}
+				char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
+				std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
 				this->_serverState.newClient(new_clientFD);
-			}
-			else {
+			} else if (fd == STDIN_FILENO) {
+				/// @todo Handle STDIN
+				ShellServerHandler::cmdHandler(*this);
+			} else {
 				Client *client = this->_serverState.idClient(fd);
 				if (client == NULL) {
 					close(fd);
@@ -223,7 +227,6 @@ void Server::mainLoop(void) {
 				}
 				if (ev == EVENT_WRITE)
 				{
-					// ask to fill the BUFFER with at most BUFFER_LEN; return the number of bytes written
 					int len = client->setOutputBuffer(BUFFER, BUFFER_LEN);
 					int res;
 					res = send(fd, BUFFER, len, 0);
@@ -233,7 +236,6 @@ void Server::mainLoop(void) {
 						close(fd);
 						this->_serverState.deleteClient(*client);
 					}
-					// say that `res` has been sent, please delete them from the output buffer
 					client->advanceOutputBuffer(res);
 				}
 				if (ev == EVENT_HANGUP)
@@ -261,30 +263,6 @@ void Server::mainLoop(void) {
 	std::cout << "Server is stopping..." << std::endl;
 	fcntl(STDIN_FILENO, F_SETFL, flags);
 	return;
-}
-
-void	Server::newUser() {
-	struct	epoll_event	currentEvent;
-	struct sockaddr_in	peerSockAddr;
-	socklen_t			addrlen = sizeof(peerSockAddr);
-
-	int conn_sock = accept(this->_serverFD, (struct sockaddr*)&peerSockAddr, &addrlen);
-	if (conn_sock == -1) {
-		throw std::runtime_error("accept() error");
-	}
-	char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
-	std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
-	if (makeSocketNonBlocking(conn_sock) == -1) {
-		close(conn_sock);
-		throw std::runtime_error("couldn't make socket non blocking");
-	}
-	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
-	currentEvent.data.fd = conn_sock;
-	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, conn_sock, &currentEvent) == -1) {
-		perror("epoll_ctl: conn_sock");
-		close(conn_sock);
-	}
-	handleNewUser(conn_sock);
 }
 
 #define MAX_BACKLOG 20
