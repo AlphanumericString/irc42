@@ -1,20 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ShellServer.hpp                                    :+:      :+:    :+:   */
+/*   ShellServerHandler.hpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 14:43:49 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/08 14:43:49 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:28:52 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/// @file ShellServerHandler.hpp
+/// @brief
 
 #include <string>
 #include <vector>
 
 #include "Server.hpp"
 
+/// @class ShellServerHandler
+/// @brief
 class ShellServerHandler {
   public:
 	static void	cmdHandler(Server &serv);
