@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:30:02 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:31:33 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Client {
 	/// @brief Appends 'length' char of string 'str' to the client's input
 	/// buffer.
 	/// @param str The content we want to append to the clien't input buffer.
-	/// @length The number of characters we want to append.
+	/// @param length The number of characters we want to append.
 	void				appendInputBuffer(char* str, unsigned int length);
 
 	/// @brief Accessor to the host_ attribute.
