@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 13:16:59 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:18:58 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,14 +73,6 @@ class Server {
 	/// @brief Accessor for the serverFD_ attribute.
 	/// @return The value of serverFD_.
 	int		getServerFD() const;
-
-	/// @brief
-	void	handleEvent(Client& client);
-
-	/// @brief
-	/// @param buffer
-	/// @param fd
-	void	handleMessage(char* buffer, int fd);
 
 	/// @brief
 	/// @param flgs

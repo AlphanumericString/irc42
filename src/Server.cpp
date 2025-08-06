@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:02:06 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:19:01 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,28 +118,6 @@ int	Server::getEpollFD() const {
 
 int	Server::getServerFD() const {
 	return (this->_serverFD);
-}
-
-void Server::handleEvent(Client& client) {
-	char buffer[1024];
-
-	ssize_t count = recv(client.getSockFD(), buffer, sizeof(buffer) - 1, 0);
-	if (count == -1) {
-		throw std::runtime_error("recv");
-	} else if (count == 0) {
-		std::cout << "Client disconnected: fd " << client.getSockFD() << std::endl;
-		close(client.getSockFD());
-		/// @todo pop Client of the list;
-	} else {
-		buffer[count] = '\0';
-		handleMessage(buffer, client.getSockFD());
-	}
-}
-
-void	Server::handleMessage(char* buffer, int fd) {
-	Client	*sender = this->_serverState.idClient(fd);
-	std::cout << "Received from Client (" << sender << "): " << buffer << std::endl;
-	/// @todo Handle messages
 }
 
 void	Server::init(int *flgs) {
