@@ -6,9 +6,12 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:32:20 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:33:48 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/// @file Client.hpp
+/// @brief
 
 #pragma once
 
