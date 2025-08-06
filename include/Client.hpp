@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 16:51:50 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:30:02 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,34 +22,30 @@
 /// @brief Class representing a single client.
 class Client {
   public:
-	/// @brief
+	/// @brief Default constructor.
 	Client();
 
-	/// @brief
+	/// @brief Constructor that takes the client's fd and his IPv4 address.
 	/// @param fd The file descriptor associated to the client.
+	/// @param ipAddress The IPv4 address of the client.
 	Client(int fd, char* ipAddress);
 
-	/// @brief
-	/// @param original
-	Client(Client const &original); // when are we gonna use this ?!
+	/// @brief Copy constructor
+	/// @param original The Client object that is to be copied.
+	Client(Client const &original);
 
-	/// @brief
+	/// @brief Default destructor
 	~Client();
-
-	/// @brief
-	/// @param original
-	/// @return
-	Client &operator=(Client const &original);
 
 	/// @brief Erase 'length' characters of the output buffer.
 	/// @param length The number of characters to erase.
-	void	advanceOutputBuffer(unsigned int length);
+	void				advanceOutputBuffer(unsigned int length);
 
 	/// @brief Appends 'length' char of string 'str' to the client's input
 	/// buffer.
 	/// @param str The content we want to append to the clien't input buffer.
 	/// @length The number of characters we want to append.
-	void	appendInputBuffer(char* str, unsigned int length);
+	void				appendInputBuffer(char* str, unsigned int length);
 
 	/// @brief Accessor to the host_ attribute.
 	/// @return A constant reference to the std::string containing the host name.
@@ -60,28 +56,34 @@ class Client {
 	/// address.
 	const std::string&	getIPAddress() const;
 
-	/// @brief
+	/// @brief Accessor for the outputBuffer_ attribute.
 	/// @return A reference to the output buffer.
-	std::string& getOutputBuffer();
+	std::string&		getOutputBuffer();
 
 	/// @brief Accessor for the sockFD_ attribute.
 	/// @return Returns the value of sockFD_.
-	int		getSockFD() const;
+	int					getSockFD() const;
 
-	/// @brief
-	void	processInput();
+	/// @brief Assignment operator overload.
+	/// @param original The Client object we want to assign from
+	/// @return A reference to a Client object.
+	Client				&operator=(Client const &original);
+
+	/// @brief Processes the commands inside the Client's inputBuffer_ attribute.
+	void				processInput();
 
 	/// @brief Fills the client's output buffer with 'length' characters of
 	/// string 'str'.
 	/// @param buffer The data we want to fill the client's output buffer with.
-	/// @maxLength The maximum number of characters we want to put inside the
-	/// client's output buffer.
+	/// @param maxLength The maximum number of characters we want to put inside
+	/// the client's output buffer.
 	/// @return Returns the number of bytes written.
-	int	setOutputBuffer(char* buffer, unsigned int maxLength);
+	int					setOutputBuffer(char* buffer, unsigned int maxLength);
 
-	/// @brief
-	/// @param fd
-	void	setSockFD(int fd);
+	/// @brief Setter for the sockFD_ attribute.
+	/// @param fd The file descriptor that will be associated with the current
+	/// Client object.
+	void				setSockFD(int fd);
 
   private:
 	int			sockFD_;		///< Socket file descriptor, -1 if not set.
