@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 16:39:46 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 18:14:53 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,46 +40,26 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 ServerState::~ServerState() {
 }
 
-ServerState	&ServerState::operator=(const ServerState &st)
-{
-	this->_stop = st._stop;
-	this->_master = st._master;
-	this->_status = st._status;
-	this->_name = st._name;
-	this->_password = st._password;
-	this->_port = st._port;
-	this->_clients = st._clients;
-	this->_channels = st._channels;
-	return (*this);
-}
-
-bool ServerState::operator==(const ServerState &st) const {
-	return (this->_name == st._name && this->_port == st._port &&
-			this->_password == st._password && this->_status == st._status);
-}
-bool ServerState::operator!=(const ServerState &st) const {
-	return (!(*this == st));
-}
-
 /// @todo Implement function
 void	ServerState::deleteClient(Client &client) {
 	std::cout << "Client " << client.getHost() << " [" << client.getIPAddress() <<
 	"]: has disconnected." << std::endl;
 }
 
-void ServerState::setStatus(ServerState::Status status) {
-	this->_status = status;
-}
-
-ServerState::Status ServerState::getStatus(void) const {
-	return (this->_status);
-}
-
 std::list< Client >&	ServerState::getClients() {
 	return (_clients);
 }
 
-std::string const &ServerState::getName() const {
+std::string ServerState::getMinimalInfo(void) const {
+	std::stringstream ss;
+	ss << "[" << this->getName() << "] at 127.0.0.1 : " << this->getPort();
+	return (ss.str());
+}
+bool				*ServerState::getStopPtr(void) {
+	return &(this->_stop);
+}
+
+std::string const&	ServerState::getName() const {
 	return (this->_name);
 }
 
@@ -91,13 +71,8 @@ int const &ServerState::getPort() const {
 	return (this->_port);
 }
 
-std::string ServerState::getMinimalInfo(void) const {
-	std::stringstream ss;
-	ss << "[" << this->getName() << "] at 127.0.0.1 : " << this->getPort();
-	return (ss.str());
-}
-bool				*ServerState::getStopPtr(void) {
-	return &(this->_stop);
+ServerState::Status ServerState::getStatus(void) const {
+	return (this->_status);
 }
 
 Client*	ServerState::idClient(int fd) {
@@ -120,11 +95,6 @@ int	ServerState::makeSocketNonBlocking(int fd) {
 	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
 }
 
-std::ostream &operator<<(std::ostream &os, const ServerState sst) {
-	os << sst.getMinimalInfo();
-	return (os);
-}
-
 void	ServerState::newClient(int fd, char* ipAddress) {
 	struct	epoll_event	currentEvent;
 	Client				newClient(fd, ipAddress);
@@ -142,3 +112,34 @@ void	ServerState::newClient(int fd, char* ipAddress) {
 	}
 	this->_clients.push_back(newClient);
 }
+
+ServerState	&ServerState::operator=(const ServerState &st)
+{
+	this->_stop = st._stop;
+	this->_master = st._master;
+	this->_status = st._status;
+	this->_name = st._name;
+	this->_password = st._password;
+	this->_port = st._port;
+	this->_clients = st._clients;
+	this->_channels = st._channels;
+	return (*this);
+}
+
+bool ServerState::operator==(const ServerState &st) const {
+	return (this->_name == st._name && this->_port == st._port &&
+			this->_password == st._password && this->_status == st._status);
+}
+bool ServerState::operator!=(const ServerState &st) const {
+	return (!(*this == st));
+}
+
+void ServerState::setStatus(ServerState::Status status) {
+	this->_status = status;
+}
+
+std::ostream &operator<<(std::ostream &os, const ServerState sst) {
+	os << sst.getMinimalInfo();
+	return (os);
+}
+
