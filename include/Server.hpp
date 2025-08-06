@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:18:58 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:45:59 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #define SERVER_NAME_DFLT	"42irc_server_apbg"
 
 /// @enum e_event_type
-/// @brief
+/// @brief Represents the different events to be processed.
 typedef enum e_event_type {
 	EVENT_READ,
 	EVENT_WRITE,
@@ -44,48 +44,46 @@ class Server {
 	/// @param password The password to be able to access the server.
 	Server(int port = SERVER_PORT_DFLT, std::string password = SERVER_PWD_DFLT);
 
-	/// @brief
+	/// @brief Default destructor.
 	~Server();
 
-	/// @brief
-	/// @param original
-	/// @return
-	Server	&operator=(const Server &original);
+	/// @brief Adds the standard input to the list of monitored file descriptors
+	/// of epoll().
+	void				addStdInToMultiplexing(void);
 
-	/// @brief
-	void	addStdInToMultiplexing();
-
-	/// @brief
-	void	bindSocket();
+	/// @brief Bind the server socket to any inbound addresses.
+	void				bindSocket(void);
 
 	/// @brief
 	/// @return
-	int	exit_state(void);
+	int					exit_state(void);
 
-	/// @brief Accessor for the epollFD_ field.
+	/// @brief Accessor for the epollFD_ attribute.
 	/// @return The value of epollFD_.
-	int	getEpollFD() const;
-
-	/// @brief
-	/// @return
-	const ServerState	&getServerState(void) const;
+	int					getEpollFD(void) const;
 
 	/// @brief Accessor for the serverFD_ attribute.
 	/// @return The value of serverFD_.
-	int		getServerFD() const;
+	int		getServerFD(void) const;
 
-	/// @brief
-	/// @param flgs
-	void	init(int *flgs);
+	/// @brief Accessor for the serverState_ attribute.
+	/// @return A constant reference to a ServerState object.
+	const ServerState&	getServerState(void) const;
 
-	/// @brief
-	void	initiateMultiplexing();
+	/// @brief Handles the initialisation of the server.
+	/// @param flags The flags that are to be set for the file descriptors.
+	void				init(int *flags);
+
+	/// @brief Initialises epoll()'s multiplexing.
+	void				initiateMultiplexing(void);
 
 	/// @brief Main loop of the server.
-	void	mainLoop(void);
+	void				mainLoop(void);
 
-	/// @brief
-	void	newUser(void);
+	/// @brief Assignment operator overload.
+	/// @param original The Server object we want to assign from.
+	/// @return A reference to a Server object.
+	Server&				operator=(const Server &original);
 
 	/// @brief Stores the pending events in a buffer implemented as a vector.
 	///
@@ -93,18 +91,18 @@ class Server {
 	/// with the pending events. Then it iterates through this array to add
 	/// those events to a vector of pairs of fd (int) and t_event_type (enum).
 	/// @return Returns a vector of pairs of fd (int) and t_event_type (enum).
-	vecEvent	polling(void);
+	vecEvent			polling(void);
 
-	/// @brief
-	/// @param state
-	void	setServerState(ServerState::Status state);
+	/// @brief Setter for the serverState_ attribute.
+	/// @param state The state to set.
+	void				setServerState(ServerState::Status state);
 
   private:
-	int			_serverFD;		///<
-	int			_epollFD;		///<
-	Client	   *_clients;		///< Pointer to _serverState's list of clients.
-	Channel	   *_channels;		///< Pointer to _serverState's list of channels.
-	ServerState _serverState;	///< Self-explanatory
+	int			serverFD_;		///<
+	int			epollFD_;		///<
+	Client	   *clients_;		///< Pointer to _serverState's list of clients.
+	Channel	   *channels_;		///< Pointer to _serverState's list of channels.
+	ServerState serverState_;	///< Self-explanatory
 								/// Event Loop
 								/// Main loop
 };

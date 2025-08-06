@@ -6,16 +6,13 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 17:19:01 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:49:27 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-#include <exception>
 #include <fcntl.h>
-#include <list>
-#include <stdexcept>
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -29,7 +26,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <iostream>
+#include <list>
+#include <stdexcept>
 
 #include "ServerState.hpp"
 #include "ShellServerHandler.hpp"
@@ -52,20 +52,16 @@ static void sig_hdl(int sig) {
 }
 
 Server::Server(int port, const std::string password)
-	: _serverState(port, password, *this) {
-	this->_serverFD = -1;
-	this->_epollFD = -1;	   // not set
-	this->_clients = NULLPTR;  // not set
-	this->_channels = NULLPTR; // not set
+	: serverState_(port, password, *this) {
+	this->serverFD_ = -1;
+	this->epollFD_ = -1;	   // not set
+	this->clients_ = NULLPTR;  // not set
+	this->channels_ = NULLPTR; // not set
 	// this->_channels = _serverState.getChannelsPtr();
 	// this->_clients = _serverState.getClientsPtr();
 }
 
-Server::~Server() {}
-
-Server &Server::operator=(Server const &original) {
-	(void)original;
-	return (*this);
+Server::~Server() {
 }
 
 void	Server::addStdInToMultiplexing() {
@@ -77,18 +73,10 @@ void	Server::addStdInToMultiplexing() {
 	}
 	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
 	currentEvent.data.fd = STDIN_FILENO;
-	if (epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) == -1) {
+	if (epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) == -1) {
 		close(STDIN_FILENO);
 		throw std::runtime_error("epoll_ctl");
 	}
-}
-
-void Server::setServerState(ServerState::Status state) {
-	this->_serverState.setStatus(state);
-}
-
-const ServerState &Server::getServerState(void) const {
-	return (this->_serverState);
 }
 
 void	Server::bindSocket() {
@@ -98,8 +86,8 @@ void	Server::bindSocket() {
 	sock_add.sin_addr.s_addr = INADDR_ANY;
 	sock_add.sin_port = htons(this->getServerState().getPort());
 
-	if (bind(this->_serverFD, (struct sockaddr*)&sock_add, sizeof(sock_add)) == -1) {
-		close(this->_serverFD);
+	if (bind(this->serverFD_, (struct sockaddr*)&sock_add, sizeof(sock_add)) == -1) {
+		close(this->serverFD_);
 		std::cerr << "Failed to bind" << std::endl;
 		return ;
 	}
@@ -109,45 +97,49 @@ int Server::exit_state(void) {
 	// todo :: not impl ->
 	// _serverState -> get_status
 	//	-> set status when parsing commands ?
-	return (_serverState.getStatus() == ServerState::STOPPING ? 0 : 1);
+	return (serverState_.getStatus() == ServerState::STOPPING ? 0 : 1);
 }
 
 int	Server::getEpollFD() const {
-	return (this->_epollFD);
+	return (this->epollFD_);
 }
 
 int	Server::getServerFD() const {
-	return (this->_serverFD);
+	return (this->serverFD_);
+}
+
+const ServerState &Server::getServerState(void) const {
+	return (this->serverState_);
 }
 
 void	Server::init(int *flgs) {
 	*flgs = fcntl(STDIN_FILENO, F_GETFL);
 	fcntl(STDIN_FILENO, F_SETFL, *flgs | O_NONBLOCK);
-	sig::stop = this->_serverState.getStopPtr();
+	sig::stop = this->serverState_.getStopPtr();
 	signal(SIGINT, sig_hdl);
 	signal(SIGTERM, sig_hdl);
 	signal(SIGQUIT, sig_hdl);
 
-	this->_serverFD = socket(AF_INET, SOCK_STREAM, 0);
+	this->serverFD_ = socket(AF_INET, SOCK_STREAM, 0);
 	bindSocket();
-	if (listen(this->_serverFD, 10) == -1) {
+	if (listen(this->serverFD_, 10) == -1) {
 		std::cerr << "Couldn't listen" << std::endl;
 		std::exit(1);
 	}
-	fcntl(this->_serverFD, F_SETFL, *flgs);
+	fcntl(this->serverFD_, F_SETFL, *flgs);
 	initiateMultiplexing();
 }
 
 void	Server::initiateMultiplexing() {
-	this->_epollFD = epoll_create(1);	// Passing 1 as size because parameter is ignored
-	if (this->_epollFD == -1) {
+	this->epollFD_ = epoll_create(1);	// Passing 1 as size because parameter is ignored
+	if (this->epollFD_ == -1) {
 		return ;
 	}
 	struct	epoll_event	currentEvent;
 
 	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
-	currentEvent.data.fd = this->_serverFD;
-	epoll_ctl(this->_epollFD, EPOLL_CTL_ADD, this->_serverFD, &currentEvent);
+	currentEvent.data.fd = this->serverFD_;
+	epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, this->serverFD_, &currentEvent);
 }
 
 #define BUFFER_LEN 8192
@@ -160,7 +152,7 @@ void Server::mainLoop(void) {
 	setServerState(ServerState::RUNNING);
 	addStdInToMultiplexing();
 	std::cout << "$> ";
-	while (ServerState::RUNNING == this->_serverState.getStatus()) {
+	while (ServerState::RUNNING == this->serverState_.getStatus()) {
 		ShellServerHandler::cmdHandler(*this);
 
 		vecEvent events = this->polling();
@@ -170,23 +162,23 @@ void Server::mainLoop(void) {
 			int				fd = it->first;
 			t_event_type	ev = it->second;
 
-			if (fd == this->_serverFD && ev == EVENT_READ)
+			if (fd == this->serverFD_ && ev == EVENT_READ)
 			{
 				sockaddr_in	peerSockAddr;
 				socklen_t	addrlen = sizeof(peerSockAddr);
 
-				int new_clientFD = accept(this->_serverFD, (struct sockaddr*)&peerSockAddr, &addrlen);
+				int new_clientFD = accept(this->serverFD_, (struct sockaddr*)&peerSockAddr, &addrlen);
 				if (new_clientFD == -1) {
 					throw std::runtime_error("accept() error");
 				}
 				char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
 				std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
-				this->_serverState.newClient(new_clientFD, ip_str);
+				this->serverState_.newClient(new_clientFD, ip_str);
 			} else if (fd == STDIN_FILENO) {
-				/// @todo Handle STDIN
+				/// @todo Handle STDI stop at null byteN
 				ShellServerHandler::cmdHandler(*this);
 			} else {
-				Client *client = this->_serverState.idClient(fd);
+				Client *client = this->serverState_.idClient(fd);
 				if (client == NULL) {
 					close(fd);
 					continue;
@@ -199,9 +191,9 @@ void Server::mainLoop(void) {
 					res = recv(fd, BUFFER, BUFFER_LEN, 0);
 					if (res < 0)
 					{
-						epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+						epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, fd, NULL);
 						close(fd);
-						this->_serverState.deleteClient(*client);
+						this->serverState_.deleteClient(*client);
 						continue;
 					}
 					client->appendInputBuffer(BUFFER, res);
@@ -213,22 +205,22 @@ void Server::mainLoop(void) {
 					res = send(fd, BUFFER, len, 0);
 					if (res < 0)
 					{
-						epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+						epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, fd, NULL);
 						close(fd);
-						this->_serverState.deleteClient(*client);
+						this->serverState_.deleteClient(*client);
 					}
 					client->advanceOutputBuffer(res);
 				}
 				if (ev == EVENT_HANGUP)
 				{
-					epoll_ctl(this->_epollFD, EPOLL_CTL_DEL, fd, NULL);
+					epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, fd, NULL);
 					close(fd);
-					this->_serverState.deleteClient(*client);
+					this->serverState_.deleteClient(*client);
 				}
 			}
 		}
-		for (std::list<Client>::iterator it = this->_serverState.getClients().begin() ;
-			it != this->_serverState.getClients().end();
+		for (std::list<Client>::iterator it = this->serverState_.getClients().begin() ;
+			it != this->serverState_.getClients().end();
 			it++) {
 			it->processInput();
 		}
@@ -246,12 +238,17 @@ void Server::mainLoop(void) {
 	return;
 }
 
+Server &Server::operator=(Server const &original) {
+	(void)original;
+	return (*this);
+}
+
 #define MAX_BACKLOG 20
 
 vecEvent	Server::polling() {
 	struct epoll_event events[MAX_BACKLOG];
 
-	int nfds = epoll_wait(this->_epollFD, events, MAX_BACKLOG, 1000);
+	int nfds = epoll_wait(this->epollFD_, events, MAX_BACKLOG, 1000);
 	if (nfds == -1) {
 		/// @todo throw specific error ?
 		throw std::runtime_error("epoll_wait");
@@ -267,5 +264,9 @@ vecEvent	Server::polling() {
 			ret.push_back(std::make_pair(fd, EVENT_HANGUP));
 	}
 	return (ret);
+}
+
+void Server::setServerState(ServerState::Status state) {
+	this->serverState_.setStatus(state);
 }
 
