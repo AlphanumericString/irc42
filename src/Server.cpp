@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:21:25 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 16:23:59 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <ostream>
+#include <string>
 #include <sys/epoll.h>
+#include <errno.h>
 
 #include <csignal>
+#include <cstdlib>
 #include <iostream>
 
 #include "ShellServerHandler.hpp"
@@ -29,6 +33,7 @@ int	  g_sig = 0;
 
 static void sig_hdl(int sig) {
 	if (sig == SIGINT || sig == SIGTERM || sig == SIGQUIT) {
+		std::cerr << "Handled signal: " << sig << std::endl;
 		std::cout << std::endl;
 		if (sig::stop != NULLPTR)
 			*sig::stop = true;
@@ -58,7 +63,7 @@ void	Server::addStdInToMultiplexing() {
 		close(STDIN_FILENO);
 		throw std::runtime_error("couldn't make socket non blocking");
 	}
-	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.events = EPOLLIN;
 	currentEvent.data.fd = STDIN_FILENO;
 	if (epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) == -1) {
 		close(STDIN_FILENO);
@@ -133,15 +138,14 @@ void	Server::initiateMultiplexing() {
 
 void Server::mainLoop(void) {
 	int	flags;
+	static char BUFFER[BUFFER_LEN];
 
 	this->init(&flags);
 
 	setServerState(ServerState::RUNNING);
 	addStdInToMultiplexing();
-	std::cout << "$> ";
+	std::cout << "$> " << std::flush;
 	while (ServerState::RUNNING == this->serverState_.getStatus()) {
-		ShellServerHandler::cmdHandler(*this);
-
 		vecEvent events = this->polling();
 
 		for (vecEvent::iterator it = events.begin(); it != events.end(); it++)
@@ -161,16 +165,29 @@ void Server::mainLoop(void) {
 				char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
 				std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
 				this->serverState_.newClient(new_clientFD, ip_str);
-			} else if (fd == STDIN_FILENO) {
+			} else if (fd == STDIN_FILENO && ev == EVENT_READ) {
 				/// @todo Handle STDI stop at null byteN
-				ShellServerHandler::cmdHandler(*this);
+				int res = read(STDIN_FILENO, BUFFER, BUFFER_LEN);
+				if (res < 0)
+				{
+					std::cerr << "Read stdin: error" << std::endl;
+				}
+				this->stdinBuffer.append(&BUFFER[0], &BUFFER[res]);
+
+				for (std::string::size_type line = this->stdinBuffer.find('\n');
+					line != std::string::npos;
+					this->stdinBuffer.erase(this->stdinBuffer.begin(), this->stdinBuffer.begin() + line + 1),
+					line = this->stdinBuffer.find('\n'))
+				{
+					std::string extracted(this->stdinBuffer.begin(), this->stdinBuffer.begin() + line);
+					ShellServerHandler::cmdHandler(*this, extracted);
+				}
 			} else {
 				Client *client = this->serverState_.idClient(fd);
 				if (client == NULL) {
 					close(fd);
 					continue;
 				}
-				static char BUFFER[BUFFER_LEN];
 
 				if (ev == EVENT_READ)
 				{
@@ -236,7 +253,7 @@ vecEvent	Server::polling() {
 	struct epoll_event events[MAX_BACKLOG];
 
 	int nfds = epoll_wait(this->epollFD_, events, MAX_BACKLOG, 1000);
-	if (nfds == -1) {
+	if (nfds == -1 && errno != EINTR) {
 		/// @todo throw specific error ?
 		throw std::runtime_error("epoll_wait");
 	}

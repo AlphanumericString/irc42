@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:20:54 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 16:05:37 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <sstream>
 #include <vector>
 
 #include "ServerState.hpp"
@@ -103,4 +104,5 @@ class Server {
 	ServerState serverState_;	///< Self-explanatory
 								/// Event Loop
 								/// Main loop
+	std::string stdinBuffer;
 };
