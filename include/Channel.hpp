@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 11:56:33 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:29:10 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@
 
 /// @class Channel
 /// @brief Represents a single channel.
+///
+/// Manages a chat room with its name, topic, modes, member list with their
+/// privileges (operator, voice, etc.), and channel-specific settings like
+/// user limits or keys. It handles message broadcasting to all members and
+/// enforces channel modes.
 class Channel {
   private:
 	typedef enum { // need to read doc, make these more explicit

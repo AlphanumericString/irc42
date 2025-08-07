@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:29:22 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:28:34 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,12 @@
 
 /// @class Client
 /// @brief Class representing a single client.
+///
+/// Represents a connected user with their socket file descriptor, connection
+/// state, authentication status, nickname, username, hostname, and current
+/// channels. It manages partial message buffering since non-blocking reads
+/// might receive incomplete IRC messages. Each client has input/output buffers
+/// and tracks registration state.
 class Client {
   public:
 	/// @brief Default constructor.

@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 16:05:37 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:27:17 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,11 @@ typedef std::vector<std::pair<int, t_event_type> > vecEvent;
 
 /// @class Server
 /// @brief Represents the server. Is the main class.
+///
+/// The main orchestrator that owns the epoll file descriptor and runs the
+/// event loop. It maintains collections of all clients, channels, and handles
+/// the core server lifecycle. This class processes epoll events and delegates
+/// to appropriate handlers.
 class Server {
   public:
 	/// @brief Default constructor.
