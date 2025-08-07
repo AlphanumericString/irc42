@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 16:23:59 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 18:01:42 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,7 @@ void Server::mainLoop(void) {
 		for (vecEvent::iterator it = events.begin(); it != events.end(); it++)
 		{
 			int				fd = it->first;
-			t_event_type	ev = it->second;
+			eventType	ev = it->second;
 
 			if (fd == this->serverFD_ && ev == EVENT_READ)
 			{

@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:32:51 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:34:21 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,13 +121,13 @@ class ServerState {
 	void					setStatus(Status status);
 
   private:
-	bool					_stop;		///< Flag indicating if server has to stop.
-	ServerState::Status		_status;	///< Current status of the Server.
-	std::string				_name;		///< Name of the Server.
-	std::string				_password;	///< Password to authentify to the Server.
-	int						_port;		///< Port of the Server.
-	std::list< Client >		_clients;	///< Clients connected to the Server.
-	std::list< Channel >	_channels;	///< Channels active on the Server.
-	Server*					_master;	///< Server object to which the current ServerStatus belongs to.
+	bool					stop_;		///< Flag indicating if server has to stop.
+	ServerState::Status		status_;	///< Current status of the Server.
+	std::string				name_;		///< Name of the Server.
+	std::string				password_;	///< Password to authentify to the Server.
+	int						port_;		///< Port of the Server.
+	std::list< Client >		clients_;	///< Clients connected to the Server.
+	std::list< Channel >	channels_;	///< Channels active on the Server.
+	Server*					master_;	///< Server object to which the current ServerStatus belongs to.
 };
 std::ostream &operator<<(std::ostream &os, const ServerState sst);

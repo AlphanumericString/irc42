@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:29:10 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 18:00:37 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,35 +24,41 @@
 /// user limits or keys. It handles message broadcasting to all members and
 /// enforces channel modes.
 class Channel {
+  public:
+	/// @brief Default constructor.
+	Channel();
+
+	/// @brief Copy constructor
+	/// @param original
+	Channel(Channel const &original); // when are we gonna use this ?!
+
+	/// @brief Default constructor.
+	~Channel();
+
+	/// @brief Assignment operator overload.
+	/// @param original The Channel object we want to assign from.
+	/// @return A reference to a Channel object.
+	Channel &operator=(Channel const &original);
+
   private:
+	/// @typedef ChanMod
+	/// @brief Enumeration for the channel modes.
+	/// @todo Fill Doxygen comments.
 	typedef enum { // need to read doc, make these more explicit
-		MODE_UNKNOWN,
-		MODE_L,
-		MODE_T,
-		MODE_I,
+		MODE_UNKNOWN,	///< Unknown mode.
+		MODE_L,			///< ???.
+		MODE_T,			///< ???.
+		MODE_I,			///< ???.
 	} ChanMod;
 
-	UNUSED std::string name;  // name,
-	UNUSED std::string topic; // topic,
-	UNUSED ChanMod	   mode;  // modes,
+	UNUSED std::string name_;	///< Name.
+	UNUSED std::string topic_;	///< Topic.
+	UNUSED ChanMod	   mode_;	///< Modes.
 	// member list with their privileges (operator, voice, etc.),
 	//   std::list -> user in the middle can leave when-ever
 	//   question is list of pair? list of self defined type?
 	//   idk - decision paralisis AAAAAAAAa /hj
 	// channel-specific settings like user limits or keys.
-
-  public:
-	// Constructors
-	Channel();
-	Channel(Channel const &original); // when are we gonna use this ?!
-	// Destructors
-	~Channel();
-	// Operator overloads
-	Channel &operator=(Channel const &original);
-	// Getters
-	// Setters
-	// Member functions
-	// Exceptions
 };
 
 #undef UNUSED

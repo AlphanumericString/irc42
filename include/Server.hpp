@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:30:57 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 18:08:01 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,19 @@
 #define SERVER_PWD_DFLT		"password"
 #define SERVER_NAME_DFLT	"42irc_server_apbg"
 
-/// @enum e_event_type
+/// @typedef eventType
 /// @brief Represents the different events to be processed.
-typedef enum e_event_type {
-	EVENT_READ,
-	EVENT_WRITE,
-	EVENT_HANGUP,
-} t_event_type;
+typedef enum {
+	EVENT_READ,		///< Read event.
+	EVENT_WRITE,	///< Write event.
+	EVENT_HANGUP,	///< Hang up event (disconnected).
+} eventType;
 
-typedef std::vector<std::pair<int, t_event_type> > vecEvent;
+/// @typedef vecEvent
+/// @brief Vector storing the events that are to be processed.
+///
+/// Vector of pairs of file descriptor () and eventType.
+typedef std::vector<std::pair<int, eventType> > vecEvent;
 
 /// @class Server
 /// @brief The main orchestrator.
