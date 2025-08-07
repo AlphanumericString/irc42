@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:28:34 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:31:20 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #define UNUSED __attribute__((unused))
 
 /// @class Client
-/// @brief Class representing a single client.
+/// @brief Represents a connected user.
 ///
 /// Represents a connected user with their socket file descriptor, connection
 /// state, authentication status, nickname, username, hostname, and current

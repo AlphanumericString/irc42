@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:26 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:29:38 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:32:51 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,7 @@
 class Server;
 
 /// @class ServerState
-/// @brief Holds data reprensenting the server status as well as current users
-/// and channels.
+/// @brief Maintains global server information.
 ///
 /// Maintains global server information like the server name, network
 /// settings, operator credentials, and configuration. It might also track

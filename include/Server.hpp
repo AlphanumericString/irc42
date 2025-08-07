@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:27:17 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/07 17:30:57 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ typedef enum e_event_type {
 typedef std::vector<std::pair<int, t_event_type> > vecEvent;
 
 /// @class Server
-/// @brief Represents the server. Is the main class.
+/// @brief The main orchestrator.
 ///
 /// The main orchestrator that owns the epoll file descriptor and runs the
 /// event loop. It maintains collections of all clients, channels, and handles
