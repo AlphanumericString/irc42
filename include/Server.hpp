@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 18:08:01 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/08 18:34:29 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include <sstream>
 #include <vector>
 
 #include "ServerState.hpp"
@@ -62,6 +61,14 @@ class Server {
 	/// @brief Bind the server socket to any inbound addresses.
 	void				bindSocket(void);
 
+	/// @brief Stores the pending events in a buffer implemented as a vector.
+	///
+	/// This function calls epoll_wait() and populate a local epoll_event array
+	/// with the pending events. Then it iterates through this array to add
+	/// those events to a vector of pairs of fd (int) and t_event_type (enum).
+	/// @return Returns a vector of pairs of fd (int) and t_event_type (enum).
+	vecEvent			collectReadyEvents(void);
+
 	/// @brief
 	/// @return
 	int					exit_state(void);
@@ -78,6 +85,24 @@ class Server {
 	/// @return A constant reference to a ServerState object.
 	const ServerState&	getServerState(void) const;
 
+	/// @brief
+	/// @param client
+	void	handleClientDisconnect(Client& client);
+
+	/// @brief
+	/// @param client
+	void	handleClientRead(Client& client);
+
+	/// @brief
+	/// @param client
+	void	handleClientWrite(Client& client);
+
+	/// @brief
+	void	handleNewConnection();
+
+	/// @brief
+	void	handleStdinInput();
+
 	/// @brief Handles the initialisation of the server.
 	/// @param flags The flags that are to be set for the file descriptors.
 	void				init(int *flags);
@@ -92,14 +117,6 @@ class Server {
 	/// @param original The Server object we want to assign from.
 	/// @return A reference to a Server object.
 	Server&				operator=(const Server &original);
-
-	/// @brief Stores the pending events in a buffer implemented as a vector.
-	///
-	/// This function calls epoll_wait() and populate a local epoll_event array
-	/// with the pending events. Then it iterates through this array to add
-	/// those events to a vector of pairs of fd (int) and t_event_type (enum).
-	/// @return Returns a vector of pairs of fd (int) and t_event_type (enum).
-	vecEvent			polling(void);
 
 	/// @brief Setter for the serverState_ attribute.
 	/// @param state The state to set.
