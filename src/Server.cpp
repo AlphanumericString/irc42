@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/08 18:41:32 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/08 18:45:02 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,6 +274,7 @@ void Server::mainLoop(void) {
 		}
 	}
 	std::cout << "Server is stopping..." << std::endl;
+	// Is this still relevant ? (apetitco)
 	fcntl(STDIN_FILENO, F_SETFL, flags);
 	return;
 }
