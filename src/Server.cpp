@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/08 18:34:11 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/08 18:41:32 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,8 +259,9 @@ void Server::mainLoop(void) {
 			}
 		}
 		for (std::list<Client>::iterator it = this->serverState_.getClients().begin() ;
-			it != this->serverState_.getClients().end();
-			it++) {
+		it != this->serverState_.getClients().end() ;
+		it++)
+		{
 			it->processInput();
 		}
 
