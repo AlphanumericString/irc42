@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/06 18:19:13 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:03:28 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,15 @@ Client &Client::operator=(Client const &original) {
 void	Client::processInput() {
 }
 
+#define MAX_NICKNAME_LENGTH 9
+
+void	Client::setNickname(std::string const& newNickname) {
+	if (newNickname.length() > MAX_NICKNAME_LENGTH) {
+		throw NicknameTooLongException();
+	}
+	this->nick_ = newNickname;
+}
+
 int	Client::setOutputBuffer(char* buffer, unsigned int maxLength) {
 	memset(buffer, 0, maxLength);
 	strncpy(buffer, this->outputBuffer_.c_str(), maxLength);
@@ -79,4 +88,8 @@ int	Client::setOutputBuffer(char* buffer, unsigned int maxLength) {
 
 void	Client::setSockFD(int fd) {
 	this->sockFD_ = fd;
+}
+
+const char*	Client::NicknameTooLongException::what() const throw() {
+	return ("Error: New nickname is too long.");
 }

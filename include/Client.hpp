@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 15:51:24 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:57:27 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <exception>
 #include <string>
 
 #include "AuthState.hpp"
@@ -82,6 +83,10 @@ class Client {
 	/// @brief Processes the commands inside the Client's inputBuffer_ attribute.
 	void				processInput();
 
+	/// @brief Fills or updates the nick_ attribute with the string `newNickname`.
+	/// @param newNickname The newNickname to set.
+	void				setNickname(std::string const& newNickname);
+
 	/// @brief Fills the client's output buffer with 'length' characters of
 	/// string 'str'.
 	/// @param buffer The data we want to fill the client's output buffer with.
@@ -94,6 +99,11 @@ class Client {
 	/// @param fd The file descriptor that will be associated with the current
 	/// Client object.
 	void				setSockFD(int fd);
+
+	class	NicknameTooLongException : public std::exception {
+	public:
+		const char*		what() const throw();
+	};
 
   private:
 	int			sockFD_;		///< Socket file descriptor, -1 if not set.
