@@ -6,7 +6,7 @@
 /*   By: apetitco <apetitco@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 16:38:34 by apetitco          #+#    #+#             */
-/*   Updated: 2025/08/11 16:47:59 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:52:47 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,15 @@ class	Operator : Client {
 public:
 	/// @brief Close the connection between the provided Client `client` and the server.
 	/// @param client
+	/// @todo Implement following RFC#1459 4.6.1
 	void	disconnectClient(Client& client);
 
 	/// @brief
+	/// @todo Implement following RFC#1459 4.1.7
 	void	disconnectServer();
 
 	/// @brief
+	/// @todo Implement following RFC#1459 4.3.5
 	void	reconnectServer();
 
 private:
