@@ -6,12 +6,14 @@
 /*   By: apetitco <apetitco@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 16:38:34 by apetitco          #+#    #+#             */
-/*   Updated: 2025/08/11 16:52:47 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:35:21 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 /// @file Operator.hpp
 /// @brief
+///
+/// NOT TO BE CONFUSED WITH CHANNEL OPERATORS !!!
 
 #include "Client.hpp"
 

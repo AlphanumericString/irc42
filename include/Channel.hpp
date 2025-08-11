@@ -6,15 +6,32 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 18:00:37 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 18:39:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+/// @file Channel.hpp
+/// @brief
+///
+/// A channel is a named group of one or more clients which will all receive
+/// messages addressed to that channel. The channel is created implicitly when
+/// the first client joins it, and the channel ceases to exist when the last
+/// client leaves it. While channel exists, any client can reference the channel
+/// using the name of the channel.
+///
+/// Channels are created when a user uses the `JOIN` command on a not-already
+/// existing channel.
+
 #pragma once
+
+#include <exception>
+#include <string>
+
+#include "Client.hpp"
 
 #define UNUSED __attribute__((unused))
 
-#include <string>
+class	ChannelOperator;
 
 /// @class Channel
 /// @brief Represents a single channel.
@@ -25,8 +42,9 @@
 /// enforces channel modes.
 class Channel {
   public:
-	/// @brief Default constructor.
-	Channel();
+	/// @brief
+	/// @param name The Channel name.
+	Channel(std::string const& name, Client& owner);
 
 	/// @brief Copy constructor
 	/// @param original
@@ -35,23 +53,41 @@ class Channel {
 	/// @brief Default constructor.
 	~Channel();
 
+	/// @brief Accessor for the `owner_` attribute.
+	/// @return A constant reference to a Client object.
+	Client const&		getOwner() const;
+
 	/// @brief Assignment operator overload.
 	/// @param original The Channel object we want to assign from.
 	/// @return A reference to a Channel object.
-	Channel &operator=(Channel const &original);
+	Channel&			operator=(Channel const &original);
+
+	class	ChannelNameTooLongException : std::exception {
+	public:
+		const char*		what() const throw();
+	};
+
+	class	ChannelInvalidNameException : std::exception {
+	public:
+		const char*		what() const throw();
+	};
 
   private:
+	/// @brief Default constructor.
+	Channel();
+
 	/// @typedef ChanMod
 	/// @brief Enumeration for the channel modes.
 	/// @todo Fill Doxygen comments.
 	typedef enum { // need to read doc, make these more explicit
 		MODE_UNKNOWN,	///< Unknown mode.
-		MODE_L,			///< ???.
-		MODE_T,			///< ???.
-		MODE_I,			///< ???.
+		MODE_L,			///< User limit for the channel.
+		MODE_T,			///< Channel topic.
+		MODE_I,			///< Invite-only channel.
 	} ChanMod;
 
-	UNUSED std::string name_;	///< Name.
+	Client&		owner_;	///< The "owner" of the channel.
+	UNUSED std::string name_;	///< The name of the channel.
 	UNUSED std::string topic_;	///< Topic.
 	UNUSED ChanMod	   mode_;	///< Modes.
 	// member list with their privileges (operator, voice, etc.),

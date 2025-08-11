@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 16:24:50 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 18:42:12 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ Client::Client() : sockFD_(-1) {
 
 Client::Client(int fd, char* ipAddress, Server* server) :
 		sockFD_(fd),
-		ipAddress_(ipAddress),
-		connectedServer_(server) {
+		connectedServer_(server),
+		ipAddress_(ipAddress) {
 	std::cout << "Nouveau client:" << std::endl <<
 		"fd: " << this->sockFD_ << std::endl <<
 		"ip address: " << this->ipAddress_ << std::endl;
