@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 15:57:27 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:25:16 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 #include "ConnectionState.hpp"
 
 #define UNUSED __attribute__((unused))
+
+class	Server;
 
 /// @class Client
 /// @brief Represents a connected user.
@@ -39,7 +41,8 @@ class Client {
 	/// @brief Constructor that takes the client's fd and his IPv4 address.
 	/// @param fd The file descriptor associated to the client.
 	/// @param ipAddress The IPv4 address of the client.
-	Client(int fd, char* ipAddress);
+	/// @param server The server to which the client is connected.
+	Client(int fd, char* ipAddress, Server* server);
 
 	/// @brief Copy constructor
 	/// @param original The Client object that is to be copied.
@@ -106,16 +109,17 @@ class Client {
 	};
 
   private:
-	int			sockFD_;		///< Socket file descriptor, -1 if not set.
+	int			sockFD_;			///< Socket file descriptor, -1 if not set.
 	UNUSED t_conState	connectionState_;	///< Connection state
 	UNUSED t_authState	authState_;	///< Authentication status
 	/// Unique identifier to distinguish a client amongs others, must be unique, 9 characters long.
 	std::string	nick_;
-	std::string	host_;			///< Real name of the host that the client is running on.
-	std::string	name_;			///< Username of the client on the aforementionned host.
-	std::string	ipAddress_;		///< IPv4 address of the client.
-	std::string	inputBuffer_;	///< Input buffer.
-	std::string	outputBuffer_;	///< Output buffer.
+	std::string	host_;				///< Real name of the host that the client is running on.
+	std::string	name_;				///< Username of the client on the aforementionned host.
+	Server*		connectedServer_;	///< The server to which this client is connected.
+	std::string	ipAddress_;			///< IPv4 address of the client.
+	std::string	inputBuffer_;		///< Input buffer.
+	std::string	outputBuffer_;		///< Output buffer.
 	//and current channels. todo! --> ?shared pointer?
 	//	- maybe a secondary list for chanels he has mod power into?
 };

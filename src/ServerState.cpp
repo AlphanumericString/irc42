@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 17:37:23 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:25:37 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ int	ServerState::makeSocketNonBlocking(int fd) {
 
 void	ServerState::newClient(int fd, char* ipAddress) {
 	struct	epoll_event	currentEvent;
-	Client				newClient(fd, ipAddress);
+	Client				newClient(fd, ipAddress, this->master_);
 
 
 	if (makeSocketNonBlocking(fd) == -1) {
