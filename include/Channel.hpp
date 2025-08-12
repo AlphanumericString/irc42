@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/12 15:14:31 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:20:33 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,13 @@ class Channel {
 	/// @brief Default constructor.
 	~Channel();
 
-	/// @brief Accessor for the `owner_` attribute.
+	/// @brief Accessor for the `channelOperator_` attribute.
 	/// @return A constant reference to a Client object.
-	Client const&		getOwner() const;
+	Client const&		getChannelOperator() const;
+
+	/// @brief Accessor for the `channelOperator_` attribute.
+	/// @return A reference to a Client object.
+	Client&		getChannelOperator();
 
 	/// @brief Assignment operator overload.
 	/// @param original The Channel object we want to assign from.
