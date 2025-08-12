@@ -31,4 +31,3 @@ std::string	to_string(const t &var)
 #define ALPHA  AL_LOW AL_CAP
 #define NUM	   "0123456789"
 #define ALNUM  ALPHA NUM
-

@@ -18,6 +18,7 @@
 #include <ostream>
 
 #include "ansi.h"
+#include <list>
 #ifdef nullptr
 #	define NULLPTR nullptr
 #else

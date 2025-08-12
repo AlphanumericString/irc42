@@ -6,12 +6,13 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 15:49:12 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/08 15:51:20 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:57:53 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
+/// @file Message.hpp
+/// @brief
 // there are no 'normal' message any message sent in chat rooms are technically
 // PRIVMSG to #chat
 // this class will be a tokenizer to TMessage (Tokenized Message)
@@ -70,8 +71,8 @@ class Message {
 	const std::string &getRaw() const;
 	t_command		   getCommand() const;
 
-	static t_handler   strToHandler(const std::string &s);
-	static t_command   strToCommand(const std::string &s);
+	static t_handler strToHandler(const std::string &s);
+	static t_command strToCommand(const std::string &s);
 
   private:
 	static int unknown_handl(Server &s);

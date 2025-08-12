@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 15:04:59 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/07/08 15:59:36 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/08/07 16:27:36 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,42 +14,29 @@
 
 #include <cerrno>
 #include <iostream>
+#include <string>
 
-void	ShellServerHandler::cmdHandler(Server &server)
+void	ShellServerHandler::cmdHandler(Server &server, std::string line)
 {
-	ShellServerCmd	cmd;
-	std::string	s;
-
-	if (std::getline(std::cin, s)) {
-		cmd = ShellServerHandler::strToCmd(s, server);
-		if (cmd != ShellServerHandler::QUIT)
-			std::cout << "$> ";
-	} else {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			std::cin.clear();
-		else {
-			std::cout << "errno::" << errno << std::endl;
-			server.setServerState(ServerState::ERROR);
-		}
-	}
-
+	ShellServerHandler::strToCmd(line, server);
+	std::cout << "$> " << std::flush;
 }
 
-ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
-																Server &serv) {
-	if (!s.compare("test") || !s.compare("t"))
-		return (ShellServerHandler::handle_test(s, serv),
-				ShellServerHandler::DISPLAY_INFO);
-	if (!s.compare("monitor") || !s.compare("mon"))
-		return (ShellServerHandler::handle_monitor(s, serv),
-				ShellServerHandler::DISPLAY_INFO);
-	if (!s.compare("quit") || !s.compare("exit"))
-		return (ShellServerHandler::handle_quit(s, serv),
-				ShellServerHandler::QUIT);
-	std::cout << "Error:Unknown command:" << s << std::endl;
-	return (ShellServerHandler::UNKNOWN);
+/// @todo Implement this function.
+int ShellServerHandler::handle_monitor(std::string s, Server &serv) {
+	(void)s; // maybe flags to display chanels list + user lists ? idk
+	std::cout << serv.getServerState() << std::endl;
+	return (0);
 }
 
+/// @todo Implement this function.
+int ShellServerHandler::handle_quit(std::string s, Server &serv) {
+	(void)s;
+	serv.setServerState(ServerState::STOPPING);
+	return (0);
+}
+
+/// @todo Implement this function.
 int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	(void)s;
 	(void)serv;
@@ -65,14 +52,17 @@ int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	return (0);
 }
 
-int ShellServerHandler::handle_monitor(std::string s, Server &serv) {
-	(void)s; // maybe flags to display chanels list + user lists ? idk
-	std::cout << serv.getServerState() << std::endl;
-	return (0);
-}
-
-int ShellServerHandler::handle_quit(std::string s, Server &serv) {
-	(void)s;
-	serv.setServerState(ServerState::STOPPING);
-	return (0);
+ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
+																Server &serv) {
+	if (!s.compare("test") || !s.compare("t"))
+		return (ShellServerHandler::handle_test(s, serv),
+				ShellServerHandler::DISPLAY_INFO);
+	if (!s.compare("monitor") || !s.compare("mon"))
+		return (ShellServerHandler::handle_monitor(s, serv),
+				ShellServerHandler::DISPLAY_INFO);
+	if (!s.compare("quit") || !s.compare("exit"))
+		return (ShellServerHandler::handle_quit(s, serv),
+				ShellServerHandler::QUIT);
+	std::cout << "Error:Unknown command:" << s << std::endl;
+	return (ShellServerHandler::UNKNOWN);
 }

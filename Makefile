@@ -6,14 +6,14 @@
 #    By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/07 12:34:46 by bgoulard          #+#    #+#              #
-#    Updated: 2025/07/07 12:34:46 by bgoulard         ###   ########.fr        #
+#    Updated: 2025/08/06 14:01:54 by apetitco         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # add version by git tag
 NAME		:=	ircserv
 VERSION		:= $(shell git describe --tags --dirty 2> /dev/null || echo "0.0.0")
-AUTHORS		:= "Baptiste GOULARD, Alessandro PETICO"
+AUTHORS		:= "Baptiste GOULARD, Alessandro PETITCOLLIN"
 DEPLOYMENT	:=	dev
 CXX			:=	c++
 
@@ -26,8 +26,8 @@ OBJ_DIR		:=	build
 IS_PROD = $(if $(filter prod,$(DEPLOYMENT)),true,false)
 
 # warnings
-42FLAGS		:=	-Wall -Wextra -Werror -std=c++98
-WFLAGS_EXTRA:=	-Wmissing-prototypes
+42FLAGS		:=	-Wall -Wextra -Werror -Wunused -std=c++98
+WFLAGS_EXTRA:=
 WFLAGS		:= $(42FLAGS) $(WFLAGS_EXTRA)
 # IFLags -> include flag -> (not good as naming scheme, we dont only want
 # 	include but everything that interacts with '#<directives> [arg]' here.
@@ -50,8 +50,8 @@ ifeq ($(IS_PROD), false)
 endif
 CPPFLAGS	:=	$(addprefix -I, $(INC_DIR)) -MMD -MP $(VARFLAGS)
 # $(DEV_FLAGS) -> dev flags | debug info, no inlining, no optimizations
-DEV_FLAGS	:=	-g3 -glldb -O0 -fno-inline -fno-inline-functions \
-
+DEV_FLAGS	:=	-g3 -O0 -fno-inline -fno-inline-functions \
+				-fsanitize=address -fsanitize=undefined
 # $(PROD_FLAGS) -> prod flags | o2 (speed, stability), lto (link time optimization)
 PROD_FLAGS	:=	-O2 -flto
 

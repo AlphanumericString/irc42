@@ -36,6 +36,7 @@
 *.exe
 *.out
 *.app
+ircserv
 
 # debug information files
 *.dwo
@@ -47,3 +48,6 @@ compile_commands.json
 tags
 ircserv
 .cache/
+
+# Doxygen files
+html
