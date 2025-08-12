@@ -25,6 +25,7 @@
 #pragma once
 
 #include <exception>
+#include <list>
 #include <string>
 
 class	Client;
@@ -65,11 +66,11 @@ class Channel {
 
 	/// @brief Accessor for the `channelOperator_` attribute.
 	/// @return A constant reference to a Client object.
-	Client const&		getChannelOperator() const;
+	Client const*		getChannelOperator() const;
 
 	/// @brief Accessor for the `channelOperator_` attribute.
 	/// @return A reference to a Client object.
-	Client&		getChannelOperator();
+	Client*				getChannelOperator();
 
 	/// @brief Assignment operator overload.
 	/// @param original The Channel object we want to assign from.
@@ -105,10 +106,11 @@ class Channel {
 	/// @brief Default constructor.
 	Channel();
 
-	Client&		channelOperator_;	///< The channel operator (or "owner") of the channel.
-	std::string name_;				///< The name of the channel.
-	std::string	topic_;				///< Topic.
-	ChanMod		mode_;				///< Modes.
+	std::list< Client* >	connectedClients_;	///< The list of Client connected to the current channel.
+	Client*					channelOperator_;	///< The channel operator (or "owner") of the channel.
+	std::string				name_;				///< The name of the channel.
+	std::string				topic_;				///< Topic.
+	ChanMod					mode_;				///< Modes.
 	// member list with their privileges (operator, voice, etc.),
 	//   std::list -> user in the middle can leave when-ever
 	//   question is list of pair? list of self defined type?

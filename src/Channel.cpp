@@ -6,14 +6,14 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/12 15:22:53 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 17:27:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 /// @todo Exception handling
-Channel::Channel(std::string const& name, Client& owner) : channelOperator_(owner), name_(name) {
+Channel::Channel(std::string const& name, Client& owner) : channelOperator_(&owner), name_(name) {
 }
 
 Channel::Channel(Channel const &original) : channelOperator_(original.channelOperator_) {
@@ -22,11 +22,11 @@ Channel::Channel(Channel const &original) : channelOperator_(original.channelOpe
 
 Channel::~Channel() {};
 
-Client const&	Channel::getChannelOperator() const {
+Client const*	Channel::getChannelOperator() const {
 	return (this->channelOperator_);
 }
 
-Client&	Channel::getChannelOperator() {
+Client*	Channel::getChannelOperator() {
 	return (this->channelOperator_);
 }
 
@@ -35,6 +35,12 @@ Channel &Channel::operator=(Channel const &original) {
 	(void)original;
 	return (*this);
 };
+
+void	Channel::transferChanOpRoleToNextClient() {
+	if (!this->connectedClients_.empty()) {
+		this->channelOperator_ = this->connectedClients_.front();
+	}
+}
 
 
 const char* Channel::ChannelInvalidNameException::what() const throw() {
