@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 16:25:16 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:14:05 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,12 @@
 #include <string>
 
 #include "AuthState.hpp"
+#include "Channel.hpp"
 #include "ConnectionState.hpp"
 
 #define UNUSED __attribute__((unused))
+
+class	Channel;
 
 class	Server;
 
@@ -102,6 +105,12 @@ class Client {
 	/// @param fd The file descriptor that will be associated with the current
 	/// Client object.
 	void				setSockFD(int fd);
+
+
+	void				kickClientFromChannel(Client& client, Channel const& channel);
+	void				changeChannelMode(Channel& channel, ChanMod const mode);
+	void				inviteClientToChannel(Client& client, Channel& channel);
+	void				changeChannelTopic(Channel& channel, std::string const& topic);
 
 	class	NicknameTooLongException : public std::exception {
 	public:

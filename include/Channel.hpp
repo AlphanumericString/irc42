@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 18:39:11 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:14:31 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,19 @@
 #include <exception>
 #include <string>
 
-#include "Client.hpp"
+class	Client;
 
 #define UNUSED __attribute__((unused))
+
+/// @typedef ChanMod
+/// @brief Enumeration for the channel modes.
+/// @todo Fill Doxygen comments.
+typedef enum { // need to read doc, make these more explicit
+	MODE_UNKNOWN,	///< Unknown mode.
+	MODE_L,			///< User limit for the channel.
+	MODE_T,			///< Channel topic.
+	MODE_I,			///< Invite-only channel.
+} ChanMod;
 
 class	ChannelOperator;
 
@@ -76,20 +86,10 @@ class Channel {
 	/// @brief Default constructor.
 	Channel();
 
-	/// @typedef ChanMod
-	/// @brief Enumeration for the channel modes.
-	/// @todo Fill Doxygen comments.
-	typedef enum { // need to read doc, make these more explicit
-		MODE_UNKNOWN,	///< Unknown mode.
-		MODE_L,			///< User limit for the channel.
-		MODE_T,			///< Channel topic.
-		MODE_I,			///< Invite-only channel.
-	} ChanMod;
-
-	Client&		owner_;	///< The "owner" of the channel.
-	UNUSED std::string name_;	///< The name of the channel.
-	UNUSED std::string topic_;	///< Topic.
-	UNUSED ChanMod	   mode_;	///< Modes.
+	Client&		channelOperator_;	///< The channel operator (or "owner") of the channel.
+	std::string name_;				///< The name of the channel.
+	std::string	topic_;				///< Topic.
+	ChanMod		mode_;				///< Modes.
 	// member list with their privileges (operator, voice, etc.),
 	//   std::list -> user in the middle can leave when-ever
 	//   question is list of pair? list of self defined type?
