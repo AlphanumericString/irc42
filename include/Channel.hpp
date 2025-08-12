@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/12 15:20:33 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 17:26:51 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,11 +76,26 @@ class Channel {
 	/// @return A reference to a Channel object.
 	Channel&			operator=(Channel const &original);
 
+	/// @todo Maybe shorten the name ?
+	/// @brief If the current channel operator leaves the channel, this function
+	/// ensures that the role is carried to the next client that joined the
+	/// channel after the former Channel Operator.
+	void				transferChanOpRoleToNextClient();
+
+	/// @class ChannelNameTooLongException
+	/// @brief Exception triggered by an attempt to give a channel name too long.
+	///
+	/// Will trigger if channel name is longer than 200 characters.
 	class	ChannelNameTooLongException : std::exception {
 	public:
 		const char*		what() const throw();
 	};
 
+	/// @class ChannelInvalidNameException
+	/// @brief Exception triggered by an attempt to give an invalid name to a channel.
+	///
+	/// Will trigger if channel doesn't start with either '&' or '#' ; or if it
+	/// contains any spaces ' ', a control G '^G', or a comma ','.
 	class	ChannelInvalidNameException : std::exception {
 	public:
 		const char*		what() const throw();
