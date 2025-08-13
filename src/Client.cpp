@@ -6,20 +6,22 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/13 14:25:36 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/13 15:07:16 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "AuthState.hpp"
 
 #include <cstring>
 #include <iostream>
 
-Client::Client() : sockFD_(-1) {
+Client::Client() : sockFD_(-1), authState_(AUTH_NO) {
 }
 
 Client::Client(int fd, char* ipAddress, Server* server) :
 		sockFD_(fd),
+		authState_(AUTH_NO),
 		connectedServer_(server),
 		ipAddress_(ipAddress) {
 	std::cout << "Nouveau client:" << std::endl <<

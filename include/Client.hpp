@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/13 14:20:15 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/13 14:53:11 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ class Client {
   private:
 	int			sockFD_;			///< Socket file descriptor, -1 if not set.
 	UNUSED t_conState	connectionState_;	///< Connection state
-	UNUSED t_authState	authState_;	///< Authentication status
+	t_authState	authState_;			///< Authentication status
 	/// Unique identifier to distinguish a client amongs others, must be unique, 9 characters long.
 	std::string	nick_;
 	std::string	host_;				///< Real name of the host that the client is running on.
