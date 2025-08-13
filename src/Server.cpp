@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/08 18:45:02 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/12 22:41:32 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ const ServerState &Server::getServerState(void) const {
 void	Server::handleNewConnection() {
 	sockaddr_in	peerSockAddr;
 	socklen_t	addrlen = sizeof(peerSockAddr);
-	
+
 	int new_clientFD = accept(this->serverFD_, (struct sockaddr*)&peerSockAddr, &addrlen);
 	if (new_clientFD == -1) {
 		throw std::runtime_error("accept() error");
@@ -194,20 +194,6 @@ void	Server::handleClientWrite(Client& client) {
 	client.advanceOutputBuffer(res);
 }
 
-void	Server::initiateMultiplexing() {
-	this->epollFD_ = epoll_create(1);	// Passing 1 as size because parameter is ignored
-	if (this->epollFD_ == -1) {
-		return ;
-	}
-	struct	epoll_event	currentEvent;
-
-	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
-	currentEvent.data.fd = this->serverFD_;
-	epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, this->serverFD_, &currentEvent);
-	addStdInToMultiplexing();
-	std::cout << "$> " << std::flush;
-}
-
 void	Server::handleStdinInput() {
 	int res = read(STDIN_FILENO, BUFFER, BUFFER_LEN);
 	if (res < 0) {
@@ -223,6 +209,20 @@ void	Server::handleStdinInput() {
 		std::string extracted(this->stdinBuffer.begin(), this->stdinBuffer.begin() + line);
 		ShellServerHandler::cmdHandler(*this, extracted);
 	}
+}
+
+void	Server::initiateMultiplexing() {
+	this->epollFD_ = epoll_create(1);	// Passing 1 as size because parameter is ignored
+	if (this->epollFD_ == -1) {
+		return ;
+	}
+	struct	epoll_event	currentEvent;
+
+	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+	currentEvent.data.fd = this->serverFD_;
+	epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, this->serverFD_, &currentEvent);
+	addStdInToMultiplexing();
+	std::cout << "$> " << std::flush;
 }
 
 void Server::mainLoop(void) {

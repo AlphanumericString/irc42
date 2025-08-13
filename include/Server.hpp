@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:29 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/08 18:34:29 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/08/13 14:43:15 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,19 @@ class Server {
 	/// @param client
 	void	handleClientDisconnect(Client& client);
 
-	/// @brief
+	/// @brief Reads what the `client` sent to the server and appends it to
+	/// the Client's inputBuffer_ attribute.
+	///
+	/// Uses recv() to fetch what the `client` sent. If recv() returns a negative
+	/// value, the function handles the `client` disconnection.
 	/// @param client
 	void	handleClientRead(Client& client);
 
-	/// @brief
+	/// @brief Fills the program's static buffer with the `client` outputBuffer_
+	/// and send it to the client.
+	///
+	/// Uses send() to send the static buffer's content to the `client`.
+	/// If send() returns a negative value, the function handles the `client` disconnection.
 	/// @param client
 	void	handleClientWrite(Client& client);
 
