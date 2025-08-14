@@ -83,6 +83,7 @@ class Client {
 	int getSockFD() const;
 
 	t_conState getConState() const;
+	void setConState(t_conState state);
 
 	const std::string &getRealName(void) const;
 	void			   setRealname(const std::string &);

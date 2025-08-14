@@ -50,9 +50,8 @@ class IError : public ISendable, public std::exception {
 
 		ret =
 			":" + s.getServerState().getName() + " " + buff + " " + c.getNick();
-		if (_s.find(':') !=
-			std::string::npos) // if you had no argument pushed after err code
-			ret += " :";
+		if (_s.find(":") == std::string::npos)
+			_s = " :" + _s;
 		ret += _s + "\n";
 		return (ret);
 	}
@@ -111,7 +110,7 @@ class ERR_UNKNOWNCOMMAND : public IError {
   public:
 	ERR_UNKNOWNCOMMAND(const std::string &cmd)
 		: IError(421, "Unknown command") {
-		_s = cmd + " :" + _s;
+		_s = " * " + cmd + " :" + _s;
 	};
 	virtual ~ERR_UNKNOWNCOMMAND() throw() {};
 };
@@ -121,6 +120,7 @@ class ICommand : public ISendable {
 	ICommand(const std::string &raw) : ISendable() {
 		_raw = raw;
 		_args = split(_raw, " ");
+		_response.clear();
 	};
 
 	virtual ~ICommand(void) {};
@@ -148,10 +148,13 @@ class CMD_PASS : public ICommand {
 	virtual void execute(Server &s, Client &clien_requesting) throw(IError *) {
 		if (_args.size() < CMD_PASS::minArg)
 			throw(new ERR_NEEDMOREPARAM(_args[0]));
-		else if (clien_requesting.getConState() != REGISTERING)
+		else if (clien_requesting.getConState() != REGISTERING_PASS &&
+				 clien_requesting.getConState() != NOT_LOGGED)
 			throw(new ERR_ALREADYREGISTRED());
 		else if (s.getServerState().getPassword().compare(_args[1]) != 0)
 			throw(new ERR_PASSWDMISMATCH());
+		_response.clear();
+		clien_requesting.setConState(REGISTERING_PASS);
 		return;
 	}
 	static const std::string predicate() {
@@ -168,20 +171,22 @@ class CMD_NICK : public ICommand {
 	virtual void execute(Server &s, Client &clien_requesting) throw(IError *) {
 		if (_args.size() < CMD_NICK::minArg)
 			throw(new ERR_NONICKNAMEGIVEN());
-		if (_args[1].length() > 200 ||
-			_args[1].find_first_not_of(ALNUM) != std::string::npos ||
-			_args[1].length() < 9)
+		if (_args[1].find_first_not_of(ALNUM) != std::string::npos ||
+			_args[1].length() > 9)
 			throw(new ERR_ERRONEUSNICKNAME(_args[1]));
+
 		for (std::list< Client >::const_iterator it =
 				 s.getServerState().getClients().begin();
 			 it != s.getServerState().getClients().end(); it++)
-			if (it->getNick().compare(_args[1]) != 0)
+			if (it->getNick().compare(_args[1]) == 0)
 				throw(new ERR_NICKNAMEINUSE(_args[1]));
+
 		try {
 			clien_requesting.setNickname(_args[1]);
 		} catch (...) {
 			throw(new ERR_ERRONEUSNICKNAME(_args[1]));
 		}
+		clien_requesting.setConState(REGISTERING_NICK);
 		// @TODO:
 		//  multi-server setup require to transmit nick to followupservers
 		//  and call ERR_NICKCOLISION if nick is already present in other server
@@ -200,7 +205,7 @@ class CMD_USER : public ICommand {
 	CMD_USER(const std::string &s) : ICommand(s) {}
 	virtual void execute(Server &s, Client &clien_requesting) throw(IError *) {
 		std::string _real_name;
-		if (clien_requesting.getConState() != REGISTERING)
+		if (clien_requesting.getConState() != REGISTERING_NICK)
 			throw(new ERR_ALREADYREGISTRED());
 		if (_raw.find_last_of(":") == std::string::npos ||
 			_args.size() < CMD_USER::minArgs)
@@ -210,12 +215,21 @@ class CMD_USER : public ICommand {
 		clien_requesting.setHost(_args[2]);
 		clien_requesting.setRealname(_real_name);
 
-		(void)s;
-		// _response = ":Welcome to the Internet Relay Network " +
-		// 			clien_requesting.getNick() + "!" +
-		// 			clien_requesting.getUserName() + "@" +
-		// 			clien_requesting.getHost() + "\r\n";
-		// _response += ":Your host is "
+		const std::string s_name = s.getServerState().getName();
+		const std::string c_name = clien_requesting.getNick();
+
+		const std::string prelude = ":" + s_name;
+
+		_response = prelude + " 001 " + c_name +
+					":Welcome to the Internet Relay Network " + c_name + "!" +
+					c_name + "@" + clien_requesting.getHost() + "\r\n";
+
+		_response += prelude + " 002 " + c_name + ":Your host is " + s_name +
+					 ", running version 1.0\r\n";
+
+		_response += prelude + " 003 " + c_name +
+					 ":This server was created by bgoulard & apetitco and is "
+					 "running on a custom IRC server implementation.\r\n";
 	}
 	static const std::string predicate() {
 		return std::string("USER");

@@ -15,9 +15,13 @@
 // maybe in a class if we add util functions to this
 // maybe moove to client since mostly used by this?
 
+// maybe add a to kick?
+// idk... might be usefull to have somthing to drop the connection
 typedef enum conState {
 	NOT_LOGGED,
-	REGISTERING,
+	REGISTERING_PASS,
+	REGISTERING_NICK,
+	REGISTERING_USER,
 	REGISTERED,
 	TIMED_OUT
 } t_conState;

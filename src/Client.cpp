@@ -13,13 +13,16 @@
 #include "Client.hpp"
 
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <string>
 
+#include "ConnectionState.hpp"
 #include "ISendable.hpp"
 
 Client::Client() : sockFD_(-1) {
 	nick_ = "*";
+	connectionState_ = NOT_LOGGED;
 }
 
 Client::Client(int fd, char *ipAddress, Server *server)
@@ -28,6 +31,7 @@ Client::Client(int fd, char *ipAddress, Server *server)
 			  << "fd: " << this->sockFD_ << std::endl
 			  << "ip address: " << this->ipAddress_ << std::endl;
 	nick_ = "*";
+	connectionState_ = NOT_LOGGED;
 }
 
 Client::Client(Client const &original) {
@@ -71,6 +75,8 @@ Client &Client::operator=(Client const &original) {
 	if (this != &original) {
 		this->sockFD_ = original.getSockFD();
 		this->ipAddress_ = original.getIPAddress();
+		this->nick_ = original.nick_;
+		this->connectionState_ = original.connectionState_;
 	}
 	return (*this);
 }
@@ -80,41 +86,60 @@ Client &Client::operator=(Client const &original) {
 // function) so need to pass by '*' if im already doing '*' with all that 'new'
 // keyword it may be usefull to do a factory for ISendable
 //
-static ISendable *try_exec(const std::string &line) {
+static ISendable *try_create(const std::string &line, Client &client,
+							 Server &s) {
 	try {
+		ICommand *cmd = NULL;
+
 		if (line.compare(0, CMD_PASS::predicate().length(),
 						 CMD_PASS::predicate()) == 0)
-			return (new CMD_PASS(line));
+			cmd = new CMD_PASS(line);
 		if (line.compare(0, CMD_USER::predicate().length(),
 						 CMD_USER::predicate()) == 0)
-			return (new CMD_USER(line));
+			cmd = new CMD_USER(line);
 		if (line.compare(0, CMD_NICK::predicate().length(),
 						 CMD_NICK::predicate()) == 0)
-			return (new CMD_NICK(line));
-		throw(new ERR_UNKNOWNCOMMAND("toto"));
+			cmd = new CMD_NICK(line);
+		if (cmd) {
+			cmd->execute(s, client);
+			return (cmd);
+		}
+		throw(new ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
 	} catch (IError *ir) {
 		return (ir);
 	}
 }
 
 /// @todo Implement this function.
-/// todo:
-///  - check if string has no \n
-///  -> ?y => go out - return
-///  get line
-///  split line by delim ' '
-///  send to
-///		CommandProcessor() -> 'ISendable &' {ICommand || IError}
-///	take ISendable and add to OutputBuffer via virtual toString inherited by
-/// ICommand and IError
+/// tldr:
+///
+/// loop(inf)
+///		if no more line / no line
+///			gtfo
+///		take line
+///		erase from buffer
+///		call try_create who parses check if line start by predicate of given
+///			cmd if yes, try to new it. the call exec() on the ICmd
+///			return either the ICmd or IError
+///		call toString() the ISendable returned and simply adds it to the OBuf
+///		dels resp
 void Client::processInput(Server &s) {
-	std::string line;
-	if (this->inputBuffer_.find("\r\n") == std::string::npos)
-		return;
-	line = inputBuffer_.substr(inputBuffer_.find("\r\n"));
-	ISendable *resp = try_exec(line);
-	this->outputBuffer_ += resp->toString(s, *this);
-	delete (resp);
+	try {
+		while (1) {
+			std::string line;
+			if (this->inputBuffer_.find("\r\n") == std::string::npos)
+				return;
+			line = inputBuffer_.substr(0, inputBuffer_.find("\r\n"));
+			this->inputBuffer_.erase(0, line.length() + 2); // +1 for the \n
+			ISendable *resp = try_create(line, *this, s);
+			this->outputBuffer_ += resp->toString(s, *this);
+
+			delete (resp);
+			line.clear();
+		}
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 #define MAX_NICKNAME_LENGTH 9
@@ -147,6 +172,7 @@ const char *Client::NicknameTooLongException::what() const throw() {
 t_conState Client::getConState() const {
 	return this->connectionState_;
 }
+
 const std::string &Client::getRealName(void) const {
 	return this->realname_;
 }
@@ -159,4 +185,7 @@ const std::string &Client::getName(void) const {
 }
 void Client::setName(const std::string &name) {
 	this->name_ = name;
+}
+void Client::setConState(t_conState state) {
+	this->connectionState_ = state;
 }

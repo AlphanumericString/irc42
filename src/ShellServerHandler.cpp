@@ -15,6 +15,8 @@
 #include <cerrno>
 #include <iostream>
 #include <string>
+#include "Client.hpp"
+#include "ISendable.hpp"
 
 void ShellServerHandler::cmdHandler(Server &server, std::string line) {
 	ShellServerHandler::strToCmd(line, server);
@@ -39,6 +41,16 @@ int ShellServerHandler::handle_quit(std::string s, Server &serv) {
 int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	(void)s;
 	(void)serv;
+
+	std::string test = "PASS toto42\r\n"
+					   "NICK testooooooooo\r\n"
+					   "USER test 0 * :test\r\n";
+	std::cout << "Testing msg with: " << std::endl;
+	std::cout << test << std::endl;
+	Client t_client = Client();
+
+	t_client.appendInputBuffer(test.c_str(), test.length());
+	t_client.processInput(serv);
 
 	// step 1:
 	//	create users and exit					- check no leaks + no mem errs
