@@ -43,7 +43,8 @@ class ServerState {
 
 	/// @brief Accessor for the clients_ attribute.
 	/// @return A reference to a std::list of Client.
-	std::list< Client > &getClients();
+	std::list< Client > &getClients() ;
+	const std::list< Client > &getClients() const;
 
 	/// @brief
 	/// @return

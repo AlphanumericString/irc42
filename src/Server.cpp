@@ -12,17 +12,16 @@
 
 #include "Server.hpp"
 
-#include <fcntl.h>
 #include <arpa/inet.h>
+#include <csignal>
+#include <cstdlib>
+#include <errno.h>
+#include <fcntl.h>
+#include <iostream>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <sys/epoll.h>
-#include <errno.h>
-
-#include <csignal>
-#include <cstdlib>
-#include <iostream>
 
 #include "ShellServerHandler.hpp"
 #include "smart_ptr.hpp"
@@ -52,17 +51,14 @@ Server::Server(int port, const std::string password)
 	: serverState_(port, password, *this) {
 	this->serverFD_ = -1;
 	this->epollFD_ = -1;	   // not set
-	this->clients_ = NULLPTR;  // not set
-	this->channels_ = NULLPTR; // not set
 	// this->_channels = _serverState.getChannelsPtr();
 	// this->_clients = _serverState.getClientsPtr();
 }
 
-Server::~Server() {
-}
+Server::~Server() {}
 
-void	Server::addStdInToMultiplexing() {
-	struct	epoll_event	currentEvent;
+void Server::addStdInToMultiplexing() {
+	struct epoll_event currentEvent;
 
 	if (ServerState::makeSocketNonBlocking(STDIN_FILENO) == -1) {
 		close(STDIN_FILENO);
@@ -70,29 +66,31 @@ void	Server::addStdInToMultiplexing() {
 	}
 	currentEvent.events = EPOLLIN;
 	currentEvent.data.fd = STDIN_FILENO;
-	if (epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) == -1) {
+	if (epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) ==
+		-1) {
 		close(STDIN_FILENO);
 		throw std::runtime_error("epoll_ctl");
 	}
 }
 
-void	Server::bindSocket() {
-	struct sockaddr_in	sock_add;
+void Server::bindSocket() {
+	struct sockaddr_in sock_add;
 
 	sock_add.sin_family = AF_INET;
 	sock_add.sin_addr.s_addr = INADDR_ANY;
 	sock_add.sin_port = htons(this->getServerState().getPort());
 
-	if (bind(this->serverFD_, (struct sockaddr*)&sock_add, sizeof(sock_add)) == -1) {
+	if (bind(this->serverFD_, (struct sockaddr *)&sock_add, sizeof(sock_add)) ==
+		-1) {
 		close(this->serverFD_);
 		std::cerr << "Failed to bind" << std::endl;
-		return ;
+		return;
 	}
 }
 
 #define MAX_BACKLOG 20
 
-vecEvent	Server::collectReadyEvents() {
+vecEvent Server::collectReadyEvents() {
 	struct epoll_event events[MAX_BACKLOG];
 
 	int nfds = epoll_wait(this->epollFD_, events, MAX_BACKLOG, 1000);
@@ -101,7 +99,7 @@ vecEvent	Server::collectReadyEvents() {
 		throw std::runtime_error("epoll_wait");
 	}
 	vecEvent ret;
-	for (int i = 0 ; i < nfds ; i++) {
+	for (int i = 0; i < nfds; i++) {
 		int fd = events[i].data.fd;
 		if (events[i].events & EPOLLIN)
 			ret.push_back(std::make_pair(fd, EVENT_READ));
@@ -120,11 +118,11 @@ int Server::exit_state(void) {
 	return (serverState_.getStatus() == ServerState::STOPPING ? 0 : 1);
 }
 
-int	Server::getEpollFD() const {
+int Server::getEpollFD() const {
 	return (this->epollFD_);
 }
 
-int	Server::getServerFD() const {
+int Server::getServerFD() const {
 	return (this->serverFD_);
 }
 
@@ -132,20 +130,21 @@ const ServerState &Server::getServerState(void) const {
 	return (this->serverState_);
 }
 
-void	Server::handleNewConnection() {
-	sockaddr_in	peerSockAddr;
+void Server::handleNewConnection() {
+	sockaddr_in peerSockAddr;
 	socklen_t	addrlen = sizeof(peerSockAddr);
-	
-	int new_clientFD = accept(this->serverFD_, (struct sockaddr*)&peerSockAddr, &addrlen);
+
+	int new_clientFD =
+		accept(this->serverFD_, (struct sockaddr *)&peerSockAddr, &addrlen);
 	if (new_clientFD == -1) {
 		throw std::runtime_error("accept() error");
 	}
-	char*	ip_str = inet_ntoa(peerSockAddr.sin_addr);
+	char *ip_str = inet_ntoa(peerSockAddr.sin_addr);
 	std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
 	this->serverState_.newClient(new_clientFD, ip_str);
 }
 
-void	Server::init(int *flgs) {
+void Server::init(int *flgs) {
 	*flgs = fcntl(STDIN_FILENO, F_GETFL);
 	fcntl(STDIN_FILENO, F_SETFL, *flgs | O_NONBLOCK);
 	sig::stop = this->serverState_.getStopPtr();
@@ -164,16 +163,16 @@ void	Server::init(int *flgs) {
 	setServerState(ServerState::RUNNING);
 }
 
-void	Server::handleClientDisconnect(Client& client) {
-	int	clientFD = client.getSockFD();
+void Server::handleClientDisconnect(Client &client) {
+	int clientFD = client.getSockFD();
 	epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
 	close(clientFD);
 	this->serverState_.deleteClient(client);
 }
 
-void	Server::handleClientRead(Client& client) {
-	int	clientFD = client.getSockFD();
-	int	res = recv(clientFD, BUFFER, BUFFER_LEN, 0);
+void Server::handleClientRead(Client &client) {
+	int clientFD = client.getSockFD();
+	int res = recv(clientFD, BUFFER, BUFFER_LEN, 0);
 	if (res < 0) {
 		epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
 		close(clientFD);
@@ -182,10 +181,10 @@ void	Server::handleClientRead(Client& client) {
 	client.appendInputBuffer(BUFFER, res);
 }
 
-void	Server::handleClientWrite(Client& client) {
-	int	clientFD = client.getSockFD();
-	int	len = client.setOutputBuffer(BUFFER, BUFFER_LEN);
-	int	res = send(clientFD, BUFFER, len, 0);
+void Server::handleClientWrite(Client &client) {
+	int clientFD = client.getSockFD();
+	int len = client.setOutputBuffer(BUFFER, BUFFER_LEN);
+	int res = send(clientFD, BUFFER, len, 0);
 	if (res < 0) {
 		epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
 		close(clientFD);
@@ -194,12 +193,13 @@ void	Server::handleClientWrite(Client& client) {
 	client.advanceOutputBuffer(res);
 }
 
-void	Server::initiateMultiplexing() {
-	this->epollFD_ = epoll_create(1);	// Passing 1 as size because parameter is ignored
+void Server::initiateMultiplexing() {
+	this->epollFD_ =
+		epoll_create(1); // Passing 1 as size because parameter is ignored
 	if (this->epollFD_ == -1) {
-		return ;
+		return;
 	}
-	struct	epoll_event	currentEvent;
+	struct epoll_event currentEvent;
 
 	currentEvent.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
 	currentEvent.data.fd = this->serverFD_;
@@ -208,25 +208,26 @@ void	Server::initiateMultiplexing() {
 	std::cout << "$> " << std::flush;
 }
 
-void	Server::handleStdinInput() {
+void Server::handleStdinInput() {
 	int res = read(STDIN_FILENO, BUFFER, BUFFER_LEN);
 	if (res < 0) {
 		throw std::runtime_error("Read stdin: error");
 	}
 	this->stdinBuffer.append(&BUFFER[0], &BUFFER[res]);
 
-	for (std::string::size_type line = this->stdinBuffer.find('\n') ;
-	line != std::string::npos ;
-	this->stdinBuffer.erase(this->stdinBuffer.begin(), this->stdinBuffer.begin() + line + 1),
-	line = this->stdinBuffer.find('\n'))
-	{
-		std::string extracted(this->stdinBuffer.begin(), this->stdinBuffer.begin() + line);
+	for (std::string::size_type line = this->stdinBuffer.find('\n');
+		 line != std::string::npos;
+		 this->stdinBuffer.erase(this->stdinBuffer.begin(),
+								 this->stdinBuffer.begin() + line + 1),
+								line = this->stdinBuffer.find('\n')) {
+		std::string extracted(this->stdinBuffer.begin(),
+							  this->stdinBuffer.begin() + line);
 		ShellServerHandler::cmdHandler(*this, extracted);
 	}
 }
 
 void Server::mainLoop(void) {
-	int	flags;
+	int flags;
 
 	this->init(&flags);
 
@@ -234,15 +235,16 @@ void Server::mainLoop(void) {
 
 		vecEvent readyEvents = this->collectReadyEvents();
 
-		for (vecEvent::iterator it = readyEvents.begin(); it != readyEvents.end(); it++)
-		{
-			int				fd = it->first;
-			eventType	ev = it->second;
+		for (vecEvent::iterator it = readyEvents.begin();
+			 it != readyEvents.end(); it++) {
+			int		  fd = it->first;
+			eventType ev = it->second;
 
 			if (fd == this->serverFD_ && ev == EVENT_READ) {
 				handleNewConnection();
 			} else if (fd == STDIN_FILENO && ev == EVENT_READ) {
-				/// @todo Handle STDI stop at null byteN -> Not sure still relevant
+				/// @todo Handle STDI stop at null byteN -> Not sure still
+				/// relevant
 				handleStdinInput();
 			} else {
 				Client *client = this->serverState_.idClient(fd);
@@ -258,11 +260,10 @@ void Server::mainLoop(void) {
 					handleClientDisconnect(*client);
 			}
 		}
-		for (std::list<Client>::iterator it = this->serverState_.getClients().begin() ;
-		it != this->serverState_.getClients().end() ;
-		it++)
-		{
-			it->processInput();
+		for (std::list< Client >::iterator it =
+				 this->serverState_.getClients().begin();
+			 it != this->serverState_.getClients().end(); it++) {
+			it->processInput(*this);
 		}
 
 		// if shell-server is dropped this display serv info when change occur

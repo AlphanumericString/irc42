@@ -13,6 +13,7 @@
 #pragma once
 
 // maybe in a class if we add util functions to this
+// maybe moove to client since mostly used by this?
 
 typedef enum conState {
 	NOT_LOGGED,

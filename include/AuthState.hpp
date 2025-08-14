@@ -10,11 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma	once
+#pragma once
 
 // maybe in a class if we add util functions to this
 // even if they're all static
 
 typedef enum AuthState {
 	AUTH_OK,
-} t_authState ;	//authentication status,
+} t_authState; // authentication status,

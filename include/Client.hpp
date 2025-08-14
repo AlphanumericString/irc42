@@ -57,17 +57,17 @@ class Client {
 	/// @brief Erase 'length' characters of the output buffer.
 	/// @param length The number of characters to erase.
 	void advanceOutputBuffer(unsigned int length);
-
 	/// @brief Appends 'length' char of string 'str' to the client's input
 	/// buffer.
 	/// @param str The content we want to append to the client's input buffer.
 	/// @param length The number of characters we want to append.
-	void appendInputBuffer(char *str, unsigned int length);
+	void appendInputBuffer(const char *str, unsigned int length);
 
 	/// @brief Accessor to the host_ attribute.
 	/// @return A constant reference to the std::string containing the host
 	/// name.
 	const std::string &getHost() const;
+	void			   setHost(std::string &host);
 
 	/// @brief Accessor to the ipAddress_ attribute.
 	/// @return A constant reference to the std::string containing the IPv4
@@ -82,6 +82,14 @@ class Client {
 	/// @return Returns the value of sockFD_.
 	int getSockFD() const;
 
+	t_conState getConState() const;
+
+	const std::string &getRealName(void) const;
+	void			   setRealname(const std::string &);
+
+	const std::string &getName(void) const;
+	void			   setName(const std::string &);
+
 	/// @brief Assignment operator overload.
 	/// @param original The Client object we want to assign from
 	/// @return A reference to a Client object.
@@ -89,12 +97,13 @@ class Client {
 
 	/// @brief Processes the commands inside the Client's inputBuffer_
 	/// attribute.
-	void processInput();
+	void processInput(Server &s);
 
 	/// @brief Fills or updates the nick_ attribute with the string
 	/// `newNickname`.
 	/// @param newNickname The newNickname to set.
-	void setNickname(std::string const &newNickname);
+	void			   setNickname(std::string const &newNickname);
+	const std::string &getNick() const;
 
 	/// @brief Fills the client's output buffer with 'length' characters of
 	/// string 'str'.
@@ -109,9 +118,10 @@ class Client {
 	/// Client object.
 	void setSockFD(int fd);
 
-	void kickClientFromChannel(Client &client, Channel const &channel);
-	void changeChannelMode(Channel &channel, ChanMod const mode);
 	void inviteClientToChannel(Client &client, Channel &channel);
+	void kickClientFromChannel(Client &client, Channel const &channel);
+
+	void changeChannelMode(Channel &channel, ChanMod const mode);
 	void changeChannelTopic(Channel &channel, std::string const &topic);
 
 	class NicknameTooLongException : public std::exception {
@@ -123,11 +133,12 @@ class Client {
 	int				   sockFD_; ///< Socket file descriptor, -1 if not set.
 	UNUSED t_conState  connectionState_; ///< Connection state
 	UNUSED t_authState authState_;		 ///< Authentication status
-	/// Unique identifier to distinguish a client amongs others, must be unique,
-	/// 9 characters long.
-	std::string		   nick_;
+
+	std::string nick_; ///< Unique identifier to distinguish a client amongs
+					   /// others, must be unique, 9 characters long.
 	std::string host_; ///< Real name of the host that the client is running on.
 	std::string name_; ///< Username of the client on the aforementionned host.
+	std::string realname_;	  ///< Realname of the client.
 	Server *connectedServer_; ///< The server to which this client is connected.
 	std::string ipAddress_;	  ///< IPv4 address of the client.
 	std::string inputBuffer_; ///< Input buffer.

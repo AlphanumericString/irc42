@@ -20,6 +20,7 @@
 #include "generics.hpp"
 
 #define UNUSED __attribute__((unused))
+
 const std::pair< Message::t_command, Message::t_handler > Message::table[] = {
 	std::make_pair(Message::UNKNOWN, unknown_handl), // keep last
 };

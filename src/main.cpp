@@ -10,10 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-
 #include <cstdlib>
 #include <iostream>
+#include <unistd.h>
 #include <vector>
 
 #include "Server.hpp"
@@ -34,7 +33,8 @@ static int help_handl(std::vector< std::string >::iterator *it) {
 	return (0);
 }
 
-// #define ALNUM	"qwertyuiplkjhgfdsazxcvbnm""QWERTYUIPLKJHGFDSAZXCVBNM""0123456789"
+// #define ALNUM
+// "qwertyuiplkjhgfdsazxcvbnm""QWERTYUIPLKJHGFDSAZXCVBNM""0123456789"
 //
 static bool parse_args(std::vector< std::string > &args, std::string *pwd,
 					   std::string *p) {

@@ -16,8 +16,7 @@
 #include <iostream>
 #include <string>
 
-void	ShellServerHandler::cmdHandler(Server &server, std::string line)
-{
+void ShellServerHandler::cmdHandler(Server &server, std::string line) {
 	ShellServerHandler::strToCmd(line, server);
 	std::cout << "$> " << std::flush;
 }

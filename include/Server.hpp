@@ -126,8 +126,6 @@ class Server {
   private:
 	int			serverFD_;	  ///< File descriptor for te server socket.
 	int			epollFD_;	  ///< File descriptor for the multiplexing.
-	Client	   *clients_;	  ///< Pointer to _serverState's list of clients.
-	Channel	   *channels_;	  ///< Pointer to _serverState's list of channels.
 	ServerState serverState_; ///< Self-explanatory
 							  /// Event Loop
 							  /// Main loop
