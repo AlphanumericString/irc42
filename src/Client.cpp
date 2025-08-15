@@ -16,9 +16,12 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "ConnectionState.hpp"
-#include "ISendable.hpp"
+#include "IError.hpp"
+#include "IRPL.hpp"
+#include "ICmd.hpp"
 
 Client::Client() : sockFD_(-1) {
 	nick_ = "*";
@@ -86,28 +89,31 @@ Client &Client::operator=(Client const &original) {
 // function) so need to pass by '*' if im already doing '*' with all that 'new'
 // keyword it may be usefull to do a factory for ISendable
 //
-static ISendable *try_create(const std::string &line, Client &client,
-							 Server &s) {
+static std::vector< IRPL > try_create(const std::string &line, Client &client,
+									  Server &s) {
+	std::vector< IRPL > ret;
+
 	try {
-		ICommand *cmd = NULL;
 
 		if (line.compare(0, CMD_PASS::predicate().length(),
 						 CMD_PASS::predicate()) == 0)
-			cmd = new CMD_PASS(line);
+			return (CMD_PASS(line).execute(s, client));
 		if (line.compare(0, CMD_USER::predicate().length(),
 						 CMD_USER::predicate()) == 0)
-			cmd = new CMD_USER(line);
+			return (CMD_USER(line).execute(s, client));
 		if (line.compare(0, CMD_NICK::predicate().length(),
 						 CMD_NICK::predicate()) == 0)
-			cmd = new CMD_NICK(line);
-		if (cmd) {
-			cmd->execute(s, client);
-			return (cmd);
-		}
-		throw(new ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
+			return (CMD_NICK(line).execute(s, client));
+		ret.push_back(ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
+		return (ret);
 	} catch (IError *ir) {
-		return (ir);
+		ret.push_back(*ir);
+		delete ir;
+	} catch (std::exception &e) {
+		std::cerr << "Exception in try_create: " << e.what() << std::endl;
+		ret.push_back(ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
 	}
+	return (ret);
 }
 
 /// @todo Implement this function.
@@ -126,16 +132,32 @@ static ISendable *try_create(const std::string &line, Client &client,
 void Client::processInput(Server &s) {
 	try {
 		while (1) {
-			std::string line;
+			std::string			line;
+			std::vector< IRPL > resp;
+
+			// std::cerr << "Client " << this->getNick()
+			// 		  << " processing input buffer: " << this->inputBuffer_
+			// 		  << std::endl;
 			if (this->inputBuffer_.find("\r\n") == std::string::npos)
 				return;
 			line = inputBuffer_.substr(0, inputBuffer_.find("\r\n"));
-			this->inputBuffer_.erase(0, line.length() + 2); // +1 for the \n
-			ISendable *resp = try_create(line, *this, s);
-			this->outputBuffer_ += resp->toString(s, *this);
-
-			delete (resp);
+			this->inputBuffer_.erase(0, line.length() + 2);
+			resp = try_create(line, *this, s);
+			for (std::vector< IRPL >::iterator it = resp.begin();
+				 it != resp.end(); ++it) {
+				// std::cerr << "dbg" << std::endl;
+				// if (dynamic_cast< RPL_CREATED * >(&(*it)))
+				// 	std::cerr << "RPL_CREATED detected" << std::endl;
+				// if (dynamic_cast< IError * >(&(*it))) {
+				// 	std::cerr << "IError detected: " << std::endl;
+				// }
+				this->outputBuffer_ += it->toString(s, *this);
+			}
+			// std::cerr << "Client " << this->getNick()
+			// 		  << " processed line: " << line << std::endl;
+			// std::cerr << "Output buffer: " << this->outputBuffer_ << std::endl;
 			line.clear();
+			resp.clear();
 		}
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
