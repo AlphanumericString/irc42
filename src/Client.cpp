@@ -44,7 +44,7 @@ Client::Client(Client const &original) {
 Client::~Client() {}
 
 void Client::advanceOutputBuffer(unsigned int length) {
-	this->outputBuffer_.erase(length);
+	this->outputBuffer_.erase(0, length);
 }
 
 void Client::appendInputBuffer(const char *str, unsigned int length) {

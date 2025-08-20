@@ -11,16 +11,20 @@
 /* ************************************************************************** */
 
 #include "ICmd.hpp"
-#include "IError.hpp"
+
+#include <istream>
+
+#include "IError_populated.hpp"
+#include "IRPL_populated.hpp"
 
 std::vector< IRPL > CMD_PASS::execute(Server &s, Client &clien_requesting) {
 	std::vector< IRPL > ret;
 
 	if (_args.size() < CMD_PASS::minArg)
-		ret.push_back(ERR_NEEDMOREPARAM(_args[0]));
+		ret.push_back(ERR_NEEDMOREPARAMS(_args[0]));
 	else if (clien_requesting.getConState() != REGISTERING_PASS &&
 			 clien_requesting.getConState() != NOT_LOGGED)
-		ret.push_back(ERR_ALREADYREGISTRED());
+		ret.push_back(ERR_ALREADYREGISTERED());
 	else if (s.getServerState().getPassword().compare(_args[1]) != 0)
 		ret.push_back(ERR_PASSWDMISMATCH());
 	if (ret.size() > 0)
@@ -62,10 +66,10 @@ std::vector< IRPL > CMD_USER::execute(Server &s, Client &clien_requesting) {
 	std::vector< IRPL > ret;
 	std::string			_real_name;
 	if (clien_requesting.getConState() != REGISTERING_NICK)
-		ret.push_back(ERR_ALREADYREGISTRED());
+		ret.push_back(ERR_ALREADYREGISTERED());
 	else if (_raw.find_last_of(":") == std::string::npos ||
 			 _args.size() < CMD_USER::minArgs)
-		ret.push_back(ERR_NEEDMOREPARAM(_args[0]));
+		ret.push_back(ERR_NEEDMOREPARAMS(_args[0]));
 
 	if (ret.size() > 0)
 		return ret;
@@ -82,6 +86,35 @@ std::vector< IRPL > CMD_USER::execute(Server &s, Client &clien_requesting) {
 	ret.push_back(RPL_WELCOME(clien_requesting.getName(), c_hostname));
 	ret.push_back(RPL_YOURHOST());
 	ret.push_back(RPL_CREATED());
+	ret.push_back(RPL_MYINFO());
 	return ret;
 }
 
+// std::vector< IRPL > CMD_CAP::execute(Server &s, Client &clien_requesting) {
+// 	std::vector< IRPL > ret;
+//
+// 	if (_args.size() < 2)
+// 		ret.push_back(ERR_NEEDMOREPARAM(_args[0]));
+// 	// NACK everything for now
+// 	else if (_args[1] != "LS" && _args[1] != "ACK" && _args[1] != "NAK")
+// 		ret.push_back(ERR_UNKNOWNCAP(_args[1]));
+// 	else if (_args[1] == "LS") {
+// 		_args.erase(_args.begin()); // remove CAP from args
+// 		_args.erase(_args.begin()); // remove LS from args
+// 		ret.push_back(RPL_CAPNACK(_args));
+// 	} else if (_args[1] == "ACK") {
+// 		_args.erase(_args.begin()); // remove CAP from args
+// 		_args.erase(_args.begin()); // remove ACK from args
+// 		ret.push_back(RPL_CAPACK(_args));
+// 	} else if (_args[1] == "NAK") {
+// 		_args.erase(_args.begin()); // remove CAP from args
+// 		_args.erase(_args.begin()); // remove NAK from args
+// 		ret.push_back(RPL_CAPNACK(_args));
+// 	} else if (_args[1] == "REQ") {
+// 		_args.erase(_args.begin()); // remove CAP from args
+// 		_args.erase(_args.begin()); // remove REQ from args
+// 		ret.push_back(RPL_CAPREQ(_args));
+// 	} else
+// 		ret.push_back(ERR_UNKNOWNCAP(_args[1]));
+// 	return ret;
+// }

@@ -48,58 +48,59 @@ class IError : public IRPL, public std::exception {
 	std::string _s;
 	int			_c;
 };
+#include "IError_populated.hpp"
 
-class ERR_NEEDMOREPARAM : public IError {
-  public:
-	ERR_NEEDMOREPARAM(const std::string &cmd)
-		: IError(461, "Not enough parameters") {
-		_s = cmd + " :" + _s;
-	};
-	virtual ~ERR_NEEDMOREPARAM(void) throw() {};
-};
-
-class ERR_ALREADYREGISTRED : public IError {
-  public:
-	ERR_ALREADYREGISTRED() : IError(462, "You may not reregister") {};
-	virtual ~ERR_ALREADYREGISTRED(void) throw() {};
-};
-
-class ERR_PASSWDMISMATCH : public IError {
-  public:
-	ERR_PASSWDMISMATCH() : IError(464, "Password incorect") {};
-	virtual ~ERR_PASSWDMISMATCH(void) throw() {};
-};
-
-class ERR_NONICKNAMEGIVEN : public IError {
-  public:
-	ERR_NONICKNAMEGIVEN() : IError(431, "No nickname given") {};
-	virtual ~ERR_NONICKNAMEGIVEN(void) throw() {};
-};
-
-class ERR_ERRONEUSNICKNAME : public IError {
-  public:
-	ERR_ERRONEUSNICKNAME(const std::string &nick)
-		: IError(432, "Erroneus nickname") {
-		_s = nick + " :" + _s;
-	};
-	virtual ~ERR_ERRONEUSNICKNAME() throw() {};
-};
-
-class ERR_NICKNAMEINUSE : public IError {
-  public:
-	ERR_NICKNAMEINUSE(const std::string &nick)
-		: IError(432, "Nickname is already in use") {
-		_s = nick + " :" + _s;
-	};
-	virtual ~ERR_NICKNAMEINUSE() throw() {};
-};
-
-class ERR_UNKNOWNCOMMAND : public IError {
-  public:
-	ERR_UNKNOWNCOMMAND(const std::string &cmd)
-		: IError(421, "Unknown command") {
-		_s = " * " + cmd + " :" + _s;
-	};
-	virtual ~ERR_UNKNOWNCOMMAND() throw() {};
-};
+// class ERR_NEEDMOREPARAMS : public IError {
+//   public:
+// 	ERR_NEEDMOREPARAMS(const std::string &cmd)
+// 		: IError(461, "Not enough parameters") {
+// 		_s = cmd + " :" + _s;
+// 	};
+// 	virtual ~ERR_NEEDMOREPARAMS(void) throw() {};
+// };
+//
+// class ERR_ALREADYREGISTERED : {
+//   public:
+// 	ERR_ALREADYREGISTRED() : IError(462, "You may not reregister") {};
+// 	virtual ~ERR_ALREADYREGISTRED(void) throw() {};
+// };
+//
+// class ERR_PASSWDMISMATCH : public IError {
+//   public:
+// 	ERR_PASSWDMISMATCH() : IError(464, "Password incorect") {};
+// 	virtual ~ERR_PASSWDMISMATCH(void) throw() {};
+// };
+//
+// class ERR_NONICKNAMEGIVEN : public IError {
+//   public:
+// 	ERR_NONICKNAMEGIVEN() : IError(431, "No nickname given") {};
+// 	virtual ~ERR_NONICKNAMEGIVEN(void) throw() {};
+// };
+//
+// class ERR_ERRONEUSNICKNAME : public IError {
+//   public:
+// 	ERR_ERRONEUSNICKNAME(const std::string &nick)
+// 		: IError(432, "Erroneus nickname") {
+// 		_s = nick + " :" + _s;
+// 	};
+// 	virtual ~ERR_ERRONEUSNICKNAME() throw() {};
+// };
+//
+// class ERR_NICKNAMEINUSE : public IError {
+//   public:
+// 	ERR_NICKNAMEINUSE(const std::string &nick)
+// 		: IError(432, "Nickname is already in use") {
+// 		_s = nick + " :" + _s;
+// 	};
+// 	virtual ~ERR_NICKNAMEINUSE() throw() {};
+// };
+//
+// class ERR_UNKNOWNCOMMAND : public IError {
+//   public:
+// 	ERR_UNKNOWNCOMMAND(const std::string &cmd)
+// 		: IError(421, "Unknown command") {
+// 		_s = " * " + cmd + " :" + _s;
+// 	};
+// 	virtual ~ERR_UNKNOWNCOMMAND() throw() {};
+// };
 

@@ -72,3 +72,15 @@ class CMD_USER : public ICmd {
 		   return std::string("USER");
 	}
 };
+
+// class CMD_CAP : public ICmd {
+//   private:
+// 	static const int minArg = 2;
+//
+//   public:
+// 	CMD_CAP(const std::string &s) : ICmd(s) {}
+// 	virtual std::vector< IRPL > execute(Server &s, Client &clien_requesting);
+// 	static const std::string	predicate() {
+// 		   return std::string("CAP");
+// 	}
+// };
