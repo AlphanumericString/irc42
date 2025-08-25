@@ -262,36 +262,35 @@ class RPL_ENDOFSTATS : public IRPL {
 // modes take parameters (like channel modes).
 class RPL_UMODEIS : public IRPL {
   public:
-	RPL_UMODEIS();
+	RPL_UMODEIS(const std::string &modes);
 	virtual ~RPL_UMODEIS(void);
 };
 
-// nb:231
-// short for:RPL_SERVICEINFO
-// desc:RFC1459
-class RPL_SERVICEINFO : public IRPL {
-  public:
-	RPL_SERVICEINFO();
-	virtual ~RPL_SERVICEINFO(void);
-};
-
-// nb:232
-// short for:RPL_ENDOFSERVICES
-// desc:RFC1459
-class RPL_ENDOFSERVICES : public IRPL {
-  public:
-	RPL_ENDOFSERVICES();
-	virtual ~RPL_ENDOFSERVICES(void);
-};
-
-// nb:233
-// short for:RPL_SERVICE
-// desc:RFC1459
-class RPL_SERVICE : public IRPL {
-  public:
-	RPL_SERVICE();
-	virtual ~RPL_SERVICE(void);
-};
+// Seems to be unused / non-standard
+// // nb:231
+// // short for:RPL_SERVICEINFO
+// // desc:RFC1459
+// class RPL_SERVICEINFO : public IRPL {
+//   public:
+// 	RPL_SERVICEINFO();
+// 	virtual ~RPL_SERVICEINFO(void);
+// };
+// // nb:232
+// // short for:RPL_ENDOFSERVICES
+// // desc:RFC1459
+// class RPL_ENDOFSERVICES : public IRPL {
+//   public:
+// 	RPL_ENDOFSERVICES();
+// 	virtual ~RPL_ENDOFSERVICES(void);
+// };
+// // nb:233
+// // short for:RPL_SERVICE
+// // desc:RFC1459
+// class RPL_SERVICE : public IRPL {
+//   public:
+// 	RPL_SERVICE();
+// 	virtual ~RPL_SERVICE(void);
+// };
 
 // nb:234
 // short for:RPL_SERVLIST
@@ -403,7 +402,7 @@ class RPL_STATSDLINE : public IRPL {
 // Reply to LUSERS command, other versions exist (eg. RFC2812); Text may vary.
 class RPL_LUSERCLIENT : public IRPL {
   public:
-	RPL_LUSERCLIENT();
+	RPL_LUSERCLIENT(int nb_users, int nb_invisible, int nb_servers);
 	virtual ~RPL_LUSERCLIENT(void);
 };
 
@@ -413,7 +412,7 @@ class RPL_LUSERCLIENT : public IRPL {
 // operators online
 class RPL_LUSEROP : public IRPL {
   public:
-	RPL_LUSEROP();
+	RPL_LUSEROP(int nb_ops);
 	virtual ~RPL_LUSEROP(void);
 };
 
@@ -423,7 +422,7 @@ class RPL_LUSEROP : public IRPL {
 // unknown/unregistered connections
 class RPL_LUSERUNKNOWN : public IRPL {
   public:
-	RPL_LUSERUNKNOWN();
+	RPL_LUSERUNKNOWN(int nb_user_unk);
 	virtual ~RPL_LUSERUNKNOWN(void);
 };
 
@@ -433,7 +432,7 @@ class RPL_LUSERUNKNOWN : public IRPL {
 // formed
 class RPL_LUSERCHANNELS : public IRPL {
   public:
-	RPL_LUSERCHANNELS();
+	RPL_LUSERCHANNELS(int nb_chan);
 	virtual ~RPL_LUSERCHANNELS(void);
 };
 
@@ -443,7 +442,7 @@ class RPL_LUSERCHANNELS : public IRPL {
 // command - Information about local connections; Text may vary.
 class RPL_LUSERME : public IRPL {
   public:
-	RPL_LUSERME();
+	RPL_LUSERME(int nb_clients, int nb_server);
 	virtual ~RPL_LUSERME(void);
 };
 
@@ -491,6 +490,8 @@ class RPL_ADMINEMAIL : public IRPL {
 	virtual ~RPL_ADMINEMAIL(void);
 };
 
+// nb:260 - not in RFC
+
 // nb:261
 // short for:RPL_TRACELOG
 // desc:RFC1459 	File <logfile> <debug_level> 	See RFC
@@ -526,7 +527,7 @@ class RPL_TRACEEND : public IRPL {
 // RPL_LOAD2HI, I'm presuming they do the same thing.
 class RPL_TRYAGAIN : public IRPL {
   public:
-	RPL_TRYAGAIN();
+	RPL_TRYAGAIN(const std::string &command, const std::string &info);
 	virtual ~RPL_TRYAGAIN(void);
 };
 
@@ -546,7 +547,7 @@ class RPL_NONE : public IRPL {
 // user who is marked as away
 class RPL_AWAY : public IRPL {
   public:
-	RPL_AWAY();
+	RPL_AWAY(const std::string &nick, const std::string &away_msg);
 	virtual ~RPL_AWAY(void);
 };
 
@@ -570,14 +571,7 @@ class RPL_ISON : public IRPL {
 	virtual ~RPL_ISON(void);
 };
 
-// nb:304
-// short for:RPL_TEXT
-// desc:
-class RPL_TEXT : public IRPL {
-  public:
-	RPL_TEXT();
-	virtual ~RPL_TEXT(void);
-};
+// 304 : seems to be absent from RFC
 
 // nb:305
 // short for:RPL_UNAWAY
@@ -595,15 +589,6 @@ class RPL_NOWAWAY : public IRPL {
   public:
 	RPL_NOWAWAY();
 	virtual ~RPL_NOWAWAY(void);
-};
-
-// nb:307
-// short for:RPL_USERIP
-// desc:
-class RPL_USERIP : public IRPL {
-  public:
-	RPL_USERIP();
-	virtual ~RPL_USERIP(void);
 };
 
 // nb:311
@@ -632,7 +617,7 @@ class RPL_WHOISSERVER : public IRPL {
 // Operator privileges
 class RPL_WHOISOPERATOR : public IRPL {
   public:
-	RPL_WHOISOPERATOR();
+	RPL_WHOISOPERATOR(const std::string &nick, const std::string &privilege);
 	virtual ~RPL_WHOISOPERATOR(void);
 };
 
@@ -652,7 +637,7 @@ class RPL_WHOWASUSER : public IRPL {
 // replies
 class RPL_ENDOFWHO : public IRPL {
   public:
-	RPL_ENDOFWHO();
+	RPL_ENDOFWHO(const std::string &name, const std::string &info);
 	virtual ~RPL_ENDOFWHO(void);
 };
 
@@ -671,7 +656,7 @@ class RPL_WHOISCHANOP : public IRPL {
 // information
 class RPL_WHOISIDLE : public IRPL {
   public:
-	RPL_WHOISIDLE();
+	RPL_WHOISIDLE(const std::string &nick, unsigned long secs);
 	virtual ~RPL_WHOISIDLE(void);
 };
 
@@ -680,7 +665,7 @@ class RPL_WHOISIDLE : public IRPL {
 // desc:RFC1459 	<nick> :<info> 	Reply to WHOIS - End of list
 class RPL_ENDOFWHOIS : public IRPL {
   public:
-	RPL_ENDOFWHOIS();
+	RPL_ENDOFWHOIS(const std::string &nick, const std::string &info);
 	virtual ~RPL_ENDOFWHOIS(void);
 };
 
@@ -690,7 +675,9 @@ class RPL_ENDOFWHOIS : public IRPL {
 // Channel list for user (See RFC)
 class RPL_WHOISCHANNELS : public IRPL {
   public:
-	RPL_WHOISCHANNELS();
+	RPL_WHOISCHANNELS(
+		const std::string
+			&nick /* chanels? idk struct passing here or string */);
 	virtual ~RPL_WHOISCHANNELS(void);
 };
 
@@ -726,7 +713,7 @@ class RPL_LISTEND : public IRPL {
 // desc:RFC1459 	<channel> <mode> <mode_params>
 class RPL_CHANNELMODEIS : public IRPL {
   public:
-	RPL_CHANNELMODEIS();
+	RPL_CHANNELMODEIS(/* Channel *? */);
 	virtual ~RPL_CHANNELMODEIS(void);
 };
 
@@ -744,7 +731,7 @@ class RPL_UNIQOPIS : public IRPL {
 // desc:RFC1459 	<channel> :<info> 	Response to TOPIC when no topic is set
 class RPL_NOTOPIC : public IRPL {
   public:
-	RPL_NOTOPIC();
+	RPL_NOTOPIC(const std::string &ch_name);
 	virtual ~RPL_NOTOPIC(void);
 };
 
@@ -753,7 +740,7 @@ class RPL_NOTOPIC : public IRPL {
 // desc:RFC1459 	<channel> :<topic> 	Response to TOPIC with the set topic
 class RPL_TOPIC : public IRPL {
   public:
-	RPL_TOPIC();
+	RPL_TOPIC(const std::string &ch_name, const std::string &topic);
 	virtual ~RPL_TOPIC(void);
 };
 
@@ -766,7 +753,7 @@ class RPL_TOPIC : public IRPL {
 // considered the standard reply above that given by RFC1459.
 class RPL_INVITING : public IRPL {
   public:
-	RPL_INVITING();
+	RPL_INVITING(const std::string &nick, const std::string &ch_name);
 	virtual ~RPL_INVITING(void);
 };
 
@@ -776,39 +763,40 @@ class RPL_INVITING : public IRPL {
 // message to indicate that it is summoning that user
 class RPL_SUMMONING : public IRPL {
   public:
-	RPL_SUMMONING();
+	RPL_SUMMONING(const std::string &u, const std::string &info);
 	virtual ~RPL_SUMMONING(void);
 };
 
-// nb:345
-// short for:RPL_INVITED
-// desc:GameSurge 	<channel> <user being invited> <user issuing invite> :<user
-// being invited> has been invited by <user issuing invite> 	Sent to users on
-// a channel when an INVITE command has been issued
-class RPL_INVITED : public IRPL {
-  public:
-	RPL_INVITED();
-	virtual ~RPL_INVITED(void);
-};
+// // nb:345
+// // short for:RPL_INVITED
+// // desc:GameSurge 	<channel> <user being invited> <user issuing invite>
+// :<user
+// // being invited> has been invited by <user issuing invite> 	Sent to users on
+// // a channel when an INVITE command has been issued
+// class RPL_INVITED : public IRPL {
+//   public:
+// 	RPL_INVITED();
+// 	virtual ~RPL_INVITED(void);
+// };
 
-// nb:346
-// short for:RPL_INVITELIST
-// desc:RFC2812 	<channel> <invitemask> 	An invite mask for the invite mask
-// list
-class RPL_INVITELIST : public IRPL {
-  public:
-	RPL_INVITELIST();
-	virtual ~RPL_INVITELIST(void);
-};
+// // nb:346
+// // short for:RPL_INVITELIST
+// // desc:RFC2812 	<channel> <invitemask> 	An invite mask for the invite mask
+// // list
+// class RPL_INVITELIST : public IRPL {
+//   public:
+// 	RPL_INVITELIST();
+// 	virtual ~RPL_INVITELIST(void);
+// };
 
-// nb:347
-// short for:RPL_ENDOFINVITELIST
-// desc:RFC2812 	<channel> :<info> 	Termination of an RPL_INVITELIST list
-class RPL_ENDOFINVITELIST : public IRPL {
-  public:
-	RPL_ENDOFINVITELIST();
-	virtual ~RPL_ENDOFINVITELIST(void);
-};
+// // nb:347
+// // short for:RPL_ENDOFINVITELIST
+// // desc:RFC2812 	<channel> :<info> 	Termination of an RPL_INVITELIST list
+// class RPL_ENDOFINVITELIST : public IRPL {
+//   public:
+// 	RPL_ENDOFINVITELIST();
+// 	virtual ~RPL_ENDOFINVITELIST(void);
+// };
 
 // nb:348
 // short for:RPL_EXCEPTLIST
@@ -816,7 +804,7 @@ class RPL_ENDOFINVITELIST : public IRPL {
 // exception mask list. Also known as RPL_EXLIST (Unreal, Ultimate)
 class RPL_EXCEPTLIST : public IRPL {
   public:
-	RPL_EXCEPTLIST();
+	RPL_EXCEPTLIST(const std::string &chn, const std::string &emsk);
 	virtual ~RPL_EXCEPTLIST(void);
 };
 
@@ -826,7 +814,7 @@ class RPL_EXCEPTLIST : public IRPL {
 // Also known as RPL_ENDOFEXLIST (Unreal, Ultimate)
 class RPL_ENDOFEXCEPTLIST : public IRPL {
   public:
-	RPL_ENDOFEXCEPTLIST();
+	RPL_ENDOFEXCEPTLIST(const std::string &ch, const std::string &info);
 	virtual ~RPL_ENDOFEXCEPTLIST(void);
 };
 
@@ -904,7 +892,7 @@ class RPL_LINKS : public IRPL {
 // desc:RFC1459 	<mask> :<info> 	Termination of an RPL_LINKS list
 class RPL_ENDOFLINKS : public IRPL {
   public:
-	RPL_ENDOFLINKS();
+	RPL_ENDOFLINKS(const std::string &msk, const std::string &info);
 	virtual ~RPL_ENDOFLINKS(void);
 };
 
@@ -913,7 +901,7 @@ class RPL_ENDOFLINKS : public IRPL {
 // desc:RFC1459 	<channel> :<info> 	Termination of an RPL_NAMREPLY list
 class RPL_ENDOFNAMES : public IRPL {
   public:
-	RPL_ENDOFNAMES();
+	RPL_ENDOFNAMES(const std::string &channel, const std::string &info);
 	virtual ~RPL_ENDOFNAMES(void);
 };
 
@@ -932,7 +920,7 @@ class RPL_BANLIST : public IRPL {
 // desc:RFC1459 	<channel> :<info> 	Termination of an RPL_BANLIST list
 class RPL_ENDOFBANLIST : public IRPL {
   public:
-	RPL_ENDOFBANLIST();
+	RPL_ENDOFBANLIST(const std::string &channel, const std::string &info);
 	virtual ~RPL_ENDOFBANLIST(void);
 };
 
@@ -941,7 +929,7 @@ class RPL_ENDOFBANLIST : public IRPL {
 // desc:RFC1459 	<nick> :<info> 	Reply to WHOWAS - End of list
 class RPL_ENDOFWHOWAS : public IRPL {
   public:
-	RPL_ENDOFWHOWAS();
+	RPL_ENDOFWHOWAS(const std::string &nick, const std::string &info);
 	virtual ~RPL_ENDOFWHOWAS(void);
 };
 
@@ -950,7 +938,7 @@ class RPL_ENDOFWHOWAS : public IRPL {
 // desc:RFC1459 	:<string> 	Reply to INFO
 class RPL_INFO : public IRPL {
   public:
-	RPL_INFO();
+	RPL_INFO(const std::string &string);
 	virtual ~RPL_INFO(void);
 };
 
@@ -959,7 +947,7 @@ class RPL_INFO : public IRPL {
 // desc:RFC1459 	:- <string> 	Reply to MOTD
 class RPL_MOTD : public IRPL {
   public:
-	RPL_MOTD();
+	RPL_MOTD(const std::string &dword);
 	virtual ~RPL_MOTD(void);
 };
 
@@ -977,7 +965,7 @@ class RPL_INFOSTART : public IRPL {
 // desc:RFC1459 	:<info> 	Termination of an RPL_INFO list
 class RPL_ENDOFINFO : public IRPL {
   public:
-	RPL_ENDOFINFO();
+	RPL_ENDOFINFO(const std::string &info);
 	virtual ~RPL_ENDOFINFO(void);
 };
 
@@ -1014,7 +1002,7 @@ class RPL_YOUREOPER : public IRPL {
 // desc:RFC1459 	<config_file> :<info> 	Successful reply from REHASH
 class RPL_REHASHING : public IRPL {
   public:
-	RPL_REHASHING();
+	RPL_REHASHING(const std::string &cfile, const std::string &info);
 	virtual ~RPL_REHASHING(void);
 };
 
@@ -1024,18 +1012,18 @@ class RPL_REHASHING : public IRPL {
 // registration of a service
 class RPL_YOURESERVICE : public IRPL {
   public:
-	RPL_YOURESERVICE();
+	RPL_YOURESERVICE(const std::string sername);
 	virtual ~RPL_YOURESERVICE(void);
 };
 
-// nb:384
-// short for:RPL_MYPORTIS
-// desc:RFC1459
-class RPL_MYPORTIS : public IRPL {
-  public:
-	RPL_MYPORTIS();
-	virtual ~RPL_MYPORTIS(void);
-};
+// // nb:384
+// // short for:RPL_MYPORTIS
+// // desc:RFC1459
+// class RPL_MYPORTIS : public IRPL {
+//   public:
+// 	RPL_MYPORTIS();
+// 	virtual ~RPL_MYPORTIS(void);
+// };
 
 // nb:391
 // short for:RPL_TIME
@@ -1043,7 +1031,7 @@ class RPL_MYPORTIS : public IRPL {
 // The string format may vary greatly. Also see #679.
 class RPL_TIME : public IRPL {
   public:
-	RPL_TIME();
+	RPL_TIME(const std::string &sname, const std::string &time);
 	virtual ~RPL_TIME(void);
 };
 
@@ -1052,7 +1040,7 @@ class RPL_TIME : public IRPL {
 // desc:RFC1459 	:UserID Terminal Host 	Start of an RPL_USERS list
 class RPL_USERSSTART : public IRPL {
   public:
-	RPL_USERSSTART();
+	RPL_USERSSTART(const std::string &uid, const std::string &th);
 	virtual ~RPL_USERSSTART(void);
 };
 
@@ -1062,7 +1050,8 @@ class RPL_USERSSTART : public IRPL {
 // command (See RFC)
 class RPL_USERS : public IRPL {
   public:
-	RPL_USERS();
+	RPL_USERS(const std::string &usr_name, const std::string &ttyline,
+			  const std::string &hname);
 	virtual ~RPL_USERS(void);
 };
 
@@ -1071,15 +1060,16 @@ class RPL_USERS : public IRPL {
 // desc:RFC1459 	:<info> 	Termination of an RPL_USERS list
 class RPL_ENDOFUSERS : public IRPL {
   public:
+	RPL_ENDOFUSERS(const std::string &inf);
 	RPL_ENDOFUSERS();
 	virtual ~RPL_ENDOFUSERS(void);
 };
 
 // nb:395
 // short for:RPL_NOUSERS
+// desc:RFC1459 	:<info> 	Reply to USERS when nobody is logged in
 class RPL_NOUSERS : public IRPL {
   public:
-	RPL_NOUSERS();
+	RPL_NOUSERS(const std::string &inf);
 	virtual ~RPL_NOUSERS(void);
 };
-// desc:RFC1459 	:<info> 	Reply to USERS when nobody is logged in

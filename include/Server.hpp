@@ -22,6 +22,7 @@
 #define SERVER_PORT_DFLT 8080
 #define SERVER_PWD_DFLT	 "password"
 #define SERVER_NAME_DFLT "42irc_server_apbg"
+#define ADMIN_EMAIL_DFLT "bgoulard@student.42.fr"
 
 /// @typedef eventType
 /// @brief Represents the different events to be processed.
