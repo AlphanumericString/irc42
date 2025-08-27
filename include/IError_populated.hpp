@@ -19,7 +19,8 @@
 // supplied to a command is currently unused
 class ERR_NOSUCHNICK : public IError {
   public:
-	ERR_NOSUCHNICK();
+	ERR_NOSUCHNICK(const std::string &nick,
+				   const std::string &reason = "No such nick");
 	virtual ~ERR_NOSUCHNICK(void) throw();
 };
 
@@ -29,7 +30,8 @@ class ERR_NOSUCHNICK : public IError {
 // currently doesn't exist
 class ERR_NOSUCHSERVER : public IError {
   public:
-	ERR_NOSUCHSERVER();
+	ERR_NOSUCHSERVER(const std::string &server,
+					 const std::string &reason = "No such server");
 	virtual ~ERR_NOSUCHSERVER(void) throw();
 };
 
@@ -39,7 +41,8 @@ class ERR_NOSUCHSERVER : public IError {
 // name is invalid, or does not exist
 class ERR_NOSUCHCHANNEL : public IError {
   public:
-	ERR_NOSUCHCHANNEL();
+	ERR_NOSUCHCHANNEL(const std::string &channel,
+					  const std::string &reason = "No such channel");
 	virtual ~ERR_NOSUCHCHANNEL(void) throw();
 };
 
@@ -49,7 +52,8 @@ class ERR_NOSUCHCHANNEL : public IError {
 // rights to send a message to a channel
 class ERR_CANNOTSENDTOCHAN : public IError {
   public:
-	ERR_CANNOTSENDTOCHAN();
+	ERR_CANNOTSENDTOCHAN(const std::string &channel,
+						 const std::string &reason = "Cannot send to channel");
 	virtual ~ERR_CANNOTSENDTOCHAN(void) throw();
 };
 
@@ -59,7 +63,9 @@ class ERR_CANNOTSENDTOCHAN : public IError {
 // the maximum number of allowed channels and they tried to join another channel
 class ERR_TOOMANYCHANNELS : public IError {
   public:
-	ERR_TOOMANYCHANNELS();
+	ERR_TOOMANYCHANNELS(
+		const std::string &channel,
+		const std::string &reason = "You have joined too many channels");
 	virtual ~ERR_TOOMANYCHANNELS(void) throw();
 };
 
@@ -69,7 +75,8 @@ class ERR_TOOMANYCHANNELS : public IError {
 // no history information for a given nickname
 class ERR_WASNOSUCHNICK : public IError {
   public:
-	ERR_WASNOSUCHNICK();
+	ERR_WASNOSUCHNICK(const std::string &nick,
+					  const std::string &reason = "There was no such nickname");
 	virtual ~ERR_WASNOSUCHNICK(void) throw();
 };
 
@@ -79,7 +86,9 @@ class ERR_WASNOSUCHNICK : public IError {
 // ambiguous in that they relate to too many targets
 class ERR_TOOMANYTARGETS : public IError {
   public:
-	ERR_TOOMANYTARGETS();
+	ERR_TOOMANYTARGETS(const std::string &target,
+					   const std::string &reason =
+						   "Duplicate recipients. No message delivered");
 	virtual ~ERR_TOOMANYTARGETS(void) throw();
 };
 
@@ -90,7 +99,8 @@ class ERR_TOOMANYTARGETS : public IError {
 // exist
 class ERR_NOSUCHSERVICE : public IError {
   public:
-	ERR_NOSUCHSERVICE();
+	ERR_NOSUCHSERVICE(const std::string &service_name,
+					  const std::string &reason = "No such service");
 	virtual ~ERR_NOSUCHSERVICE(void) throw();
 };
 
@@ -101,7 +111,7 @@ class ERR_NOSUCHSERVICE : public IError {
 // prefixes
 class ERR_NOORIGIN : public IError {
   public:
-	ERR_NOORIGIN();
+	ERR_NOORIGIN(const std::string &reason = "No origin specified");
 	virtual ~ERR_NOORIGIN(void) throw();
 };
 
@@ -111,7 +121,7 @@ class ERR_NOORIGIN : public IError {
 // command
 class ERR_NORECIPIENT : public IError {
   public:
-	ERR_NORECIPIENT();
+	ERR_NORECIPIENT(const std::string &reason = "No recipient given");
 	virtual ~ERR_NORECIPIENT(void) throw();
 };
 
@@ -121,7 +131,7 @@ class ERR_NORECIPIENT : public IError {
 // message given
 class ERR_NOTEXTTOSEND : public IError {
   public:
-	ERR_NOTEXTTOSEND();
+	ERR_NOTEXTTOSEND(const std::string &reason = "No text to send");
 	virtual ~ERR_NOTEXTTOSEND(void) throw();
 };
 
@@ -131,7 +141,8 @@ class ERR_NOTEXTTOSEND : public IError {
 // mask without being limited to a top-level domain (i.e. * instead of *.au)
 class ERR_NOTOPLEVEL : public IError {
   public:
-	ERR_NOTOPLEVEL();
+	ERR_NOTOPLEVEL(const std::string &mask,
+				   const std::string &reason = "No toplevel domain specified");
 	virtual ~ERR_NOTOPLEVEL(void) throw();
 };
 
@@ -141,7 +152,7 @@ class ERR_NOTOPLEVEL : public IError {
 // mask with a wild-card for a top level domain (i.e. *.*)
 class ERR_WILDTOPLEVEL : public IError {
   public:
-	ERR_WILDTOPLEVEL();
+	ERR_WILDTOPLEVEL(const std::string &mask, const std::string &reason);
 	virtual ~ERR_WILDTOPLEVEL(void) throw();
 };
 
@@ -151,7 +162,8 @@ class ERR_WILDTOPLEVEL : public IError {
 // mask with an invalid syntax
 class ERR_BADMASK : public IError {
   public:
-	ERR_BADMASK();
+	ERR_BADMASK(const std::string &mask,
+				const std::string &reason = "Bad Mask");
 	virtual ~ERR_BADMASK(void) throw();
 };
 
@@ -163,7 +175,8 @@ class ERR_BADMASK : public IError {
 // network! Ouch!
 class ERR_TOOMANYMATCHES : public IError {
   public:
-	ERR_TOOMANYMATCHES();
+	ERR_TOOMANYMATCHES(const std::string &command, std::string const &mask = "",
+					   const std::string &reason = "Too many matches");
 	virtual ~ERR_TOOMANYMATCHES(void) throw();
 };
 
@@ -173,7 +186,8 @@ class ERR_TOOMANYMATCHES : public IError {
 // unknown to the server (or hidden because of lack of access rights)
 class ERR_UNKNOWNCOMMAND : public IError {
   public:
-	ERR_UNKNOWNCOMMAND(const std::string &cmd_predicate);
+	ERR_UNKNOWNCOMMAND(const std::string &cmd_predicate,
+					   const std::string &reason = "Unknown command");
 	virtual ~ERR_UNKNOWNCOMMAND(void) throw();
 };
 
@@ -182,7 +196,7 @@ class ERR_UNKNOWNCOMMAND : public IError {
 // desc:RFC1459 	:<reason> 	Sent when there is no MOTD to send the client
 class ERR_NOMOTD : public IError {
   public:
-	ERR_NOMOTD();
+	ERR_NOMOTD(const std::string &reason = "MOTD File is missing");
 	virtual ~ERR_NOMOTD(void) throw();
 };
 
@@ -194,7 +208,9 @@ class ERR_NOMOTD : public IError {
 // ('Admin command'), it's confirmed to exist in the real world.
 class ERR_NOADMININFO : public IError {
   public:
-	ERR_NOADMININFO();
+	ERR_NOADMININFO(
+		const std::string &server,
+		const std::string &reason = "No administrative info available");
 	virtual ~ERR_NOADMININFO(void) throw();
 };
 
@@ -204,7 +220,7 @@ class ERR_NOADMININFO : public IError {
 // file operation during the processing of a command
 class ERR_FILEERROR : public IError {
   public:
-	ERR_FILEERROR();
+	ERR_FILEERROR(const std::string &reason = "File error doing operation");
 	virtual ~ERR_FILEERROR(void) throw();
 };
 
@@ -214,7 +230,7 @@ class ERR_FILEERROR : public IError {
 // a command isn't found
 class ERR_NONICKNAMEGIVEN : public IError {
   public:
-	ERR_NONICKNAMEGIVEN();
+	ERR_NONICKNAMEGIVEN(const std::string &reason = "No nickname given");
 	virtual ~ERR_NONICKNAMEGIVEN(void) throw();
 };
 
@@ -226,7 +242,8 @@ class ERR_NONICKNAMEGIVEN : public IError {
 // numeric is misspelt, but remains with this name for historical reasons :)
 class ERR_ERRONEUSNICKNAME : public IError {
   public:
-	ERR_ERRONEUSNICKNAME(const std::string &nick);
+	ERR_ERRONEUSNICKNAME(const std::string &nick,
+						 const std::string &reason = "Erroneous nickname");
 	virtual ~ERR_ERRONEUSNICKNAME(void) throw();
 };
 
@@ -236,7 +253,8 @@ class ERR_ERRONEUSNICKNAME : public IError {
 // given nickname is already in use
 class ERR_NICKNAMEINUSE : public IError {
   public:
-	ERR_NICKNAMEINUSE(const std::string &nick);
+	ERR_NICKNAMEINUSE(const std::string &nick,
+					  const std::string &reason = "Nickname is already in use");
 	virtual ~ERR_NICKNAMEINUSE(void) throw();
 };
 
@@ -246,7 +264,8 @@ class ERR_NICKNAMEINUSE : public IError {
 // detects a nickname collision
 class ERR_NICKCOLLISION : public IError {
   public:
-	ERR_NICKCOLLISION();
+	ERR_NICKCOLLISION(const std::string &nick,
+					  const std::string &reason = "Nickname collision");
 	virtual ~ERR_NICKCOLLISION(void) throw();
 };
 
@@ -257,7 +276,8 @@ class ERR_NICKCOLLISION : public IError {
 // service being offline
 class ERR_UNAVAILRESOURCE : public IError {
   public:
-	ERR_UNAVAILRESOURCE();
+	ERR_UNAVAILRESOURCE(const std::string &target,
+						const std::string &reason = "Resource temporarily unavailable");
 	virtual ~ERR_UNAVAILRESOURCE(void) throw();
 };
 
@@ -267,7 +287,8 @@ class ERR_UNAVAILRESOURCE : public IError {
 // indicate that the target user of the command is not on the given channel
 class ERR_USERNOTINCHANNEL : public IError {
   public:
-	ERR_USERNOTINCHANNEL();
+	ERR_USERNOTINCHANNEL(const std::string &nick, const std::string &channel,
+						 const std::string &reason = "is not on that channel");
 	virtual ~ERR_USERNOTINCHANNEL(void) throw();
 };
 
@@ -278,7 +299,8 @@ class ERR_USERNOTINCHANNEL : public IError {
 // not a member
 class ERR_NOTONCHANNEL : public IError {
   public:
-	ERR_NOTONCHANNEL();
+	ERR_NOTONCHANNEL(const std::string &channel,
+					 const std::string &reason = "You're not on that channel");
 	virtual ~ERR_NOTONCHANNEL(void) throw();
 };
 
@@ -288,7 +310,8 @@ class ERR_NOTONCHANNEL : public IError {
 // to invite a user to a channel they're already on
 class ERR_USERONCHANNEL : public IError {
   public:
-	ERR_USERONCHANNEL();
+	ERR_USERONCHANNEL(const std::string &nick, const std::string &channel,
+					  const std::string &reason = "is already on channel");
 	virtual ~ERR_USERONCHANNEL(void) throw();
 };
 
@@ -298,7 +321,8 @@ class ERR_USERONCHANNEL : public IError {
 // given user was not logged in and could not be summoned
 class ERR_NOLOGIN : public IError {
   public:
-	ERR_NOLOGIN();
+	ERR_NOLOGIN(const std::string &user,
+				const std::string &reason = "User not logged in");
 	virtual ~ERR_NOLOGIN(void) throw();
 };
 
@@ -308,7 +332,8 @@ class ERR_NOLOGIN : public IError {
 // not implemented
 class ERR_SUMMONDISABLED : public IError {
   public:
-	ERR_SUMMONDISABLED();
+	ERR_SUMMONDISABLED(
+		const std::string &reason = "SUMMON command has been disabled");
 	virtual ~ERR_SUMMONDISABLED(void) throw();
 };
 
@@ -318,7 +343,8 @@ class ERR_SUMMONDISABLED : public IError {
 // not implemented
 class ERR_USERSDISABLED : public IError {
   public:
-	ERR_USERSDISABLED();
+	ERR_USERSDISABLED(
+		const std::string &reason = "USERS command has been disabled");
 	virtual ~ERR_USERSDISABLED(void) throw();
 };
 
@@ -329,7 +355,7 @@ class ERR_USERSDISABLED : public IError {
 // detail
 class ERR_NOTREGISTERED : public IError {
   public:
-	ERR_NOTREGISTERED();
+	ERR_NOTREGISTERED(const std::string &reason = "You have not registered");
 	virtual ~ERR_NOTREGISTERED(void) throw();
 };
 
@@ -339,7 +365,8 @@ class ERR_NOTREGISTERED : public IError {
 // command which requires more parameters than the number of parameters given
 class ERR_NEEDMOREPARAMS : public IError {
   public:
-	ERR_NEEDMOREPARAMS(const std::string &);
+	ERR_NEEDMOREPARAMS(const std::string &cmd,
+					   const std::string &reason = "Not enough parameters");
 	virtual ~ERR_NEEDMOREPARAMS(void) throw();
 };
 
@@ -349,7 +376,7 @@ class ERR_NEEDMOREPARAMS : public IError {
 // attempts to register again
 class ERR_ALREADYREGISTERED : public IError {
   public:
-	ERR_ALREADYREGISTERED();
+	ERR_ALREADYREGISTERED(const std::string &reason = "You may not reregister");
 	virtual ~ERR_ALREADYREGISTERED(void) throw();
 };
 
@@ -360,7 +387,7 @@ class ERR_ALREADYREGISTERED : public IError {
 // client's host
 class ERR_NOPERMFORHOST : public IError {
   public:
-	ERR_NOPERMFORHOST();
+	ERR_NOPERMFORHOST(const std::string &reason = "No permission for host");
 	virtual ~ERR_NOPERMFORHOST(void) throw();
 };
 
@@ -370,7 +397,7 @@ class ERR_NOPERMFORHOST : public IError {
 // given password was required and was either not given or was incorrect
 class ERR_PASSWDMISMATCH : public IError {
   public:
-	ERR_PASSWDMISMATCH();
+	ERR_PASSWDMISMATCH(const std::string &reason = "Password incorrect");
 	virtual ~ERR_PASSWDMISMATCH(void) throw();
 };
 
@@ -380,7 +407,8 @@ class ERR_PASSWDMISMATCH : public IError {
 // register on a server configured to ban connections from that client
 class ERR_YOUREBANNEDCREEP : public IError {
   public:
-	ERR_YOUREBANNEDCREEP();
+	ERR_YOUREBANNEDCREEP(
+		const std::string &reason = "You are banned from this server");
 	virtual ~ERR_YOUREBANNEDCREEP(void) throw();
 };
 
@@ -390,7 +418,7 @@ class ERR_YOUREBANNEDCREEP : public IError {
 // server will soon be denied
 class ERR_YOUWILLBEBANNED : public IError {
   public:
-	ERR_YOUWILLBEBANNED();
+	ERR_YOUWILLBEBANNED(const std::string &reason = "You will be banned");
 	virtual ~ERR_YOUWILLBEBANNED(void) throw();
 };
 
@@ -400,7 +428,8 @@ class ERR_YOUWILLBEBANNED : public IError {
 // channel has already been set
 class ERR_KEYSET : public IError {
   public:
-	ERR_KEYSET();
+	ERR_KEYSET(const std::string &channel,
+			   const std::string &reason = "Channel key already set");
 	virtual ~ERR_KEYSET(void) throw();
 };
 
@@ -410,7 +439,8 @@ class ERR_KEYSET : public IError {
 // channel which is set +l and is already full
 class ERR_CHANNELISFULL : public IError {
   public:
-	ERR_CHANNELISFULL();
+	ERR_CHANNELISFULL(const std::string &channel,
+					  const std::string &reason = "Channel is full");
 	virtual ~ERR_CHANNELISFULL(void) throw();
 };
 
@@ -419,7 +449,8 @@ class ERR_CHANNELISFULL : public IError {
 // desc:RFC1459 	<char> :<reason> 	Returned when a given mode is unknown
 class ERR_UNKNOWNMODE : public IError {
   public:
-	ERR_UNKNOWNMODE();
+	ERR_UNKNOWNMODE(const std::string &mode_char,
+					const std::string &reason = "is unknown mode char to me");
 	virtual ~ERR_UNKNOWNMODE(void) throw();
 };
 
@@ -429,7 +460,8 @@ class ERR_UNKNOWNMODE : public IError {
 // channel which is invite only without an invitation
 class ERR_INVITEONLYCHAN : public IError {
   public:
-	ERR_INVITEONLYCHAN();
+	ERR_INVITEONLYCHAN(const std::string &channel,
+					   const std::string &reason = "Cannot join channel (+i)");
 	virtual ~ERR_INVITEONLYCHAN(void) throw();
 };
 
@@ -439,7 +471,8 @@ class ERR_INVITEONLYCHAN : public IError {
 // channel a user is banned from
 class ERR_BANNEDFROMCHAN : public IError {
   public:
-	ERR_BANNEDFROMCHAN();
+	ERR_BANNEDFROMCHAN(const std::string &channel,
+					   const std::string &reason = "Cannot join channel (+b)");
 	virtual ~ERR_BANNEDFROMCHAN(void) throw();
 };
 
@@ -449,7 +482,8 @@ class ERR_BANNEDFROMCHAN : public IError {
 // key-locked channel either without a key or with the wrong key
 class ERR_BADCHANNELKEY : public IError {
   public:
-	ERR_BADCHANNELKEY();
+	ERR_BADCHANNELKEY(const std::string &channel,
+					  const std::string &reason = "Cannot join channel (+k)");
 	virtual ~ERR_BADCHANNELKEY(void) throw();
 };
 
@@ -458,7 +492,8 @@ class ERR_BADCHANNELKEY : public IError {
 // desc:RFC2812 	<channel> :<reason> 	The given channel mask was invalid
 class ERR_BADCHANMASK : public IError {
   public:
-	ERR_BADCHANMASK();
+	ERR_BADCHANMASK(const std::string &channel,
+					const std::string &reason = "Bad Channel Mask");
 	virtual ~ERR_BADCHANMASK(void) throw();
 };
 
@@ -469,7 +504,9 @@ class ERR_BADCHANMASK : public IError {
 // changes. Also known as ERR_MODELESS
 class ERR_NOCHANMODES : public IError {
   public:
-	ERR_NOCHANMODES();
+	ERR_NOCHANMODES(
+		const std::string &channel,
+		const std::string &reason = "Channel doesn't support modes");
 	virtual ~ERR_NOCHANMODES(void) throw();
 };
 
@@ -479,7 +516,8 @@ class ERR_NOCHANMODES : public IError {
 // list (i.e. ban list etc) is full and cannot be added to
 class ERR_BANLISTFULL : public IError {
   public:
-	ERR_BANLISTFULL();
+	ERR_BANLISTFULL(const std::string &channel, char mode_char,
+					const std::string &reason = "Channel ban list is full");
 	virtual ~ERR_BANLISTFULL(void) throw();
 };
 
@@ -489,7 +527,8 @@ class ERR_BANLISTFULL : public IError {
 // privileges (eg. IRC operator) to indicate the operation was unsuccessful
 class ERR_NOPRIVILEGES : public IError {
   public:
-	ERR_NOPRIVILEGES();
+	ERR_NOPRIVILEGES(const std::string &reason =
+						 "Permission Denied- You're not an IRC operator");
 	virtual ~ERR_NOPRIVILEGES(void) throw();
 };
 
@@ -500,7 +539,9 @@ class ERR_NOPRIVILEGES : public IError {
 // was unsuccessful
 class ERR_CHANOPRIVSNEEDED : public IError {
   public:
-	ERR_CHANOPRIVSNEEDED();
+	ERR_CHANOPRIVSNEEDED(
+		const std::string &channel,
+		const std::string &reason = "You're not channel operator");
 	virtual ~ERR_CHANOPRIVSNEEDED(void) throw();
 };
 
@@ -510,7 +551,7 @@ class ERR_CHANOPRIVSNEEDED : public IError {
 // server
 class ERR_CANTKILLSERVER : public IError {
   public:
-	ERR_CANTKILLSERVER();
+	ERR_CANTKILLSERVER(const std::string &reason = "You can't kill a server");
 	virtual ~ERR_CANTKILLSERVER(void) throw();
 };
 
@@ -520,7 +561,7 @@ class ERR_CANTKILLSERVER : public IError {
 // indicate the restricted nature of the connection (i.e. usermode +r)
 class ERR_RESTRICTED : public IError {
   public:
-	ERR_RESTRICTED();
+	ERR_RESTRICTED(const std::string &reason = "Your connection is restricted");
 	virtual ~ERR_RESTRICTED(void) throw();
 };
 
@@ -531,7 +572,8 @@ class ERR_RESTRICTED : public IError {
 // creator on the given channel
 class ERR_UNIQOPRIVSNEEDED : public IError {
   public:
-	ERR_UNIQOPRIVSNEEDED();
+	ERR_UNIQOPRIVSNEEDED(
+		const std::string &reason = "You're not the channel creator");
 	virtual ~ERR_UNIQOPRIVSNEEDED(void) throw();
 };
 
@@ -542,7 +584,7 @@ class ERR_UNIQOPRIVSNEEDED : public IError {
 // client's host
 class ERR_NOOPERHOST : public IError {
   public:
-	ERR_NOOPERHOST();
+	ERR_NOOPERHOST(const std::string &reason = "No O-lines for your host");
 	virtual ~ERR_NOOPERHOST(void) throw();
 };
 
@@ -551,7 +593,7 @@ class ERR_NOOPERHOST : public IError {
 // desc:RFC1459
 class ERR_NOSERVICEHOST : public IError {
   public:
-	ERR_NOSERVICEHOST();
+	ERR_NOSERVICEHOST(const std::string &reason = "No service host");
 	virtual ~ERR_NOSERVICEHOST(void) throw();
 };
 
@@ -562,16 +604,17 @@ class ERR_NOSERVICEHOST : public IError {
 // not recognised
 class ERR_UMODEUNKNOWNFLAG : public IError {
   public:
-	ERR_UMODEUNKNOWNFLAG();
+	ERR_UMODEUNKNOWNFLAG(const std::string &reason = "Unknown MODE flag");
 	virtual ~ERR_UMODEUNKNOWNFLAG(void) throw();
 };
 
 // nb:502
 // short for:ERR_USERSDONTMATCH
 // desc:RFC1459 	:<reason> 	Error sent to any user trying to view or change
+// the user mode for a user other than themselves
 class ERR_USERSDONTMATCH : public IError {
   public:
-	ERR_USERSDONTMATCH();
+	ERR_USERSDONTMATCH(
+		const std::string &reason = "Cannot change mode for other users");
 	virtual ~ERR_USERSDONTMATCH(void) throw();
 };
-// the user mode for a user other than themselves

@@ -883,28 +883,481 @@ RPL_NOUSERS::~RPL_NOUSERS(void) {};
 //									 ------									  //
 ////////////////////////////////////////////////////////////////////////////////
 
-ERR_UNKNOWNCOMMAND::ERR_UNKNOWNCOMMAND(const std::string &cmd_predicate)
-	: IError(421, cmd_predicate + ": Unknown command") {};
+// nb:401
+// short for:ERR_NOSUCHNICK
+// desc:RFC1459 	<nick> :<reason> 	Used to indicate the nickname parameter
+// supplied to a command is currently unused
+ERR_NOSUCHNICK::ERR_NOSUCHNICK(const std::string &nick,
+							   const std::string &reason)
+	: IError(401, nick + " :" + reason) {};
+ERR_NOSUCHNICK::~ERR_NOSUCHNICK(void) throw() {};
+
+// nb:402
+// short for:ERR_NOSUCHSERVER
+// desc:RFC1459 	<server> :<reason> 	Used to indicate the server name given
+// currently doesn't exist
+ERR_NOSUCHSERVER::ERR_NOSUCHSERVER(const std::string &server,
+								   const std::string &reason)
+	: IError(402, server + " :" + reason) {};
+ERR_NOSUCHSERVER::~ERR_NOSUCHSERVER(void) throw() {};
+
+// nb:403
+// short for:ERR_NOSUCHCHANNEL
+// desc:RFC1459 	<channel> :<reason> 	Used to indicate the given channel
+// name is invalid, or does not exist
+ERR_NOSUCHCHANNEL::ERR_NOSUCHCHANNEL(const std::string &ch_name,
+									 const std::string &reason)
+	: IError(403, ch_name + " :" + reason) {};
+ERR_NOSUCHCHANNEL::~ERR_NOSUCHCHANNEL(void) throw() {};
+
+// nb:404
+// short for:ERR_CANNOTSENDTOCHAN
+// desc:RFC1459 	<channel> :<reason> 	Sent to a user who does not have the
+// rights to send a message to a channel
+ERR_CANNOTSENDTOCHAN::ERR_CANNOTSENDTOCHAN(const std::string &ch_name,
+										   const std::string &reason)
+	: IError(404, ch_name + " :" + reason) {};
+ERR_CANNOTSENDTOCHAN::~ERR_CANNOTSENDTOCHAN(void) throw() {};
+
+// nb:405
+// short for:ERR_TOOMANYCHANNELS
+// desc:RFC1459 	<channel> :<reason> 	Sent to a user when they have joined
+// the maximum number of allowed channels and they tried to join another channel
+ERR_TOOMANYCHANNELS::ERR_TOOMANYCHANNELS(const std::string &ch_name,
+										 const std::string &reason)
+	: IError(405, ch_name + " :" + reason) {};
+ERR_TOOMANYCHANNELS::~ERR_TOOMANYCHANNELS(void) throw() {};
+
+// nb:406
+// short for:ERR_WASNOSUCHNICK
+// desc:RFC1459 	<nick> :<reason> 	Returned by WHOWAS to indicate there was
+// no history information for a given nickname
+ERR_WASNOSUCHNICK::ERR_WASNOSUCHNICK(const std::string &nick,
+									 const std::string &reason)
+	: IError(406, nick + " :" + reason) {};
+ERR_WASNOSUCHNICK::~ERR_WASNOSUCHNICK(void) throw() {};
+
+// nb:407
+// short for:ERR_TOOMANYTARGETS
+// desc:RFC1459 	<target> :<reason> 	The given target(s) for a command are
+// ambiguous in that they relate to too many targets
+ERR_TOOMANYTARGETS::ERR_TOOMANYTARGETS(const std::string &target,
+									   const std::string &reason)
+	: IError(407, target + " :" + reason) {};
+ERR_TOOMANYTARGETS::~ERR_TOOMANYTARGETS(void) throw() {};
+
+// nb:408
+// short for:ERR_NOSUCHSERVICE
+// desc:RFC2812 	<service_name> :<reason> 	Returned to a client which is
+// attempting to send an SQUERY (or other message) to a service which does not
+// exist
+ERR_NOSUCHSERVICE::ERR_NOSUCHSERVICE(const std::string &serv_name,
+									 const std::string &reason)
+	: IError(408, serv_name + " :" + reason) {};
+ERR_NOSUCHSERVICE::~ERR_NOSUCHSERVICE(void) throw() {};
+
+// nb:409
+// short for:ERR_NOORIGIN
+// desc:RFC1459 	:<reason> 	PING or PONG message missing the originator
+// parameter which is required since these commands must work without valid
+// prefixes
+ERR_NOORIGIN::ERR_NOORIGIN(const std::string &reason) : IError(409, reason) {};
+ERR_NOORIGIN::~ERR_NOORIGIN(void) throw() {};
+
+// nb:411
+// short for:ERR_NORECIPIENT
+// desc:RFC1459 	:<reason> 	Returned when no recipient is given with a
+// command
+ERR_NORECIPIENT::ERR_NORECIPIENT(const std::string &reason)
+	: IError(411, reason) {};
+ERR_NORECIPIENT::~ERR_NORECIPIENT(void) throw() {};
+
+// nb:412
+// short for:ERR_NOTEXTTOSEND
+// desc:RFC1459 	:<reason> 	Returned when NOTICE/PRIVMSG is used with no
+// message given
+ERR_NOTEXTTOSEND::ERR_NOTEXTTOSEND(const std::string &reason)
+	: IError(412, reason) {};
+ERR_NOTEXTTOSEND::~ERR_NOTEXTTOSEND(void) throw() {};
+
+// nb:413
+// short for:ERR_NOTOPLEVEL
+// desc:RFC1459 	<mask> :<reason> 	Used when a message is being sent to a
+// mask without being limited to a top-level domain (i.e. * instead of *.au)
+ERR_NOTOPLEVEL::ERR_NOTOPLEVEL(const std::string &mask,
+							   const std::string &reason)
+	: IError(413, mask + " :" + reason) {};
+ERR_NOTOPLEVEL::~ERR_NOTOPLEVEL(void) throw() {};
+
+// nb:414
+// short for:ERR_WILDTOPLEVEL
+// desc:RFC1459 	<mask> :<reason> 	Used when a message is being sent to a
+// mask with a wild-card for a top level domain (i.e. *.*)
+ERR_WILDTOPLEVEL::ERR_WILDTOPLEVEL(const std::string &mask,
+								   const std::string &reason)
+	: IError(414, mask + " :" + reason) {};
+ERR_WILDTOPLEVEL::~ERR_WILDTOPLEVEL(void) throw() {};
+
+// nb:415
+// short for:ERR_BADMASK
+// desc:RFC2812 	<mask> :<reason> 	Used when a message is being sent to a
+// mask with an invalid syntax
+ERR_BADMASK::ERR_BADMASK(const std::string &mask, const std::string &reason)
+	: IError(415, mask + " :" + reason) {};
+ERR_BADMASK::~ERR_BADMASK(void) throw() {};
+
+// nb:416
+// short for:ERR_TOOMANYMATCHES
+// desc:IRCnet 	<command> [<mask>] :<info> 	Returned when too many matches have
+// been found for a command and the output has been truncated. An example would
+// be the WHO command, where by the mask '*' would match everyone on the
+// network! Ouch!
+ERR_TOOMANYMATCHES::ERR_TOOMANYMATCHES(const std::string &cmd,
+									   const std::string &mask,
+									   const std::string &info)
+	: IError(416, cmd + " " + mask + " :" + info) {};
+ERR_TOOMANYMATCHES::~ERR_TOOMANYMATCHES(void) throw() {};
+
+// nb:421
+// short for:ERR_UNKNOWNCOMMAND
+// desc:RFC1459 	<command> :<reason> 	Returned when the given command is
+// unknown to the server (or hidden because of lack of access rights)
+ERR_UNKNOWNCOMMAND::ERR_UNKNOWNCOMMAND(const std::string &cmd_predicate,
+									   const std::string &reason)
+	: IError(421, cmd_predicate + " :" + reason) {};
 ERR_UNKNOWNCOMMAND::~ERR_UNKNOWNCOMMAND(void) throw() {}
 
-ERR_NONICKNAMEGIVEN::ERR_NONICKNAMEGIVEN() : IError(431, "No nick given") {};
+// nb:422
+// short for:ERR_NOMOTD
+// desc:RFC1459 	:<reason> 	Sent when there is no MOTD to send the client
+ERR_NOMOTD::ERR_NOMOTD(const std::string &reason) : IError(422, reason) {};
+ERR_NOMOTD::~ERR_NOMOTD(void) throw() {};
+
+// nb:423
+// short for:ERR_NOADMININFO
+// desc:RFC1459 	<server> :<reason> 	Returned by a server in response to an
+// ADMIN request when no information is available. RFC1459 mentions this in the
+// list of numerics. While it's not listed as a valid reply in section 4.3.7
+// ('Admin command'), it's confirmed to exist in the real world.
+ERR_NOADMININFO::ERR_NOADMININFO(const std::string &server,
+								 const std::string &reason)
+	: IError(423, server + " :" + reason) {};
+ERR_NOADMININFO::~ERR_NOADMININFO(void) throw() {};
+
+// nb:424
+// short for:ERR_FILEERROR
+// desc:RFC1459 	:<reason> 	Generic error message used to report a failed
+// file operation during the processing of a command
+ERR_FILEERROR::ERR_FILEERROR(const std::string &reason)
+	: IError(424, reason) {};
+ERR_FILEERROR::~ERR_FILEERROR(void) throw() {};
+
+// nb:431
+// short for:ERR_NONICKNAMEGIVEN
+// desc:RFC1459 	:<reason> 	Returned when a nickname parameter expected for
+// a command isn't found
+ERR_NONICKNAMEGIVEN::ERR_NONICKNAMEGIVEN(const std::string &reason)
+	: IError(431, reason) {};
 ERR_NONICKNAMEGIVEN::~ERR_NONICKNAMEGIVEN() throw() {}
 
-ERR_ERRONEUSNICKNAME::ERR_ERRONEUSNICKNAME(const std::string &nick)
-	: IError(432, nick + ": Erroneous nickname") {}
+// nb:432
+// short for:ERR_ERRONEUSNICKNAME
+// desc:RFC1459 	<nick> :<reason> 	Returned after receiving a NICK message
+// which contains a nickname which is considered invalid, such as it's reserved
+// ('anonymous') or contains characters considered invalid for nicknames. This
+// numeric is misspelt, but remains with this name for historical reasons :)
+ERR_ERRONEUSNICKNAME::ERR_ERRONEUSNICKNAME(const std::string &nick,
+										   const std::string &reason)
+	: IError(432, nick + " :" + reason) {}
 ERR_ERRONEUSNICKNAME::~ERR_ERRONEUSNICKNAME(void) throw() {}
 
-ERR_NICKNAMEINUSE::ERR_NICKNAMEINUSE(const std::string &nick)
-	: IError(433, nick + ": Nickname is already in use") {}
+// nb:433
+// short for:ERR_NICKNAMEINUSE
+// desc:RFC1459 	<nick> :<reason> 	Returned by the NICK command when the
+// given nickname is already in use
+ERR_NICKNAMEINUSE::ERR_NICKNAMEINUSE(const std::string &nick,
+									 const std::string &reason)
+	: IError(433, nick + " :" + reason) {}
 ERR_NICKNAMEINUSE::~ERR_NICKNAMEINUSE(void) throw() {}
 
-ERR_NEEDMOREPARAMS::ERR_NEEDMOREPARAMS(const std::string &cmd)
-	: IError(461, cmd + ": Not enough parameters") {}
+// nb:436
+// short for:ERR_NICKCOLLISION
+// desc:RFC1459 	<nick> :<reason> 	Returned by a server to a client when it
+// detects a nickname collision
+ERR_NICKCOLLISION::ERR_NICKCOLLISION(const std::string &nick,
+									 const std::string &reason)
+	: IError(436, nick + " :" + reason) {}
+ERR_NICKCOLLISION::~ERR_NICKCOLLISION(void) throw() {};
+
+// nb:437
+// short for:ERR_UNAVAILRESOURCE
+// desc:RFC2812 	<nick/channel/service> :<reason> 	Return when the target
+// is unable to be reached temporarily, eg. a delay mechanism in play, or a
+// service being offline
+ERR_UNAVAILRESOURCE::ERR_UNAVAILRESOURCE(const std::string &target,
+										 const std::string &reason)
+	: IError(437, target + " :" + reason) {}
+ERR_UNAVAILRESOURCE::~ERR_UNAVAILRESOURCE(void) throw() {};
+
+// nb:441
+// short for:ERR_USERNOTINCHANNEL
+// desc:RFC1459 	<nick> <channel> :<reason> 	Returned by the server to
+// indicate that the target user of the command is not on the given channel
+ERR_USERNOTINCHANNEL::ERR_USERNOTINCHANNEL(const std::string &nick,
+										   const std::string &ch_name,
+										   const std::string &reason)
+	: IError(441, nick + " " + ch_name + " :" + reason) {}
+ERR_USERNOTINCHANNEL::~ERR_USERNOTINCHANNEL(void) throw() {};
+
+// nb:442
+// short for:ERR_NOTONCHANNEL
+// desc:RFC1459 	<channel> :<reason> 	Returned by the server whenever a
+// client tries to perform a channel effecting command for which the client is
+// not a member
+ERR_NOTONCHANNEL::ERR_NOTONCHANNEL(const std::string &chan,
+								   const std::string &reason)
+	: IError(442, chan + " :" + reason) {}
+ERR_NOTONCHANNEL::~ERR_NOTONCHANNEL(void) throw() {}
+
+// nb:443
+// short for:ERR_USERONCHANNEL
+// desc:RFC1459 	<nick> <channel> [:<reason>] 	Returned when a client tries
+// to invite a user to a channel they're already on
+ERR_USERONCHANNEL::ERR_USERONCHANNEL(const std::string &nick,
+									 const std::string &chan,
+									 const std::string &reason)
+	: IError(443, nick + " " + chan) {
+	if (reason.empty() == false)
+		IError::_s += " :" + reason;
+}
+ERR_USERONCHANNEL::~ERR_USERONCHANNEL(void) throw() {}
+
+// nb:444
+// short for:ERR_NOLOGIN
+// desc:RFC1459 	<user> :<reason> 	Returned by the SUMMON command if a
+// given user was not logged in and could not be summoned
+ERR_NOLOGIN::ERR_NOLOGIN(const std::string &usr, const std::string &r)
+	: IError(444, usr + " :" + r) {};
+ERR_NOLOGIN::~ERR_NOLOGIN(void) throw() {}
+
+// nb:445
+// short for:ERR_SUMMONDISABLED
+// desc:RFC1459 	:<reason> 	Returned by SUMMON when it has been disabled or
+// not implemented
+ERR_SUMMONDISABLED::ERR_SUMMONDISABLED(const std::string &reason)
+	: IError(445, reason) {};
+ERR_SUMMONDISABLED::~ERR_SUMMONDISABLED(void) throw() {}
+
+// nb:446
+// short for:ERR_USERSDISABLED
+// desc:RFC1459 	:<reason> 	Returned by USERS when it has been disabled or
+// not implemented
+ERR_USERSDISABLED::ERR_USERSDISABLED(const std::string &reason)
+	: IError(446, reason) {};
+ERR_USERSDISABLED::~ERR_USERSDISABLED(void) throw() {};
+
+// nb:451
+// short for:ERR_NOTREGISTERED
+// desc:RFC1459 	:<reason> 	Returned by the server to indicate that the
+// client must be registered before the server will allow it to be parsed in
+// detail
+ERR_NOTREGISTERED::ERR_NOTREGISTERED(const std::string &reason)
+	: IError(452, reason) {};
+ERR_NOTREGISTERED::~ERR_NOTREGISTERED(void) throw() {};
+
+// nb:461
+// short for:ERR_NEEDMOREPARAMS
+// desc:RFC1459 	<command> :<reason> 	Returned by the server by any
+// command which requires more parameters than the number of parameters given
+ERR_NEEDMOREPARAMS::ERR_NEEDMOREPARAMS(const std::string &cmd,
+									   const std::string &reason)
+	: IError(461, cmd + " :" + reason) {}
 ERR_NEEDMOREPARAMS::~ERR_NEEDMOREPARAMS(void) throw() {}
 
-ERR_ALREADYREGISTERED::ERR_ALREADYREGISTERED()
-	: IError(462, "You may not reregister") {};
+// nb:462
+// short for:ERR_ALREADYREGISTERED
+// desc:RFC1459 	:<reason> 	Returned by the server to any link which
+// attempts to register again
+ERR_ALREADYREGISTERED::ERR_ALREADYREGISTERED(const std::string &reason)
+	: IError(462, reason) {};
 ERR_ALREADYREGISTERED::~ERR_ALREADYREGISTERED(void) throw() {}
 
-ERR_PASSWDMISMATCH::ERR_PASSWDMISMATCH() : IError(464, "Password incorrect") {};
+// nb:463
+// short for:ERR_NOPERMFORHOST
+// desc:RFC1459 	:<reason> 	Returned to a client which attempts to register
+// with a server which has been configured to refuse connections from the
+// client's host
+ERR_NOPERMFORHOST::ERR_NOPERMFORHOST(const std::string &reason)
+	: IError(463, reason) {};
+ERR_NOPERMFORHOST::~ERR_NOPERMFORHOST(void) throw() {}
+
+// nb:464
+// short for:ERR_PASSWDMISMATCH
+// desc:RFC1459 	:<reason> 	Returned by the PASS command to indicate the
+// given password was required and was either not given or was incorrect
+ERR_PASSWDMISMATCH::ERR_PASSWDMISMATCH(const std::string &r)
+	: IError(464, r) {};
 ERR_PASSWDMISMATCH::~ERR_PASSWDMISMATCH(void) throw() {}
+
+// nb:465
+// short for:ERR_YOUREBANNEDCREEP
+// desc:RFC1459 	:<reason> 	Returned to a client after an attempt to
+// register on a server configured to ban connections from that client
+ERR_YOUREBANNEDCREEP::ERR_YOUREBANNEDCREEP(const std::string &reason)
+	: IError(462, reason) {};
+ERR_YOUREBANNEDCREEP::~ERR_YOUREBANNEDCREEP(void) throw() {}
+
+// nb:466
+// short for:ERR_YOUWILLBEBANNED
+// desc:RFC1459 		Sent by a server to a user to inform that access to the
+// server will soon be denied
+ERR_YOUWILLBEBANNED::ERR_YOUWILLBEBANNED(const std::string &msg)
+	: IError(466, msg) {};
+ERR_YOUWILLBEBANNED::~ERR_YOUWILLBEBANNED(void) throw() {};
+
+// nb:467
+// short for:ERR_KEYSET
+// desc:RFC1459 	<channel> :<reason> 	Returned when the channel key for a
+// channel has already been set
+ERR_KEYSET::ERR_KEYSET(const std::string &chan, const std::string &r)
+	: IError(467, chan + " :" + r) {};
+ERR_KEYSET::~ERR_KEYSET(void) throw() {};
+
+// nb:471
+// short for:ERR_CHANNELISFULL
+// desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
+// channel which is set +l and is already full
+ERR_CHANNELISFULL::ERR_CHANNELISFULL(const std::string &chan,
+									 const std::string &r)
+	: IError(471, chan + " :" + r) {};
+ERR_CHANNELISFULL::~ERR_CHANNELISFULL(void) throw() {};
+
+// nb:472
+// short for:ERR_UNKNOWNMODE
+// desc:RFC1459 	<char> :<reason> 	Returned when a given mode is unknow
+ERR_UNKNOWNMODE::ERR_UNKNOWNMODE(const std::string &char_m,
+								 const std::string &r)
+	: IError(472, char_m + " :" + r) {};
+ERR_UNKNOWNMODE::~ERR_UNKNOWNMODE(void) throw() {};
+
+// nb:473
+// short for:ERR_INVITEONLYCHAN
+// desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
+// channel which is invite only without an invitation
+ERR_INVITEONLYCHAN::ERR_INVITEONLYCHAN(const std::string &chan,
+									   const std::string &r)
+	: IError(473, chan + " :" + r) {};
+ERR_INVITEONLYCHAN::~ERR_INVITEONLYCHAN(void) throw() {};
+
+// nb:474
+// short for:ERR_BANNEDFROMCHAN
+// desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
+// channel a user is banned from
+ERR_BANNEDFROMCHAN::ERR_BANNEDFROMCHAN(const std::string &chan,
+									   const std::string &r)
+	: IError(474, chan + " :" + r) {};
+ERR_BANNEDFROMCHAN::~ERR_BANNEDFROMCHAN(void) throw() {};
+
+// nb:475
+// short for:ERR_BADCHANNELKEY
+// desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
+// key-locked channel either without a key or with the wrong key
+ERR_BADCHANNELKEY::ERR_BADCHANNELKEY(const std::string &chan,
+									 const std::string &r)
+	: IError(475, chan + " :" + r) {};
+ERR_BADCHANNELKEY::~ERR_BADCHANNELKEY(void) throw() {};
+
+// nb:476
+// short for:ERR_BADCHANMASK
+// desc:RFC2812 	<channel> :<reason> 	The given channel mask was invalid
+ERR_BADCHANMASK::ERR_BADCHANMASK(const std::string &chan, const std::string &r)
+	: IError(476, chan + " :" + r) {};
+ERR_BADCHANMASK::~ERR_BADCHANMASK(void) throw() {};
+
+// nb:477
+// short for:ERR_NOCHANMODES
+// desc:RFC2812 	<channel> :<reason> 	Returned when attempting to set a
+// mode on a channel which does not support channel modes, or channel mode
+// changes. Also known as ERR_MODELESS
+ERR_NOCHANMODES::ERR_NOCHANMODES(const std::string &chan, const std::string &r)
+	: IError(477, chan + " :" + r) {};
+ERR_NOCHANMODES::~ERR_NOCHANMODES(void) throw() {};
+
+// nb:478
+// short for:ERR_BANLISTFULL
+// desc:RFC2812 	<channel> <char> :<reason> 	Returned when a channel access
+// list (i.e. ban list etc) is full and cannot be added to
+ERR_BANLISTFULL::ERR_BANLISTFULL(const std::string &channel, char mode_char,
+								 const std::string &reason)
+	: IError(478, channel + " " + mode_char + " :" + reason) {};
+ERR_BANLISTFULL::~ERR_BANLISTFULL(void) throw() {};
+
+// nb:481
+// short for:ERR_NOPRIVILEGES
+// desc:RFC1459 	:<reason> 	Returned by any command requiring special
+// privileges (eg. IRC operator) to indicate the operation was unsuccessful
+ERR_NOPRIVILEGES::ERR_NOPRIVILEGES(const std::string &r) : IError(481, r) {}
+ERR_NOPRIVILEGES::~ERR_NOPRIVILEGES(void) throw() {};
+
+// nb:482
+// short for:ERR_CHANOPRIVSNEEDED
+// desc:RFC1459 	<channel> :<reason> 	Returned by any command requiring
+// special channel privileges (eg. channel operator) to indicate the operation
+// was unsuccessful
+ERR_CHANOPRIVSNEEDED::ERR_CHANOPRIVSNEEDED(const std::string &chan,
+										   const std::string &r)
+	: IError(482, chan + " :" + r) {};
+ERR_CHANOPRIVSNEEDED::~ERR_CHANOPRIVSNEEDED(void) throw() {};
+
+// nb:483
+// short for:ERR_CANTKILLSERVER
+// desc:RFC1459 	:<reason> 	Returned by KILL to anyone who tries to kill a
+// server
+ERR_CANTKILLSERVER::ERR_CANTKILLSERVER(const std::string &r) : IError(483, r) {}
+ERR_CANTKILLSERVER::~ERR_CANTKILLSERVER(void) throw() {};
+
+// nb:484
+// short for:ERR_RESTRICTED
+// desc:RFC2812 	:<reason> 	Sent by the server to a user upon connection to
+// indicate the restricted nature of the connection (i.e. usermode +r)
+ERR_RESTRICTED::ERR_RESTRICTED(const std::string &r) : IError(484, r) {}
+ERR_RESTRICTED::~ERR_RESTRICTED(void) throw() {};
+
+// nb:485
+// short for:ERR_UNIQOPRIVSNEEDED
+// desc:RFC2812 	:<reason> 	Any mode requiring 'channel creator' privileges
+// returns this error if the client is attempting to use it while not a channel
+// creator on the given channel
+ERR_UNIQOPRIVSNEEDED::ERR_UNIQOPRIVSNEEDED(const std::string &r)
+	: IError(485, r) {}
+ERR_UNIQOPRIVSNEEDED::~ERR_UNIQOPRIVSNEEDED(void) throw() {};
+
+// nb:491
+// short for:ERR_NOOPERHOST
+// desc:RFC1459 	:<reason> 	Returned by OPER to a client who cannot become
+// an IRC operator because the server has been configured to disallow the
+// client's host
+ERR_NOOPERHOST::ERR_NOOPERHOST(const std::string &r) : IError(491, r) {}
+ERR_NOOPERHOST::~ERR_NOOPERHOST(void) throw() {};
+
+// nb:492
+// short for:ERR_NOSERVICEHOST
+// desc:RFC1459
+ERR_NOSERVICEHOST::ERR_NOSERVICEHOST(const std::string &r) : IError(492, r) {};
+ERR_NOSERVICEHOST::~ERR_NOSERVICEHOST(void) throw() {};
+
+// nb:501
+// short for:ERR_UMODEUNKNOWNFLAG
+// desc:RFC1459 	:<reason> 	Returned by the server to indicate that a MODE
+// message was sent with a nickname parameter and that the mode flag sent was
+// not recognised
+ERR_UMODEUNKNOWNFLAG::ERR_UMODEUNKNOWNFLAG(const std::string &r)
+	: IError(501, r) {}
+ERR_UMODEUNKNOWNFLAG::~ERR_UMODEUNKNOWNFLAG(void) throw() {};
+
+// nb:502
+// short for:ERR_USERSDONTMATCH
+// desc:RFC1459 	:<reason> 	Error sent to any user trying to view or change
+// the user mode for a user other than themselves
+ERR_USERSDONTMATCH::ERR_USERSDONTMATCH(const std::string &r) : IError(502, r) {}
+ERR_USERSDONTMATCH::~ERR_USERSDONTMATCH(void) throw() {};
