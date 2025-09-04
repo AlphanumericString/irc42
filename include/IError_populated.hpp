@@ -115,6 +115,17 @@ class ERR_NOORIGIN : public IError {
 	virtual ~ERR_NOORIGIN(void) throw();
 };
 
+// nb:410
+// short for:ERR_UNKNOWNCAPCMD
+// desc:RFC2812		<capability> :<reason>	Returned when a client tries to
+// use a CAP subcommand that the server doesn't support
+class ERR_UNKNOWNCAPCMD : public IError {
+  public:
+	ERR_UNKNOWNCAPCMD(const std::string &capability,
+					  const std::string &reason = "Unknown CAP command");
+	virtual ~ERR_UNKNOWNCAPCMD(void) throw();
+};
+
 // nb:411
 // short for:ERR_NORECIPIENT
 // desc:RFC1459 	:<reason> 	Returned when no recipient is given with a
@@ -152,7 +163,8 @@ class ERR_NOTOPLEVEL : public IError {
 // mask with a wild-card for a top level domain (i.e. *.*)
 class ERR_WILDTOPLEVEL : public IError {
   public:
-	ERR_WILDTOPLEVEL(const std::string &mask, const std::string &reason);
+	ERR_WILDTOPLEVEL(const std::string &mask,
+					 const std::string &reason = "Wildcard in toplevel domain");
 	virtual ~ERR_WILDTOPLEVEL(void) throw();
 };
 
@@ -276,8 +288,9 @@ class ERR_NICKCOLLISION : public IError {
 // service being offline
 class ERR_UNAVAILRESOURCE : public IError {
   public:
-	ERR_UNAVAILRESOURCE(const std::string &target,
-						const std::string &reason = "Resource temporarily unavailable");
+	ERR_UNAVAILRESOURCE(
+		const std::string &target,
+		const std::string &reason = "Resource temporarily unavailable");
 	virtual ~ERR_UNAVAILRESOURCE(void) throw();
 };
 

@@ -17,11 +17,15 @@
 
 // maybe add a to kick?
 // idk... might be usefull to have somthing to drop the connection
+#include <ostream>
 typedef enum conState {
-	NOT_LOGGED,
-	REGISTERING_PASS,
-	REGISTERING_NICK,
-	REGISTERING_USER,
-	REGISTERED,
-	TIMED_OUT
+	NOT_LOGGED = 0,
+	REGISTERING = 1,
+	REGISTERED = 2,
+	TIMED_OUT = 3,
+	DISCONNECTING = 4,
+	DISCONNECTED = 5,
 } t_conState;
+
+std::ostream &operator<<(std::ostream &o, const t_conState &c);
+

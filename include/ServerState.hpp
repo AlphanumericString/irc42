@@ -15,11 +15,13 @@
 #include <fstream>
 #include <list>
 #include <string>
+#include <vector>
 
-#include "Channel.hpp"
-#include "Client.hpp"
+#include "PrevClients.hpp"
 #include "smart_ptr.hpp"
 
+class Client;
+class Channel;
 class Server;
 
 class ServerState {
@@ -32,90 +34,51 @@ class ServerState {
 		ERROR
 	} Status;
 
-	/// @brief Constructor initiating the port_, password_ and master_ fields.
-	/// @param port The port the server will listen on.
-	/// @param password The password needed to authentify on the server.
-	/// @param master The Server to which the current ServerState is related to.
 	ServerState(int port, const std::string password, Server &master);
-
-	/// @brief Default destructor
 	~ServerState();
 
-	/// @brief Accessor for the clients_ attribute.
-	/// @return A reference to a std::list of Client.
-	std::list< Client > &getClients() ;
+	std::list< Client >		  &getClients();
 	const std::list< Client > &getClients() const;
 
-	/// @brief
-	/// @return
+	std::list< Channel >	   &getChannels();
+	const std::list< Channel > &getChannels() const;
+	const Channel			   *getChannel(const std::string &name) const;
+	Channel					   *getChannel(const std::string &name);
+
 	std::string getMinimalInfo(void) const;
 
-	/// @brief Accessor for the name_ attribute.
-	/// @return A constant reference to a string.
 	std::string const &getName() const;
-
-	/// @brief Accessor for the password_ attribute.
-	/// @return A constant reference to a string.
 	std::string const &getPassword() const;
+	int const		  &getPort() const;
+	const std::string &getHostname(void) const;
 
-	/// @brief Accessor for the port_ attribute.
-	/// @return A constant reference to an int.
-	/// @todo Switch to non-const ret ?
-	int const &getPort() const;
-
-	/// @brief Accessor for the status_ attribute.
-	/// @return A Status object.
-	Status getStatus(void) const;
-
-	/// @brief
-	/// @return
 	bool *getStopPtr(void);
 
-	/// @brief Delete a client that has disconnected from all pertinent spaces.
-	/// @param client The client we want to disconnect and delete.
-	void deleteClient(Client &client);
+	void   setStatus(Status status);
+	Status getStatus(void) const;
 
-	/// @brief Retrieves a Client through its associated file descriptor.
-	/// @param fd The file descriptor we are looking for to be associated to
-	/// a client.
-	/// @return NULL if no Client matched. Otherwise the address of the Client
-	/// that matched.
+	void	newClient(int fd, char *ipAddress);
+	void	deleteClient(Client &client);
 	Client *idClient(int fd);
 
-	/// @brief Uses fcntl() to set the O_NONBLOCK option on the provided
-	/// file descriptor.
-	/// @param fd The file descriptor on which we want to set O_NONBLOCK to.
-	/// @return The return value of fcntl().
-	static int makeSocketNonBlocking(int fd);
-
-	/// @brief Creates a new client associated with the file descriptor 'fd'
-	/// and fills its fields.
-	/// @param fd The file descriptor of the new client.
-	/// @param ipAddress The IPv4 address of the new client.
-	void newClient(int fd, char *ipAddress);
-
-	/// @brief Assignment operator overload
-	/// @param original The ServerState object we want to assign from.
-	/// @return A reference to a ServerState object.
 	ServerState &operator=(const ServerState &original);
+	bool		 operator==(const ServerState &original) const;
+	bool		 operator!=(const ServerState &original) const;
 
-	/// @brief Is equal operator overload
-	/// @param original The ServerState object we want to compare to.
-	/// @return TRUE if both ServerState objects are equal (as defined per
-	/// implementation), FALSE otherwise.
-	bool operator==(const ServerState &original) const;
+	Client		 *getClient(const std::string &name);
+	Client		 *getClient(int fd);
+	const Client *getClient(const std::string &name) const;
+	const Client *getClient(int fd) const;
 
-	/// @brief Is different operator overload
-	/// @param original The ServerState object we want to compare to.
-	/// @return TRUE if both ServerState objects are different (as defined per
-	/// implementation), FALSE otherwise.
-	bool operator!=(const ServerState &original) const;
+	const std::string &getDescription() const;
+	void			   setDescription(const std::string &desc);
 
-	/// @brief Setter for the status_ attribute.
-	/// @param status The status we want to set to.
-	void setStatus(Status status);
+	void							  addPrevClient(const Client &c);
+	const std::vector< PrevClients > &getPrevClients() const;
+	std::vector< PrevClients > getPrevClients(const std::string &name) const;
 
   private:
+	std::string			 desc;		///< Description of the Server.
 	bool				 stop_;		///< Flag indicating if server has to stop.
 	ServerState::Status	 status_;	///< Current status of the Server.
 	std::string			 name_;		///< Name of the Server.
@@ -125,5 +88,7 @@ class ServerState {
 	std::list< Channel > channels_; ///< Channels active on the Server.
 	Server *master_; ///< Server object to which the current ServerStatus
 					 ///< belongs to.
+	const std::string		   hostname_;
+	std::vector< PrevClients > prevClients_; // whowas util
 };
 std::ostream &operator<<(std::ostream &os, const ServerState sst);

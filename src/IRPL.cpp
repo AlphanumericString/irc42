@@ -13,6 +13,7 @@
 #include "IRPL.hpp"
 
 #include <iomanip>
+#include <list>
 #include <sstream>
 
 #include "IError.hpp"
@@ -26,7 +27,12 @@ std::string IRPL::toString(const Server &s, const Client &c) {
 
 	ss << ":" << s.getServerState().getName() << " ";
 	ss << std::setw(3) << std::setfill('0') << _code;
-	ss << " " << c.getNick() << " :" << string << "\r\n";
+	ss << " " << c.getNick();
+	if (string.find(":") == std::string::npos)
+		ss << " :";
+	if (string.c_str()[0] != ' ' && ss.str().end()[-1] != ' ')
+		ss << " ";
+	ss << string << "\r\n";
 	return ss.str();
 }
 
@@ -42,7 +48,7 @@ RPL_YOURHOST::~RPL_YOURHOST(void) {};
 RPL_CREATED::RPL_CREATED()
 	: IRPL(003, "This server was created by " IRC_SERVER_AUTHORS " and is "
 				"running on a custom IRC server implementation "
-				"(version:" IRC_SERVER_VERSION ".") {};
+				"(version " IRC_SERVER_VERSION ").") {};
 RPL_CREATED::~RPL_CREATED(void) {};
 
 RPL_MYINFO::RPL_MYINFO()
@@ -52,7 +58,7 @@ RPL_MYINFO::RPL_MYINFO()
 RPL_MYINFO::~RPL_MYINFO() {};
 
 RPL_BOUNCE::RPL_BOUNCE()
-	: IRPL(005, "") {
+	: IRPL(005, "...") {
 		  // TODO:
 		  // implement when server is multi-server capable
 		  //	- pick a server not full in list of connected server,
@@ -61,14 +67,14 @@ RPL_BOUNCE::RPL_BOUNCE()
 	  };
 RPL_BOUNCE::~RPL_BOUNCE() {};
 
-RPL_TRACELINK::RPL_TRACELINK() : IRPL(200, "") {
+RPL_TRACELINK::RPL_TRACELINK() : IRPL(200, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
 }
 RPL_TRACELINK::~RPL_TRACELINK() {};
 
-RPL_TRACECONNECTING::RPL_TRACECONNECTING() : IRPL(201, "") {
+RPL_TRACECONNECTING::RPL_TRACECONNECTING() : IRPL(201, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -78,7 +84,7 @@ RPL_TRACECONNECTING::~RPL_TRACECONNECTING(void) {}
 // nb:202
 // short for:RPL_TRACEHANDSHAKE
 // desc:RFC1459 	H.S. <class> <server> 	See RFC
-RPL_TRACEHANDSHAKE::RPL_TRACEHANDSHAKE() : IRPL(202, "") {
+RPL_TRACEHANDSHAKE::RPL_TRACEHANDSHAKE() : IRPL(202, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -88,7 +94,7 @@ RPL_TRACEHANDSHAKE::~RPL_TRACEHANDSHAKE(void) {};
 // nb:203
 // short for:RPL_TRACEUNKNOWN
 // desc:RFC1459 	???? <class> [<connection_address>] 	See RFC
-RPL_TRACEUNKNOWN::RPL_TRACEUNKNOWN() : IRPL(203, "") {
+RPL_TRACEUNKNOWN::RPL_TRACEUNKNOWN() : IRPL(203, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -98,7 +104,7 @@ RPL_TRACEUNKNOWN::~RPL_TRACEUNKNOWN(void) {};
 // nb:204
 // short for:RPL_TRACEOPERATOR
 // desc:RFC1459 	Oper <class> <nick> 	See RFC
-RPL_TRACEOPERATOR::RPL_TRACEOPERATOR() : IRPL(204, "") {
+RPL_TRACEOPERATOR::RPL_TRACEOPERATOR() : IRPL(204, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -108,7 +114,7 @@ RPL_TRACEOPERATOR::~RPL_TRACEOPERATOR(void) {};
 // nb:205
 // short for:RPL_TRACEUSER
 // desc:RFC1459 	User <class> <nick> 	See RFC
-RPL_TRACEUSER::RPL_TRACEUSER() : IRPL(205, "") {
+RPL_TRACEUSER::RPL_TRACEUSER() : IRPL(205, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -119,7 +125,7 @@ RPL_TRACEUSER::~RPL_TRACEUSER(void) {};
 // short for:RPL_TRACESERVER
 // desc:RFC1459 	Serv <class> <int>S <int>C <server>
 // <nick!user|*!*>@<host|server> [V<protocol_version>] 	See RFC
-RPL_TRACESERVER::RPL_TRACESERVER() : IRPL(206, "") {
+RPL_TRACESERVER::RPL_TRACESERVER() : IRPL(206, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -129,7 +135,7 @@ RPL_TRACESERVER::~RPL_TRACESERVER(void) {};
 // nb:207
 // short for:RPL_TRACESERVICE
 // desc:RFC2812 	Service <class> <name> <type> <active_type> 	See RFC
-RPL_TRACESERVICE::RPL_TRACESERVICE() : IRPL(207, "") {
+RPL_TRACESERVICE::RPL_TRACESERVICE() : IRPL(207, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -139,7 +145,7 @@ RPL_TRACESERVICE::~RPL_TRACESERVICE(void) {};
 // nb:208
 // short for:RPL_TRACENEWTYPE
 // desc:RFC1459 	<newtype> 0 <client_name> 	See RFC
-RPL_TRACENEWTYPE::RPL_TRACENEWTYPE() : IRPL(208, "") {
+RPL_TRACENEWTYPE::RPL_TRACENEWTYPE() : IRPL(208, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -149,7 +155,7 @@ RPL_TRACENEWTYPE::~RPL_TRACENEWTYPE(void) {};
 // nb:209
 // short for:RPL_TRACECLASS
 // desc:RFC2812 	Class <class> <count> 	See RFC
-RPL_TRACECLASS::RPL_TRACECLASS() : IRPL(209, "") {
+RPL_TRACECLASS::RPL_TRACECLASS() : IRPL(209, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -159,7 +165,7 @@ RPL_TRACECLASS::~RPL_TRACECLASS(void) {};
 // nb:210
 // short for:RPL_TRACERECONNECT
 // desc:RFC2812
-RPL_TRACERECONNECT::RPL_TRACERECONNECT() : IRPL(210, "") {
+RPL_TRACERECONNECT::RPL_TRACERECONNECT() : IRPL(210, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -170,7 +176,7 @@ RPL_TRACERECONNECT::~RPL_TRACERECONNECT(void) {};
 // short for:RPL_STATSLINKINFO
 // desc:RFC1459 	<linkname> <sendq> <sent_msgs> <sent_bytes> <recvd_msgs>
 // <rcvd_bytes> <time_open> 	Reply to STATS (See RFC)
-RPL_STATSLINKINFO::RPL_STATSLINKINFO() : IRPL(212, "") {
+RPL_STATSLINKINFO::RPL_STATSLINKINFO() : IRPL(212, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -181,7 +187,7 @@ RPL_STATSLINKINFO::~RPL_STATSLINKINFO(void) {};
 // short for:RPL_STATSCOMMANDS
 // desc:RFC1459 	<command> <count> [<byte_count> <remote_count>] 	Reply to
 // STATS (See RFC)
-RPL_STATSCOMMANDS::RPL_STATSCOMMANDS() : IRPL(212, "") {
+RPL_STATSCOMMANDS::RPL_STATSCOMMANDS() : IRPL(212, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -191,7 +197,7 @@ RPL_STATSCOMMANDS::~RPL_STATSCOMMANDS(void) {};
 // nb:213
 // short for:RPL_STATSCLINE
 // desc:RFC1459 	C <host> * <name> <port> <class> 	Reply to STATS (See RFC)
-RPL_STATSCLINE::RPL_STATSCLINE() : IRPL(213, "") {
+RPL_STATSCLINE::RPL_STATSCLINE() : IRPL(213, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -202,7 +208,7 @@ RPL_STATSCLINE::~RPL_STATSCLINE(void) {};
 // short for:RPL_STATSNLINE
 // desc:RFC1459 	N <host> * <name> <port> <class> 	Reply to STATS (See
 // RFC), Also known as RPL_STATSOLDNLINE (ircu, Unreal)
-RPL_STATSNLINE::RPL_STATSNLINE() : IRPL(214, "") {
+RPL_STATSNLINE::RPL_STATSNLINE() : IRPL(214, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -212,7 +218,7 @@ RPL_STATSNLINE::~RPL_STATSNLINE(void) {};
 // nb:215
 // short for:RPL_STATSILINE
 // desc:RFC1459 	I <host> * <host> <port> <class> 	Reply to STATS (See RFC)
-RPL_STATSILINE::RPL_STATSILINE() : IRPL(215, "") {
+RPL_STATSILINE::RPL_STATSILINE() : IRPL(215, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -223,7 +229,7 @@ RPL_STATSILINE::~RPL_STATSILINE(void) {};
 // short for:RPL_STATSKLINE
 // desc:RFC1459 	K <host> * <username> <port> <class> 	Reply to STATS (See
 // RFC)
-RPL_STATSKLINE::RPL_STATSKLINE() : IRPL(216, "") {
+RPL_STATSKLINE::RPL_STATSKLINE() : IRPL(216, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -233,7 +239,7 @@ RPL_STATSKLINE::~RPL_STATSKLINE(void) {};
 // nb:217
 // short for:RPL_STATSQLINE
 // desc:RFC1459
-RPL_STATSQLINE::RPL_STATSQLINE() : IRPL(217, "") {
+RPL_STATSQLINE::RPL_STATSQLINE() : IRPL(217, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -246,7 +252,7 @@ RPL_STATSQLINE::~RPL_STATSQLINE(void) {};
 // short for:RPL_STATSYLINE
 // desc:RFC1459 	Y <class> <ping_freq> <connect_freq> <max_sendq> 	Reply to
 // STATS (See RFC)
-RPL_STATSYLINE::RPL_STATSYLINE() : IRPL(218, "") {
+RPL_STATSYLINE::RPL_STATSYLINE() : IRPL(218, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -256,7 +262,7 @@ RPL_STATSYLINE::~RPL_STATSYLINE(void) {};
 // nb:219
 // short for:RPL_ENDOFSTATS
 // desc:RFC1459 	<query> :<info> 	End of RPL_STATS* list.
-RPL_ENDOFSTATS::RPL_ENDOFSTATS() : IRPL(219, "") {
+RPL_ENDOFSTATS::RPL_ENDOFSTATS() : IRPL(219, "...") {
 	// TODO:
 	// server stuff.
 	// didnt really get it.
@@ -267,7 +273,7 @@ RPL_UMODEIS::RPL_UMODEIS(const std::string &modes) : IRPL(221, modes) {}
 RPL_UMODEIS::~RPL_UMODEIS(void) {};
 
 // might be useless - no server to server communications are needed for irc
-RPL_SERVLIST::RPL_SERVLIST() : IRPL(234, "") {};
+RPL_SERVLIST::RPL_SERVLIST() : IRPL(234, "...") {};
 RPL_SERVLIST::~RPL_SERVLIST() {};
 
 RPL_SERVLISTEND::RPL_SERVLISTEND(void) : IRPL(235, "End of service listing") {};
@@ -276,21 +282,21 @@ RPL_SERVLISTEND::~RPL_SERVLISTEND(void) {};
 // nb:240
 // short for:RPL_STATSVLINE
 // desc:RFC2812
-RPL_STATSVLINE::RPL_STATSVLINE() : IRPL(240, "") {};
+RPL_STATSVLINE::RPL_STATSVLINE() : IRPL(240, "...") {};
 RPL_STATSVLINE::~RPL_STATSVLINE(void) {};
 
 // nb:241
 // short for:RPL_STATSLLINE::RPL_STATSLLINE
 // desc:RFC1459 	L <hostmask> * <servername> <maxdepth> 	Reply to STATS (See
 // RFC)
-RPL_STATSLLINE::RPL_STATSLLINE() : IRPL(241, "") {};
+RPL_STATSLLINE::RPL_STATSLLINE() : IRPL(241, "...") {};
 RPL_STATSLLINE::~RPL_STATSLLINE(void) {};
 
 // nb:242
 // short for:RPL_STATSUPTIME::RPL_STATSUPTIME
 // desc:RFC1459 	:Server Up <days> days <hours>:<minutes>:<seconds> 	Reply to
 // STATS (See RFC)
-RPL_STATSUPTIME::RPL_STATSUPTIME() : IRPL(242, "") {};
+RPL_STATSUPTIME::RPL_STATSUPTIME() : IRPL(242, "...") {};
 RPL_STATSUPTIME::~RPL_STATSUPTIME(void) {};
 
 // nb:243
@@ -298,37 +304,37 @@ RPL_STATSUPTIME::~RPL_STATSUPTIME(void) {};
 // desc:RFC1459 	O <hostmask> * <nick> [:<info>] 	Reply to STATS (See
 // RFC); The info field is an extension found in some IRC daemons, which returns
 // info such as an e-mail address or the name/job of an operator
-RPL_STATSOLINE::RPL_STATSOLINE() : IRPL(243, "") {};
+RPL_STATSOLINE::RPL_STATSOLINE() : IRPL(243, "...") {};
 RPL_STATSOLINE::~RPL_STATSOLINE(void) {};
 
 // nb:244
 // short for:RPL_STATSHLINE::RPL_STATSHLINE
 // desc:RFC1459 	H <hostmask> * <servername> 	Reply to STATS (See RFC)
-RPL_STATSHLINE::RPL_STATSHLINE() : IRPL(244, "") {};
+RPL_STATSHLINE::RPL_STATSHLINE() : IRPL(244, "...") {};
 RPL_STATSHLINE::~RPL_STATSHLINE(void) {};
 
 // nb:246
 // short for:RPL_STATSPING::RPL_STATSPING
 // desc:RFC2812
-RPL_STATSPING::RPL_STATSPING() : IRPL(246, "") {};
+RPL_STATSPING::RPL_STATSPING() : IRPL(246, "...") {};
 RPL_STATSPING::~RPL_STATSPING(void) {};
 
 // nb:247
 // short for:RPL_STATSBLINE::RPL_STATSBLINE
 // desc:RFC2812
-RPL_STATSBLINE::RPL_STATSBLINE() : IRPL(247, "") {};
+RPL_STATSBLINE::RPL_STATSBLINE() : IRPL(247, "...") {};
 RPL_STATSBLINE::~RPL_STATSBLINE(void) {};
 
 // nb:249
 // short for:RPL_STATSULINE::RPL_STATSULINE
 // desc:Extension to RFC1459?
-RPL_STATSULINE::RPL_STATSULINE() : IRPL(249, "") {};
+RPL_STATSULINE::RPL_STATSULINE() : IRPL(249, "...") {};
 RPL_STATSULINE::~RPL_STATSULINE(void) {};
 
 // nb:250
 // short for:RPL_STATSDLINE::RPL_STATSDLINE
 // desc:RFC2812
-RPL_STATSDLINE::RPL_STATSDLINE() : IRPL(250, "") {};
+RPL_STATSDLINE::RPL_STATSDLINE() : IRPL(250, "...") {};
 RPL_STATSDLINE::~RPL_STATSDLINE(void) {};
 
 // nb:251
@@ -347,7 +353,7 @@ RPL_LUSERCLIENT::~RPL_LUSERCLIENT(void) {};
 // short for:RPL_LUSEROP
 // desc:RFC1459 	<int> :<info> 	Reply to LUSERS command - Number of IRC
 // operators online
-RPL_LUSEROP::RPL_LUSEROP(int nb_ops) : IRPL(252, "") {
+RPL_LUSEROP::RPL_LUSEROP(int nb_ops) : IRPL(252, "...") {
 	IRPL::string = to_string(nb_ops) + " :There are " + to_string(nb_ops) +
 				   " IRC operators online";
 };
@@ -357,7 +363,7 @@ RPL_LUSEROP::~RPL_LUSEROP(void) {};
 // short for:RPL_LUSERUNKNOWN
 // desc:RFC1459 	<int> :<info> 	Reply to LUSERS command - Number of
 // unknown/unregistered connections
-RPL_LUSERUNKNOWN::RPL_LUSERUNKNOWN(int nb_user_unk) : IRPL(253, "") {
+RPL_LUSERUNKNOWN::RPL_LUSERUNKNOWN(int nb_user_unk) : IRPL(253, "...") {
 	IRPL::string = to_string(nb_user_unk) + " :There are " +
 				   to_string(nb_user_unk) + " unknown/unregistered connections";
 };
@@ -367,7 +373,7 @@ RPL_LUSERUNKNOWN::~RPL_LUSERUNKNOWN(void) {};
 // short for:RPL_LUSERCHANNELS
 // desc:RFC1459 	<int> :<info> 	Reply to LUSERS command - Number of channels
 // formed
-RPL_LUSERCHANNELS::RPL_LUSERCHANNELS(int nb_chan) : IRPL(254, "") {
+RPL_LUSERCHANNELS::RPL_LUSERCHANNELS(int nb_chan) : IRPL(254, "...") {
 	IRPL::string = to_string(nb_chan) + " :There are " + to_string(nb_chan) +
 				   " channels formed";
 };
@@ -377,7 +383,7 @@ RPL_LUSERCHANNELS::~RPL_LUSERCHANNELS(void) {};
 // short for:RPL_LUSERME
 // desc:RFC1459 	:I have <int> clients and <int> servers 	Reply to LUSERS
 // command - Information about local connections; Text may vary.
-RPL_LUSERME::RPL_LUSERME(int nb_clients, int nb_server) : IRPL(255, "") {
+RPL_LUSERME::RPL_LUSERME(int nb_clients, int nb_server) : IRPL(255, "...") {
 	IRPL::string = "I have " + to_string(nb_clients) + " clients and " +
 				   to_string(nb_server) + " servers";
 };
@@ -392,7 +398,7 @@ RPL_LUSERME::~RPL_LUSERME(void) {};
 // parameter, but also output the server name in the text as per traditional
 // daemons.
 RPL_ADMINME::RPL_ADMINME()
-	: IRPL(256, "") {
+	: IRPL(256, "...") {
 		  // TODO: implement
 	  };
 RPL_ADMINME::~RPL_ADMINME(void) {};
@@ -402,7 +408,7 @@ RPL_ADMINME::~RPL_ADMINME(void) {};
 // desc:RFC1459 	:<admin_location> 	Reply to ADMIN command (Location, first
 // line)
 RPL_ADMINLOC::RPL_ADMINLOC()
-	: IRPL(257, "") {
+	: IRPL(257, "...") {
 		  // TODO: implement
 	  };
 RPL_ADMINLOC::~RPL_ADMINLOC(void) {};
@@ -412,7 +418,7 @@ RPL_ADMINLOC::~RPL_ADMINLOC(void) {};
 // desc:RFC1459 	:<admin_location> 	Reply to ADMIN command (Location, second
 // line)
 RPL_ADMINLOC2::RPL_ADMINLOC2()
-	: IRPL(258, "") {
+	: IRPL(258, "...") {
 		  // TODO: implement
 	  };
 RPL_ADMINLOC2::~RPL_ADMINLOC2(void) {};
@@ -428,7 +434,7 @@ RPL_ADMINEMAIL::~RPL_ADMINEMAIL(void) {};
 // short for:RPL_TRACELOG
 // desc:RFC1459 	File <logfile> <debug_level> 	See RFC
 RPL_TRACELOG::RPL_TRACELOG()
-	: IRPL(261, "") {
+	: IRPL(261, "...") {
 		  // TODO: implement
 	  };
 RPL_TRACELOG::~RPL_TRACELOG(void) {};
@@ -437,7 +443,7 @@ RPL_TRACELOG::~RPL_TRACELOG(void) {};
 // short for:RPL_TRACEPING
 // desc:Extension to RFC1459?
 RPL_TRACEPING::RPL_TRACEPING()
-	: IRPL(262, "") {
+	: IRPL(262, "...") {
 		  // TODO: implement - ping related?
 	  };
 RPL_TRACEPING::~RPL_TRACEPING(void) {};
@@ -448,7 +454,7 @@ RPL_TRACEPING::~RPL_TRACEPING(void) {};
 // terminate a list of RPL_TRACE* replies
 //   code is the same as RPL_TRACEPING? might be a bug in what I read
 RPL_TRACEEND::RPL_TRACEEND()
-	: IRPL(262, "") {
+	: IRPL(262, "...") {
 		  // TODO: implement
 	  };
 RPL_TRACEEND::~RPL_TRACEEND(void) {};
@@ -466,7 +472,7 @@ RPL_TRYAGAIN::~RPL_TRYAGAIN(void) {};
 // short for:RPL_NONE
 // desc:RFC1459 		Dummy reply, supposedly only used for debugging/testing
 // new features, however has appeared in production daemons.
-RPL_NONE::RPL_NONE() : IRPL(300, "") {}; // empty string
+RPL_NONE::RPL_NONE() : IRPL(300, "...") {}; // empty string
 RPL_NONE::~RPL_NONE(void) {};
 
 // nb:301
@@ -482,7 +488,7 @@ RPL_AWAY::~RPL_AWAY(void) {};
 // desc:RFC1459 	:*1<reply> *( ' ' <reply> ) 	Reply used by USERHOST (see
 // RFC)
 RPL_USERHOST::RPL_USERHOST()
-	: IRPL(302, "") {
+	: IRPL(302, "...") {
 		  // TODO: implement
 	  };
 RPL_USERHOST::~RPL_USERHOST(void) {};
@@ -492,7 +498,7 @@ RPL_USERHOST::~RPL_USERHOST(void) {};
 // desc:RFC1459 	:*1<nick> *( ' ' <nick> ) 	Reply to the ISON command (see
 // RFC)
 RPL_ISON::RPL_ISON()
-	: IRPL(303, "") {
+	: IRPL(303, "...") {
 		  // TODO: implement
 	  };
 RPL_ISON::~RPL_ISON(void) {};
@@ -514,20 +520,22 @@ RPL_NOWAWAY::~RPL_NOWAWAY(void) {};
 // short for:RPL_WHOISUSER
 // desc:RFC1459 	<nick> <user> <host> * :<real_name> 	Reply to WHOIS -
 // Information about the user
-RPL_WHOISUSER::RPL_WHOISUSER()
-	: IRPL(311, "") {
-		  // TODO: implement with whois cmd
-	  };
+RPL_WHOISUSER::RPL_WHOISUSER(const std::string &nick, const std::string &user,
+							 const std::string &host,
+							 const std::string &real_name)
+	: IRPL(311, "...") {
+	IRPL::string = nick + " " + user + " " + host + " * :" + real_name;
+};
 RPL_WHOISUSER::~RPL_WHOISUSER(void) {};
 
 // nb:312
 // short for:RPL_WHOISSERVER
 // desc:RFC1459 	<nick> <server> :<server_info> 	Reply to WHOIS - What server
 // they're on
-RPL_WHOISSERVER::RPL_WHOISSERVER()
-	: IRPL(312, "") {
-		  // TODO: implement with whois cmd
-	  };
+RPL_WHOISSERVER::RPL_WHOISSERVER(const std::string &nick,
+								 const std::string &server,
+								 const std::string &server_info)
+	: IRPL(312, nick + " " + server + " :" + server_info) {};
 RPL_WHOISSERVER::~RPL_WHOISSERVER(void) {};
 
 // nb:313
@@ -543,9 +551,11 @@ RPL_WHOISOPERATOR::~RPL_WHOISOPERATOR(void) {};
 // short for:RPL_WHOWASUSER
 // desc:RFC1459 	<nick> <user> <host> * :<real_name> 	Reply to WHOWAS -
 // Information about the user
-RPL_WHOWASUSER::RPL_WHOWASUSER()
-	: IRPL(314, "") {
-		  // TODO: implement with whois cmd
+RPL_WHOWASUSER::RPL_WHOWASUSER(const std::string &nick, const std::string &user,
+							   const std::string &host,
+							   const std::string &real_name)
+	: IRPL(314, nick + " " + user + " " + host + " * :" + real_name) {
+
 	  };
 RPL_WHOWASUSER::~RPL_WHOWASUSER(void) {};
 
@@ -562,7 +572,7 @@ RPL_ENDOFWHO::~RPL_ENDOFWHO(void) {};
 // desc:RFC1459 	<nick> <seconds> :seconds idle
 // Reply to WHOIS - Idle information
 RPL_WHOISIDLE::RPL_WHOISIDLE(const std::string &nick, unsigned long secs)
-	: IRPL(317, nick + " " + to_string(secs) + " :seconds idle") {};
+	: IRPL(317, nick + " " + to_string(secs) + " : since last activity.") {};
 RPL_WHOISIDLE::~RPL_WHOISIDLE(void) {};
 
 // nb:318
@@ -576,10 +586,9 @@ RPL_ENDOFWHOIS::~RPL_ENDOFWHOIS(void) {};
 // short for:RPL_WHOISCHANNELS
 // desc:RFC1459 	<nick> :*( ( '@' / '+' ) <channel> ' ' ) 	Reply to WHOIS -
 // Channel list for user (See RFC)
-RPL_WHOISCHANNELS::RPL_WHOISCHANNELS(const std::string &nick /* channels */)
-	: IRPL(319, nick + " :") {
-		  // TODO: implement
-	  };
+RPL_WHOISCHANNELS::RPL_WHOISCHANNELS(const std::string &nick,
+									 const std::string &chanstr)
+	: IRPL(319, nick + " :" + chanstr) {};
 RPL_WHOISCHANNELS::~RPL_WHOISCHANNELS(void) {};
 
 // nb:321
@@ -591,7 +600,7 @@ RPL_LISTSTART::~RPL_LISTSTART(void) {};
 // nb:322
 // short for:RPL_LIST
 // desc:RFC1459 	<channel> <#_visible> :<topic> 	Channel list - A channel
-RPL_LIST::RPL_LIST(/* (Channel *) or ChannelState? */) : IRPL(322, "") {
+RPL_LIST::RPL_LIST(/* (Channel *) or ChannelState? */) : IRPL(322, "...") {
 	IRPL::string = "";
 };
 RPL_LIST::~RPL_LIST(void) {};
@@ -605,14 +614,14 @@ RPL_LISTEND::~RPL_LISTEND(void) {};
 // nb:324
 // short for:RPL_CHANNELMODEIS
 // desc:RFC1459 	<channel> <mode> <mode_params>
-RPL_CHANNELMODEIS::RPL_CHANNELMODEIS() : IRPL(324, "") {};
+RPL_CHANNELMODEIS::RPL_CHANNELMODEIS() : IRPL(324, "...") {};
 RPL_CHANNELMODEIS::~RPL_CHANNELMODEIS(void) {};
 
 // nb:325
 // short for:RPL_UNIQOPIS
 // desc:RFC2812 	<channel> <nickname>
 RPL_UNIQOPIS::RPL_UNIQOPIS()
-	: IRPL(325, "") {
+	: IRPL(325, "...") {
 		  // TODO: implement.
 	  };
 RPL_UNIQOPIS::~RPL_UNIQOPIS(void) {};
@@ -624,6 +633,16 @@ RPL_NOTOPIC::RPL_NOTOPIC(const std::string &ch_name)
 	: IRPL(331, ch_name + " :" + "No topic set for channel " + ch_name + ".") {
 	  };
 RPL_NOTOPIC::~RPL_NOTOPIC(void) {};
+std::string RPL_NOTOPIC::toString(const Server &s, const Client &c) {
+	(void)s;
+	std::stringstream ss;
+
+	ss << ":" << s.getServerState().getName() << " ";
+	ss << std::setw(3) << std::setfill('0') << _code;
+	ss << " " << c.getNick();
+	ss << " " << string << "\r\n";
+	return ss.str();
+};
 
 // nb:332
 // short for:RPL_TOPIC
@@ -657,20 +676,20 @@ RPL_SUMMONING::~RPL_SUMMONING(void) {};
 // :<user
 // // being invited> has been invited by <user issuing invite> 	Sent to users on
 // // a channel when an INVITE command has been issued
-// RPL_INVITED::RPL_INVITED() : IRPL(000, "") {};
+// RPL_INVITED::RPL_INVITED() : IRPL(000, "...") {};
 // RPL_INVITED::~RPL_INVITED(void) {};
 
 // // nb:346
 // // short for:RPL_INVITELIST
 // // desc:RFC2812 	<channel> <invitemask> 	An invite mask for the invite mask
 // // list
-// RPL_INVITELIST::RPL_INVITELIST() : IRPL(000, "") {};
+// RPL_INVITELIST::RPL_INVITELIST() : IRPL(000, "...") {};
 // RPL_INVITELIST::~RPL_INVITELIST(void) {};
 
 // // nb:347
 // // short for:RPL_ENDOFINVITELIST
 // // desc:RFC2812 	<channel> :<info> 	Termination of an RPL_INVITELIST list
-// RPL_ENDOFINVITELIST::RPL_ENDOFINVITELIST() : IRPL(000, "") {};
+// RPL_ENDOFINVITELIST::RPL_ENDOFINVITELIST() : IRPL(000, "...") {};
 // RPL_ENDOFINVITELIST::~RPL_ENDOFINVITELIST(void) {};
 
 // nb:348
@@ -695,7 +714,16 @@ RPL_ENDOFEXCEPTLIST::~RPL_ENDOFEXCEPTLIST(void) {};
 // desc:RFC1459 	<version>[.<debuglevel>] <server> :<comments> 	Reply by the
 // server showing its version details, however this format is not often adhered
 // to
-RPL_VERSION::RPL_VERSION() : IRPL(351, "") {};
+RPL_VERSION::RPL_VERSION(const std::string &version,
+						 const std::string &serverName,
+						 const std::string &comments)
+	: IRPL(351, version + " " + serverName + " :" + comments) {}
+RPL_VERSION::RPL_VERSION(const std::string &version,
+						 const std::string &debuglevel,
+						 const std::string &serverName,
+						 const std::string &comments)
+	: IRPL(351,
+		   version + "." + debuglevel + " " + serverName + " :" + comments) {}
 RPL_VERSION::~RPL_VERSION(void) {};
 
 // nb:352
@@ -703,39 +731,76 @@ RPL_VERSION::~RPL_VERSION(void) {};
 // desc:RFC1459 	<channel> <user> <host> <server> <nick> <H|G>[*][@|+]
 // :<hopcount> <real_name> 	Reply to vanilla WHO (See RFC). This format can be
 // very different if the 'WHOX' version of the command is used (see ircu).
-RPL_WHOREPLY::RPL_WHOREPLY() : IRPL(000, "") {};
+RPL_WHOREPLY::RPL_WHOREPLY() : IRPL(000, "...") {};
 RPL_WHOREPLY::~RPL_WHOREPLY(void) {};
 
 // nb:353
 // short for:RPL_NAMREPLY
 // desc:RFC1459 	( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *(
 // ' ' [ '@' / '+' ] <nick> ) 	Reply to NAMES (See RFC)
-RPL_NAMREPLY::RPL_NAMREPLY() : IRPL(000, "") {};
+RPL_NAMREPLY::RPL_NAMREPLY(const std::string		 &ch_name,
+						   const std::list< Client > &cl_list,
+						   const std::list< Client > &ops, const ChanMod cm)
+	: IRPL(353, "...") {
+
+	std::cerr << "DBG::" << __FILE__ << ":" << __LINE__
+			  << " RPL_NAMREPLY constructor called\n";
+	std::cerr << "mode:" << cm << std::endl;
+	IRPL::string = "";
+	if (cm & MODE_I)
+		IRPL::string += "* ";
+	else if (cm & MODE_S)
+		IRPL::string += "@";
+	else
+		IRPL::string += "= ";
+
+	IRPL::string += ch_name + " :";
+
+	for (std::list< Client >::const_iterator ci = cl_list.begin();
+		 ci != cl_list.end();) {
+		if (containsInList< Client >(ops, *ci))
+			IRPL::string += "@";
+		IRPL::string += ci->getNick();
+		if (++ci != cl_list.end())
+			IRPL::string += " ";
+	}
+};
 RPL_NAMREPLY::~RPL_NAMREPLY(void) {};
+
+std::string RPL_NAMREPLY::toString(const Server &s, const Client &c) {
+	(void)s;
+	std::stringstream ss;
+
+	ss << ":" << s.getServerState().getName() << " ";
+	ss << std::setw(3) << std::setfill('0') << _code;
+	ss << " " << c.getNick();
+	ss << " " << string << "\r\n";
+	return ss.str();
+};
 
 // nb:361
 // short for:RPL_KILLDONE
 // desc:RFC1459
-RPL_KILLDONE::RPL_KILLDONE() : IRPL(361, "") {};
+RPL_KILLDONE::RPL_KILLDONE() : IRPL(361, "...") {};
 RPL_KILLDONE::~RPL_KILLDONE(void) {};
 
 // nb:362
 // short for:RPL_CLOSING
 // desc:RFC1459
-RPL_CLOSING::RPL_CLOSING() : IRPL(362, "") {};
+RPL_CLOSING::RPL_CLOSING() : IRPL(362, "...") {};
 RPL_CLOSING::~RPL_CLOSING(void) {};
 
 // nb:363
 // short for:RPL_CLOSEEND
 // desc:RFC1459
-RPL_CLOSEEND::RPL_CLOSEEND() : IRPL(363, "") {};
+RPL_CLOSEEND::RPL_CLOSEEND() : IRPL(363, "...") {};
 RPL_CLOSEEND::~RPL_CLOSEEND(void) {};
 
 // nb:364
 // short for:RPL_LINKS
 // desc:RFC1459 	<mask> <server> :<hopcount> <server_info> 	Reply to the
 // LINKS command
-RPL_LINKS::RPL_LINKS() : IRPL(000, "") {};
+RPL_LINKS::RPL_LINKS() : IRPL(000, "...") {};
 RPL_LINKS::~RPL_LINKS(void) {};
 
 // nb:365
@@ -752,12 +817,22 @@ RPL_ENDOFNAMES::RPL_ENDOFNAMES(const std::string &channel,
 							   const std::string &info)
 	: IRPL(366, channel + " :" + info) {};
 RPL_ENDOFNAMES::~RPL_ENDOFNAMES(void) {};
+std::string RPL_ENDOFNAMES::toString(const Server &s, const Client &c) {
+	(void)s;
+	std::stringstream ss;
+
+	ss << ":" << s.getServerState().getName() << " ";
+	ss << std::setw(3) << std::setfill('0') << _code;
+	ss << " " << c.getNick();
+	ss << " " << string << "\r\n";
+	return ss.str();
+};
 
 // nb:367
 // short for:RPL_BANLIST
 // desc:RFC1459 	<channel> <banid> [<time_left> :<reason>] 	A ban-list item
 // (See RFC); <time left> and <reason> are additions used by KineIRCd
-RPL_BANLIST::RPL_BANLIST() : IRPL(000, "") {};
+RPL_BANLIST::RPL_BANLIST() : IRPL(000, "...") {};
 RPL_BANLIST::~RPL_BANLIST(void) {};
 
 // nb:368
@@ -791,7 +866,7 @@ RPL_MOTD::~RPL_MOTD(void) {};
 // nb:373
 // short for:RPL_INFOSTART
 // desc:RFC1459
-RPL_INFOSTART::RPL_INFOSTART() : IRPL(373, "") {};
+RPL_INFOSTART::RPL_INFOSTART() : IRPL(373, "...") {};
 RPL_INFOSTART::~RPL_INFOSTART(void) {};
 
 // nb:374
@@ -876,6 +951,20 @@ RPL_ENDOFUSERS::~RPL_ENDOFUSERS(void) {};
 // desc:RFC1459 	:<info> 	Reply to USERS when nobody is logged in
 RPL_NOUSERS::RPL_NOUSERS(const std::string &inf) : IRPL(395, inf) {};
 RPL_NOUSERS::~RPL_NOUSERS(void) {};
+
+RPL_JOIN::RPL_JOIN(const std::string &infoclient, const std::string &ch_name)
+	: IRPL(000, "...") {
+	IRPL::string = ":" + infoclient + " JOIN :" + ch_name;
+};
+
+RPL_JOIN::~RPL_JOIN(void) {};
+
+std::string RPL_JOIN::toString(const Server &s, const Client &c) {
+	(void)s;
+	(void)c;
+
+	return IRPL::string + "\r\n";
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //									 ------									  //

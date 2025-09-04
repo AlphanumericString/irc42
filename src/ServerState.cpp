@@ -12,16 +12,19 @@
 
 #include "ServerState.hpp"
 
+#include <algorithm>
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <sys/epoll.h>
 #include <unistd.h>
 
+#include "Channel.hpp"
+#include "Client.hpp"
 #include "Server.hpp"
 
 ServerState::ServerState(int p, const std::string pwd, Server &m)
-	: password_(pwd), port_(p) {
+	: password_(pwd), port_(p), hostname_("localhost") {
 	this->master_ = &m;
 	this->channels_ = std::list< Channel >();
 	this->clients_ = std::list< Client >();
@@ -29,6 +32,8 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 	this->port_ = (p);
 	this->status_ = STARTING;
 	this->stop_ = false;
+	setDescription("A simple IRC server made in the context of a school "
+				   "project at 42Paris.");
 }
 
 ServerState::~ServerState() {}
@@ -84,7 +89,7 @@ Client *ServerState::idClient(int fd) {
 	return (NULL);
 }
 
-int ServerState::makeSocketNonBlocking(int fd) {
+static int makeSocketNonBlocking(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1) {
 		return (-1);
@@ -108,6 +113,10 @@ void ServerState::newClient(int fd, char *ipAddress) {
 		throw std::runtime_error("epoll_ctl");
 	}
 	this->clients_.push_back(newClient);
+}
+
+const std::string &ServerState::getHostname(void) const {
+	return (hostname_);
 }
 
 ServerState &ServerState::operator=(const ServerState &st) {
@@ -137,4 +146,87 @@ void ServerState::setStatus(ServerState::Status status) {
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
 	os << sst.getMinimalInfo();
 	return (os);
+}
+
+std::list< Channel > &ServerState::getChannels() {
+	return (channels_);
+}
+const std::list< Channel > &ServerState::getChannels() const {
+	return (channels_);
+}
+
+const Channel *ServerState::getChannel(const std::string &name) const {
+	for (std::list< Channel >::const_iterator it = channels_.begin();
+		 it != channels_.end(); it++) {
+		if (it->getName() == name)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+Channel *ServerState::getChannel(const std::string &name) {
+	for (std::list< Channel >::iterator it = channels_.begin();
+		 it != channels_.end(); it++) {
+		if (it->getName() == name)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+
+Client *ServerState::getClient(const std::string &name) {
+	for (std::list< Client >::iterator it = clients_.begin();
+		 it != clients_.end(); it++) {
+		if (it->getNick() == name)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+const Client *ServerState::getClient(const std::string &name) const {
+	for (std::list< Client >::const_iterator it = clients_.begin();
+		 it != clients_.end(); it++) {
+		if (it->getNick() == name)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+
+Client *ServerState::getClient(int fd) {
+	for (std::list< Client >::iterator it = clients_.begin();
+		 it != clients_.end(); it++) {
+		if (it->getSockFD() == fd)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+const Client *ServerState::getClient(int fd) const {
+	for (std::list< Client >::const_iterator it = clients_.begin();
+		 it != clients_.end(); it++) {
+		if (it->getSockFD() == fd)
+			return (&(*it));
+	}
+	return (NULLPTR);
+}
+
+void ServerState::setDescription(const std::string &desc) {
+	this->desc = desc;
+}
+const std::string &ServerState::getDescription() const {
+	return (this->desc);
+}
+
+void ServerState::addPrevClient(const Client &c) {
+	this->prevClients_.push_back(c);
+}
+const std::vector< PrevClients > &ServerState::getPrevClients() const {
+	return (this->prevClients_);
+}
+std::vector< PrevClients >
+ServerState::getPrevClients(const std::string &name) const {
+	std::vector< PrevClients >::const_iterator ci;
+	std::vector< PrevClients >				   ret;
+
+	for (ci = std::find(prevClients_.begin(), prevClients_.end(), name);
+		 ci != prevClients_.end() && ci->_nick == name; ci++) {
+		ret.push_back(*ci);
+	}
+	return (ret);
 }

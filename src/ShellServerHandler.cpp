@@ -15,6 +15,8 @@
 #include <cerrno>
 #include <iostream>
 #include <string>
+
+#include "Channel.hpp"
 #include "Client.hpp"
 
 void ShellServerHandler::cmdHandler(Server &server, std::string line) {
@@ -52,7 +54,6 @@ int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	t_client.processInput(serv);
 
 	std::cout << "Output buffer: " << t_client.getOutputBuffer() << std::endl;
-
 
 	// step 1:
 	//	create users and exit					- check no leaks + no mem errs

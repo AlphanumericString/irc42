@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <list>
 #include <sstream>
 #include <vector>
 #pragma once
@@ -22,7 +23,7 @@ template < typename t > std::string to_string(const t &var) {
 }
 
 inline std::vector< std::string > split(const std::string &str_src,
-								 const std::string &delimiter) {
+										const std::string &delimiter) {
 	std::vector< std::string > tokens;
 	size_t					   pos;
 	std::string				   s = str_src;
@@ -45,3 +46,30 @@ inline std::vector< std::string > split(const std::string &str_src,
 #define ALPHA  AL_LOW AL_CAP
 #define NUM	   "0123456789"
 #define ALNUM  ALPHA NUM
+
+template < typename T > T &searchInList(std::list< T > &lst, T const &toFind) {
+	for (typename std::list< T >::const_iterator it = lst.begin(); it != lst.end();
+		 ++it) {
+		if (*it == toFind)
+			return (*it);
+	}
+	throw std::runtime_error("Element not found in list");
+}
+template < typename T > const T &searchInList(const std::list< T > &lst, T const &toFind) {
+	for (typename std::list< T >::const_iterator it = lst.begin(); it != lst.end();
+		 ++it) {
+		if (*it == toFind)
+			return (*it);
+	}
+	throw std::runtime_error("Element not found in list");
+}
+
+template < typename T >
+bool containsInList(const std::list< T > &lst, T const &toFind) {
+	try {
+		searchInList<T>(lst, toFind);
+		return (true);
+	} catch (...) {
+		return (false);
+	}
+}

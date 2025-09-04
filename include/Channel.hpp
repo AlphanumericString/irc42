@@ -25,85 +25,106 @@
 #pragma once
 
 #include <exception>
+#include <list>
 #include <string>
-
-#define MAX_NAME_LEN   200
-#define PREFIX_CHARS   "#&"
-#define DEFAULT_PREFIX PREFIX_CHARS[0]
+#include <ostream>
 
 class Client;
+class Server;
 
+#define MAX_CHAN_NAME_LEN 200
+#define PREFIX_CHARS	  "#&"
+#define DEFAULT_PREFIX	  PREFIX_CHARS[0]
 #define UNUSED __attribute__((unused))
 
-/// @typedef ChanMod
-/// @brief Enumeration for the channel modes.
-/// @todo Fill Doxygen comments.
-typedef enum {	  // need to read doc, make these more explicit
-	MODE_UNKNOWN, ///< Unknown mode.
-	MODE_L,		  ///< User limit for the channel.
-	MODE_T,		  ///< Channel topic.
-	MODE_I,		  ///< Invite-only channel.
+typedef enum {		  // need to read doc, make these more explicit
+	MODE_UNKNOWN = 0, ///< Unknown mode (default).
+	MODE_L = 1 << 0,  ///< User limit for the channel.
+	MODE_T = 1 << 1,  ///< Channel topic.
+	MODE_I = 1 << 2,  ///< Invite-only channel.
+	MODE_S = 1 << 3,  ///< Secret channel.
 } ChanMod;
 
-class ChannelOperator;
+std::ostream &operator<<(std::ostream &os, ChanMod m);
 
-/// @class Channel
-/// @brief Represents a single channel.
-///
-/// Manages a chat room with its name, topic, modes, member list with their
-/// privileges (operator, voice, etc.), and channel-specific settings like
-/// user limits or keys. It handles message broadcasting to all members and
-/// enforces channel modes.
 class Channel {
   public:
-	/// @brief
-	/// @param name The Channel name.
 	Channel(std::string const &name, Client &owner);
-
-	/// @brief Copy constructor
-	/// @param original
-	Channel(Channel const &original); // when are we gonna use this ?!
-
-	/// @brief Default constructor.
+	Channel(Channel const &original);
 	~Channel();
-
-	/// @brief Accessor for the `channelOperator_` attribute.
-	/// @return A constant reference to a Client object.
-	Client const &getChannelOperator() const;
-
-	/// @brief Accessor for the `channelOperator_` attribute.
-	/// @return A reference to a Client object.
-	Client &getChannelOperator();
-
-	/// @brief Assignment operator overload.
-	/// @param original The Channel object we want to assign from.
-	/// @return A reference to a Channel object.
 	Channel &operator=(Channel const &original);
 
-	class ChannelNameTooLongException : std::exception {
-	  public:
-		const char *what() const throw();
-	};
+	// broadcast message to all members except the origin
+	void broadcast(const std::string &s, const Client &c, Server &ser);
+	void updateNick(const Client &c, const std::string &newNick, Server &ser);
 
-	class ChannelInvalidNameException : std::exception {
-	  public:
-		const char *what() const throw();
-	};
+	// [checks]
+	bool isFull() const;
+	bool isEmpty() const;
+	bool operator==(Channel const &other) const ;
+	bool operator==(std::string const &name) const ;
+
+
+	// [members] {has, add, remove, get}
+	bool					   hasMember(const Client &client) const;
+	void					   addMember(Client &client);
+	void					   removeMember(const Client &client);
+	std::list< Client >		  &getMembers();
+	const std::list< Client > &getMembers() const;
+	const Client			  &getMember(const std::string &nick) const;
+	Client					  &getMember(const std::string &nick);
+
+	// [operators] {is, add, remove, get}
+	bool					   isOperator(const Client &client) const;
+	void					   addOperator(Client &client);
+	void					   removeOperator(const Client &client);
+	std::list< Client >		  &getOperators();
+	const std::list< Client > &getOperators() const;
+	Client					  &getOperator(const std::string &nick);
+	const Client			  &getOperator(const std::string &nick) const;
+
+	// [invites] {is, add, remove, get}
+	bool					   isInvited(const Client &client) const;
+	void					   addInvite(const Client &client);
+	void					   removeInvite(const Client &client);
+	std::list< Client >		  &getInvited();
+	const std::list< Client > &getInvited() const;
+	Client					  &getInvited(const std::string &nick);
+	const Client			  &getInvited(const std::string &nick) const;
+
+	// get/set
+	// [name]
+	void			   setName(const std::string &t);
+	std::string const &getName() const;
+	// [owner]
+	Client		 &getOwner();
+	const Client &getOwner() const;
+	void		  setOwner(Client &c);
+	// [topic]
+	void			   setTopic(const std::string &t);
+	std::string const &getTopic() const;
+	bool			   isTopicProtected() const;
+	void			   setTopicProtected(bool b);
+	// [other] {user limit, mode}
+	unsigned int getUserLimit() const;
+	void		 setUserLimit(unsigned int limit);
+	ChanMod		 getMode() const;
+	void		 setMode(ChanMod m);
 
   private:
-	/// @brief Default constructor.
 	Channel();
 
-	Client &
-		channelOperator_; ///< The channel operator (or "owner") of the channel.
-	std::string name_;	  ///< The name of the channel.
-	std::string topic_;	  ///< Topic.
-	ChanMod		mode_;	  ///< Modes.
-	// member list with their privileges (operator, voice, etc.),
-	//   std::list -> user in the middle can leave when-ever
-	//   question is list of pair? list of self defined type?
-	//   idk - decision paralisis AAAAAAAAa /hj
-	// channel-specific settings like user limits or keys.
+	Client			   &owner_;
+	std::list< Client > operators_;
+	std::list< Client > invited_;
+	std::list< Client > members_;
+
+	std::string	 name_;
+	std::string	 topic_;
+	bool		 topicProtected_;
+	unsigned int userLimit_;
+
+	ChanMod mode_;
 };
 
 #undef UNUSED

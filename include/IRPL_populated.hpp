@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #pragma once
+#include "Channel.hpp"
 #include "IRPL.hpp"
 
 // nb:001
@@ -597,7 +598,8 @@ class RPL_NOWAWAY : public IRPL {
 // Information about the user
 class RPL_WHOISUSER : public IRPL {
   public:
-	RPL_WHOISUSER();
+	RPL_WHOISUSER(const std::string &nick, const std::string &user,
+				  const std::string &host, const std::string &real_name);
 	virtual ~RPL_WHOISUSER(void);
 };
 
@@ -607,7 +609,8 @@ class RPL_WHOISUSER : public IRPL {
 // they're on
 class RPL_WHOISSERVER : public IRPL {
   public:
-	RPL_WHOISSERVER();
+	RPL_WHOISSERVER(const std::string &nick, const std::string &server_name,
+					const std::string &server_info);
 	virtual ~RPL_WHOISSERVER(void);
 };
 
@@ -627,7 +630,8 @@ class RPL_WHOISOPERATOR : public IRPL {
 // Information about the user
 class RPL_WHOWASUSER : public IRPL {
   public:
-	RPL_WHOWASUSER();
+	RPL_WHOWASUSER(const std::string &nick, const std::string &user,
+				   const std::string &host, const std::string &real_name);
 	virtual ~RPL_WHOWASUSER(void);
 };
 
@@ -665,7 +669,7 @@ class RPL_WHOISIDLE : public IRPL {
 // desc:RFC1459 	<nick> :<info> 	Reply to WHOIS - End of list
 class RPL_ENDOFWHOIS : public IRPL {
   public:
-	RPL_ENDOFWHOIS(const std::string &nick, const std::string &info);
+	RPL_ENDOFWHOIS(const std::string &nick, const std::string &info = "End of /WHOIS list");
 	virtual ~RPL_ENDOFWHOIS(void);
 };
 
@@ -675,9 +679,7 @@ class RPL_ENDOFWHOIS : public IRPL {
 // Channel list for user (See RFC)
 class RPL_WHOISCHANNELS : public IRPL {
   public:
-	RPL_WHOISCHANNELS(
-		const std::string
-			&nick /* chanels? idk struct passing here or string */);
+	RPL_WHOISCHANNELS(const std::string &nick, const std::string &chan_list);
 	virtual ~RPL_WHOISCHANNELS(void);
 };
 
@@ -733,6 +735,7 @@ class RPL_NOTOPIC : public IRPL {
   public:
 	RPL_NOTOPIC(const std::string &ch_name);
 	virtual ~RPL_NOTOPIC(void);
+	virtual std::string toString(const Server &s, const Client &c);
 };
 
 // nb:332
@@ -825,7 +828,10 @@ class RPL_ENDOFEXCEPTLIST : public IRPL {
 // to
 class RPL_VERSION : public IRPL {
   public:
-	RPL_VERSION();
+	RPL_VERSION(const std::string &version, const std::string &server,
+			 const std::string &comments = "");
+	RPL_VERSION(const std::string &version, const std::string &debuglevel,
+			 const std::string &server, const std::string &comments);
 	virtual ~RPL_VERSION(void);
 };
 
@@ -844,10 +850,21 @@ class RPL_WHOREPLY : public IRPL {
 // short for:RPL_NAMREPLY
 // desc:RFC1459 	( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *(
 // ' ' [ '@' / '+' ] <nick> ) 	Reply to NAMES (See RFC)
+// '=' = public channel, '*' = private channel, '@' = secret channel
+//  -> if none of these are used, it is a public channel by default
+// '@' = channel operator, '+' = voiced user
+//  -> if none of these are used, the user is a normal user
+// note: we dont support secret channels, so no need to implement '@' case
+// note: we dont support private channels, so no need to implement '*' case
+// note: we dont support voiced users, so no need to implement '+' case
+// note: tldr; we only need to implement '@' for channel clients
 class RPL_NAMREPLY : public IRPL {
   public:
-	RPL_NAMREPLY();
+	RPL_NAMREPLY(const std::string		   &ch_name,
+				 const std::list< Client > &ch_clients,
+				 const std::list< Client > &ops, const ChanMod mode);
 	virtual ~RPL_NAMREPLY(void);
+	virtual std::string toString(const Server &s, const Client &c);
 };
 
 // nb:361
@@ -901,8 +918,10 @@ class RPL_ENDOFLINKS : public IRPL {
 // desc:RFC1459 	<channel> :<info> 	Termination of an RPL_NAMREPLY list
 class RPL_ENDOFNAMES : public IRPL {
   public:
-	RPL_ENDOFNAMES(const std::string &channel, const std::string &info);
+	RPL_ENDOFNAMES(const std::string &channel,
+				   const std::string &info = "end of /NAMES list.");
 	virtual ~RPL_ENDOFNAMES(void);
+	virtual std::string toString(const Server &s, const Client &c);
 };
 
 // nb:367
@@ -929,7 +948,7 @@ class RPL_ENDOFBANLIST : public IRPL {
 // desc:RFC1459 	<nick> :<info> 	Reply to WHOWAS - End of list
 class RPL_ENDOFWHOWAS : public IRPL {
   public:
-	RPL_ENDOFWHOWAS(const std::string &nick, const std::string &info);
+	RPL_ENDOFWHOWAS(const std::string &nick, const std::string &info = "End of /WHOWAS");
 	virtual ~RPL_ENDOFWHOWAS(void);
 };
 

@@ -18,11 +18,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <iostream>
+#include <list>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <sys/epoll.h>
 
+#include "Channel.hpp"
+#include "Client.hpp"
+#include "ConnectionState.hpp"
 #include "ShellServerHandler.hpp"
 #include "smart_ptr.hpp"
 
@@ -50,17 +54,25 @@ static void sig_hdl(int sig) {
 Server::Server(int port, const std::string password)
 	: serverState_(port, password, *this) {
 	this->serverFD_ = -1;
-	this->epollFD_ = -1;	   // not set
-	// this->_channels = _serverState.getChannelsPtr();
-	// this->_clients = _serverState.getClientsPtr();
+	this->epollFD_ = -1; // not set
+						 // this->_channels = _serverState.getChannelsPtr();
+						 // this->_clients = _serverState.getClientsPtr();
 }
 
 Server::~Server() {}
 
+static int makeSocketNonBlocking(int fd) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1) {
+		return (-1);
+	}
+	return (fcntl(fd, F_SETFL, flags | O_NONBLOCK));
+}
+
 void Server::addStdInToMultiplexing() {
 	struct epoll_event currentEvent;
 
-	if (ServerState::makeSocketNonBlocking(STDIN_FILENO) == -1) {
+	if (makeSocketNonBlocking(STDIN_FILENO) == -1) {
 		close(STDIN_FILENO);
 		throw std::runtime_error("couldn't make socket non blocking");
 	}
@@ -80,8 +92,7 @@ void Server::bindSocket() {
 	sock_add.sin_addr.s_addr = INADDR_ANY;
 	sock_add.sin_port = htons(this->getServerState().getPort());
 
-	if (bind(this->serverFD_, (struct sockaddr *)&sock_add, sizeof(sock_add)) ==
-		-1) {
+	if (bind(this->serverFD_, (sockaddr *)&sock_add, sizeof(sock_add)) == -1) {
 		close(this->serverFD_);
 		std::cerr << "Failed to bind" << std::endl;
 		return;
@@ -126,6 +137,9 @@ int Server::getServerFD() const {
 	return (this->serverFD_);
 }
 
+ServerState &Server::getServerState(void) {
+	return (this->serverState_);
+}
 const ServerState &Server::getServerState(void) const {
 	return (this->serverState_);
 }
@@ -140,7 +154,7 @@ void Server::handleNewConnection() {
 		throw std::runtime_error("accept() error");
 	}
 	char *ip_str = inet_ntoa(peerSockAddr.sin_addr);
-	std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
+	// std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
 	this->serverState_.newClient(new_clientFD, ip_str);
 }
 
@@ -266,10 +280,19 @@ void Server::mainLoop(void) {
 			it->processInput(*this);
 		}
 
-		// if shell-server is dropped this display serv info when change occur
-		// if (prev != this->_serverState)
-		// 	std::cout << _serverState << std::endl;
-		// prev = this->_serverState;
+		// push to a function -> handleDisconnections()
+		for (std::list< Client >::iterator it =
+				 serverState_.getClients().begin();
+			 it != serverState_.getClients().end(); it++) {
+			if (it->getConState() == DISCONNECTING) {
+
+				it->setConState(DISCONNECTED); // jobdone
+				this->getServerState().addPrevClient(*it);
+				serverState_.getClients().remove(*it);
+				it = serverState_.getClients().begin();
+			}
+		}
+
 		if (*sig::stop) {
 			setServerState(ServerState::STOPPING);
 		}

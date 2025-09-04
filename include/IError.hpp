@@ -40,6 +40,8 @@ class IError : public IRPL, public std::exception {
 			":" + s.getServerState().getName() + " " + buff + " " + c.getNick();
 		if (_s.find(":") == std::string::npos)
 			_s = " :" + _s;
+		else if (_s[0] != ' ')
+			ret += " ";
 		ret += _s + "\n";
 		return (ret);
 	}

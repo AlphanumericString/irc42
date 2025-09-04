@@ -86,6 +86,7 @@ class Server {
 	/// @brief Accessor for the serverState_ attribute.
 	/// @return A constant reference to a ServerState object.
 	const ServerState &getServerState(void) const;
+	ServerState &getServerState(void);
 
 	/// @brief
 	/// @param client

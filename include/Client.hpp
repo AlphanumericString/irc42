@@ -15,18 +15,20 @@
 
 #pragma once
 
-#include <exception>
+#include <ctime>
 #include <string>
 
 #include "AuthState.hpp"
-#include "Channel.hpp"
 #include "ConnectionState.hpp"
 
 #define UNUSED __attribute__((unused))
 
 class Channel;
-
 class Server;
+class ICmd;
+class IRPL;
+
+#define MAX_NICKNAME_LENGTH 9
 
 /// @class Client
 /// @brief Represents a connected user.
@@ -38,114 +40,85 @@ class Server;
 /// and tracks registration state.
 class Client {
   public:
-	/// @brief Default constructor.
 	Client();
-
-	/// @brief Constructor that takes the client's fd and his IPv4 address.
-	/// @param fd The file descriptor associated to the client.
-	/// @param ipAddress The IPv4 address of the client.
-	/// @param server The server to which the client is connected.
 	Client(int fd, char *ipAddress, Server *server);
-
-	/// @brief Copy constructor
-	/// @param original The Client object that is to be copied.
 	Client(Client const &original);
-
-	/// @brief Default destructor
 	~Client();
-
-	/// @brief Erase 'length' characters of the output buffer.
-	/// @param length The number of characters to erase.
-	void advanceOutputBuffer(unsigned int length);
-	/// @brief Appends 'length' char of string 'str' to the client's input
-	/// buffer.
-	/// @param str The content we want to append to the client's input buffer.
-	/// @param length The number of characters we want to append.
-	void appendInputBuffer(const char *str, unsigned int length);
-
-	/// @brief Accessor to the host_ attribute.
-	/// @return A constant reference to the std::string containing the host
-	/// name.
-	const std::string &getHost() const;
-	void			   setHost(std::string &host);
-
-	/// @brief Accessor to the ipAddress_ attribute.
-	/// @return A constant reference to the std::string containing the IPv4
-	/// address.
-	const std::string &getIPAddress() const;
-
-	/// @brief Accessor for the outputBuffer_ attribute.
-	/// @return A reference to the output buffer.
-	std::string &getOutputBuffer();
-
-	/// @brief Accessor for the sockFD_ attribute.
-	/// @return Returns the value of sockFD_.
-	int getSockFD() const;
-
-	t_conState getConState() const;
-	void setConState(t_conState state);
-
-	const std::string &getRealName(void) const;
-	void			   setRealname(const std::string &);
-
-	const std::string &getName(void) const;
-	void			   setName(const std::string &);
-
-	/// @brief Assignment operator overload.
-	/// @param original The Client object we want to assign from
-	/// @return A reference to a Client object.
 	Client &operator=(Client const &original);
 
-	/// @brief Processes the commands inside the Client's inputBuffer_
-	/// attribute.
-	void processInput(Server &s);
+	// [ buffers ]
+	// ibuf
+	void		 appendInputBuffer(const char *str, unsigned int length);
+	// obuf
+	void		 appendToOutputBuffer(const std::string &str);
+	void		 advanceOutputBuffer(unsigned int length);
+	std::string &getOutputBuffer();
+	int			 setOutputBuffer(char *buffer, unsigned int maxLength);
 
-	/// @brief Fills or updates the nick_ attribute with the string
-	/// `newNickname`.
-	/// @param newNickname The newNickname to set.
+	// cmds
+	std::string infostr(void) const; // nick!user@host
+	void		processInput(Server &s);
+
+	// checks
+	bool operator==(const Client &o) const;
+	bool operator==(int sock_fd) const;
+	bool operator!=(const Client &o) const;
+	bool operator==(const std::string nick) const;
+
+	// get/set
+	// [connection]
+	const std::string &getIPAddress() const;
+	t_conState		   getConState() const;
+	void			   setConState(t_conState state);
+	void			   setHost(std::string &host);
+	const std::string &getHost() const;
+	void			   setSockFD(int fd);
+	int				   getSockFD() const;
+
+	// [names]
+	const std::string &getRealName(void) const;
+	void			   setRealname(const std::string &);
+	const std::string &getUserName(void) const;
+	void			   setUserName(const std::string &);
 	void			   setNickname(std::string const &newNickname);
 	const std::string &getNick() const;
 
-	/// @brief Fills the client's output buffer with 'length' characters of
-	/// string 'str'.
-	/// @param buffer The data we want to fill the client's output buffer with.
-	/// @param maxLength The maximum number of characters we want to put inside
-	/// the client's output buffer.
-	/// @return Returns the number of bytes written.
-	int setOutputBuffer(char *buffer, unsigned int maxLength);
+	// [idle/ time]
+	clock_t getIdleSince() const;
+	void	setIdleSince(clock_t t);
+	void	resetIdleSince();
 
-	/// @brief Setter for the sockFD_ attribute.
-	/// @param fd The file descriptor that will be associated with the current
-	/// Client object.
-	void setSockFD(int fd);
+	// [server]
+	Server *getServer() const;
+	void	setServer(Server *s);
 
-	void inviteClientToChannel(Client &client, Channel &channel);
-	void kickClientFromChannel(Client &client, Channel const &channel);
+	// [away]
+	const std::string &getAwayMsg() const;
+	void			   setAwayMsg(const std::string &msg);
 
-	void changeChannelMode(Channel &channel, ChanMod const mode);
-	void changeChannelTopic(Channel &channel, std::string const &topic);
-
-	class NicknameTooLongException : public std::exception {
-	  public:
-		const char *what() const throw();
-	};
+	bool hasNick;
+	bool hasUser;
+	bool hasPass;
 
   private:
-	int				   sockFD_; ///< Socket file descriptor, -1 if not set.
-	UNUSED t_conState  connectionState_; ///< Connection state
-	UNUSED t_authState authState_;		 ///< Authentication status
+	int				   sockFD_; /// -1 if not set.
+	t_conState		   connectionState_;
+	UNUSED t_authState authState_;
 
-	std::string nick_; ///< Unique identifier to distinguish a client amongs
-					   /// others, must be unique, 9 characters long.
-	std::string host_; ///< Real name of the host that the client is running on.
-	std::string name_; ///< Username of the client on the aforementionned host.
-	std::string realname_;	  ///< Realname of the client.
-	Server *connectedServer_; ///< The server to which this client is connected.
-	std::string ipAddress_;	  ///< IPv4 address of the client.
-	std::string inputBuffer_; ///< Input buffer.
+	clock_t idleSince_;
+
+	std::string nick_;
+	std::string host_;
+	std::string username_;
+	std::string realname_;
+
+	std::string awayMsg_;
+
+	Server	   *serv_;		/// Pointer to the server instance.
+	std::string ipAddress_; ///< IPv4 address of the client.
+
+	std::string inputBuffer_;  ///< Input buffer.
 	std::string outputBuffer_; ///< Output buffer.
-	// and current channels. todo! --> ?shared pointer?
-	//	- maybe a secondary list for chanels he has mod power into?
 };
 
 #undef UNUSED
