@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
 		return (server.exit_state());
 	} catch (...) {
 		std::cerr << "unhandled critical error in server :(" << std::endl;
+		std::cerr << "Exiting..." << std::endl;
 	}
 	return (EXIT_FAILURE);
 }

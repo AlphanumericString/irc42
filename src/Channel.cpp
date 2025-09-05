@@ -19,45 +19,66 @@
 #include "ServerState.hpp"
 #include "generics.hpp"
 
-std::ostream &operator<<(std::ostream &os, ChanMod m)
-{
-	if (m & MODE_L)
-		os << "l";
-	if (m & MODE_T)
-		os << "t";
-	if (m & MODE_I)
-		os << "i";
-	if (m & MODE_S)
-		os << "s";
-	if (m == MODE_UNKNOWN)
-		os << "unknown";
+std::ostream &operator<<(std::ostream &os, ChanMod m) {
+	switch (m) {
+		case MODE_L:
+			os << "l";
+			break;
+		case MODE_T:
+			os << "t";
+			break;
+		case MODE_I:
+			os << "i";
+			break;
+		case MODE_K:
+			os << "k";
+			break;
+		case MODE_O:
+			os << "o";
+			break;
+		case MODE_UNKNOWN:
+		case MODE_NUMBER:
+		default:
+			os << "?";
+			break;
+	}
 	return (os);
 }
+
+void operator|=(ChanMod &a, ChanMod b) {
+	a = static_cast< ChanMod >(static_cast< int >(a) | static_cast< int >(b));
+}
+ChanMod operator|(const ChanMod a, const ChanMod b) {
+	return (
+		static_cast< ChanMod >(static_cast< int >(a) | static_cast< int >(b)));
+}
+ChanMod operator&(const ChanMod a, const ChanMod b) {
+	return (
+		static_cast< ChanMod >(static_cast< int >(a) & static_cast< int >(b)));
+}
+
 /// @todo Exception handling
-Channel::Channel(std::string const &name, Client &owner)
-	: owner_(owner), name_(name) {
-	members_.push_back(owner);
+Channel::Channel(std::string const &name, Client &creator) : name_(name) {
+	members_.push_back(creator);
 	invited_.clear();
-	operators_.push_back(owner);
+	operators_.push_back(creator);
 	topic_ = "";
-	topicProtected_ = false;
 	userLimit_ = 0;
 	mode_ = MODE_UNKNOWN;
 }
 
-Channel::Channel(Channel const &original) : owner_(original.owner_) {
+Channel::Channel(Channel const &original) {
 	*this = original;
 };
+
 Channel::~Channel() {};
 Channel &Channel::operator=(Channel const &original) {
 	if (this != &original) {
-		this->owner_ = original.owner_;
 		this->name_ = original.name_;
 		this->members_ = original.members_;
 		this->operators_ = original.operators_;
 		this->invited_ = original.invited_;
 		this->topic_ = original.topic_;
-		this->topicProtected_ = original.topicProtected_;
 		this->userLimit_ = original.userLimit_;
 		this->mode_ = original.mode_;
 	}
@@ -65,6 +86,20 @@ Channel &Channel::operator=(Channel const &original) {
 };
 
 // [broadcast]
+void Channel::broadcast_full(const std::string &s, Server &ser) {
+	if (s.empty())
+		return;
+	if (s.find("\r\n") == std::string::npos)
+		throw std::runtime_error("Broadcast message must end with \\r\\n");
+
+	for (std::list< Client >::iterator it =
+			 ser.getServerState().getClients().begin();
+		 it != ser.getServerState().getClients().end(); ++it) {
+		if (this->hasMember(*it)) {
+			it->appendToOutputBuffer(s);
+		}
+	}
+}
 void Channel::broadcast(const std::string &s, const Client &origin,
 						Server &ser) {
 	if (s.empty())
@@ -109,14 +144,16 @@ void Channel::updateNick(const Client &c, const std::string &newNick,
 			}
 		}
 	}
-	if (this->owner_ == c.getSockFD()) {
-		this->owner_.setNickname(newNick);
-	}
 }
 
 // [checks]
 bool Channel::isFull() const {
-	return (this->userLimit_ != 0 && this->members_.size() >= this->userLimit_);
+	if (!(this->mode_ & MODE_L))
+		return (false);
+	if (this->userLimit_ <= 0)
+		return (true);
+	return (this->members_.size() >=
+			static_cast< unsigned int >(this->userLimit_));
 }
 bool Channel::isEmpty() const {
 	return (this->members_.empty());
@@ -143,8 +180,9 @@ void Channel::removeMember(const Client &c) {
 void Channel::addMember(Client &c) {
 	if (this->hasMember(c))
 		return;
-	if (this->mode_ & MODE_L && getMembers().size() >= getUserLimit() &&
-		getUserLimit() != 0)
+	if (this->mode_ & MODE_L &&
+		(getUserLimit() <= 0 ||
+		 getMembers().size() >= static_cast< unsigned int >(getUserLimit())))
 		throw std::runtime_error("Channel is full");
 	if (this->mode_ & MODE_I && !this->isInvited(c))
 		throw std::runtime_error("You must be invited to join this channel");
@@ -157,10 +195,40 @@ std::list< Client > const &Channel::getMembers() const {
 	return (this->members_);
 }
 
+Client &Channel::getMember(const std::string &nick) {
+	for (std::list< Client >::iterator it = this->members_.begin();
+		 it != this->members_.end(); ++it) {
+		if (it->getNick() == nick)
+			return (*it);
+	}
+	throw std::runtime_error("No such client in channel");
+}
+const Client &Channel::getMember(const std::string &nick) const {
+	for (std::list< Client >::const_iterator it = this->members_.begin();
+		 it != this->members_.end(); ++it) {
+		if (it->getNick() == nick)
+			return (*it);
+	}
+	throw std::runtime_error("No such client in channel");
+}
+Client &Channel::getMember(const Client &c) {
+	for (std::list< Client >::iterator it = this->members_.begin();
+		 it != this->members_.end(); ++it) {
+		if (*it == c)
+			return (*it);
+	}
+	throw std::runtime_error("No such client in channel");
+}
+const Client &Channel::getMember(const Client &c) const {
+	try {
+		return (searchInList< Client >(this->members_, c));
+	} catch (...) {
+		throw std::runtime_error("No such client in channel");
+	}
+}
+
 // [operators] {is, add, remove, get}
 bool Channel::isOperator(const Client &client) const {
-	if (this->owner_ == client)
-		return (true);
 	try {
 		searchInList< Client >(this->operators_, client);
 		return (true);
@@ -176,8 +244,6 @@ void Channel::addOperator(Client &c) {
 	this->operators_.push_back(c);
 }
 void Channel::removeOperator(const Client &c) {
-	if (this->owner_ == c)
-		throw std::runtime_error("Cannot remove owner from operators");
 	this->operators_.remove(c);
 }
 std::list< Client > &Channel::getOperators() {
@@ -222,21 +288,6 @@ const std::string &Channel::getName() const {
 	return (this->name_);
 }
 
-// [owner]
-Client &Channel::getOwner() {
-	return (this->owner_);
-}
-const Client &Channel::getOwner() const {
-	return (this->owner_);
-}
-void Channel::setOwner(Client &c) {
-	if (!this->hasMember(c))
-		throw std::runtime_error("New owner must be a member of the channel");
-	this->owner_ = c;
-	if (!this->isOperator(c))
-		this->addOperator(c);
-}
-
 // [topic]
 void Channel::setTopic(const std::string &t) {
 	this->topic_ = t;
@@ -244,18 +295,46 @@ void Channel::setTopic(const std::string &t) {
 const std::string &Channel::getTopic() const {
 	return (this->topic_);
 }
-void Channel::setTopicProtected(bool b) {
-	this->topicProtected_ = b;
-}
-bool Channel::isTopicProtected() const {
-	return (this->topicProtected_);
-}
 
 // [other] {user limit, mode}
-unsigned int Channel::getUserLimit() const {
+std::string Channel::getModeStrFormat(std::string *mode_params_ret) const {
+	std::string mode_str = "+";
+	std::string mode_params = "";
+
+	if (this->mode_ & MODE_I)
+		mode_str += "i";
+	if (this->mode_ & MODE_T) {
+		mode_str += "t";
+		if (!this->topic_.empty())
+			mode_params += this->topic_;
+	}
+	if (this->mode_ & MODE_K) {
+		mode_str += "k";
+		if (!this->key_.empty()) {
+			if (!mode_params.empty())
+				mode_params += " ";
+			mode_params += this->key_;
+		}
+	}
+	if (this->mode_ & MODE_L) {
+		mode_str += "l";
+		if (this->userLimit_ > 0) {
+			if (!mode_params.empty())
+				mode_params += " ";
+			mode_params += to_string(this->userLimit_);
+		}
+	}
+	if (mode_str == "+")
+		mode_str = "";
+	if (mode_params_ret)
+		*mode_params_ret = mode_params;
+	return (mode_str);
+}
+
+int Channel::getUserLimit() const {
 	return (this->userLimit_);
 }
-void Channel::setUserLimit(unsigned int limit) {
+void Channel::setUserLimit(int limit) {
 	this->userLimit_ = limit;
 }
 
@@ -264,4 +343,15 @@ ChanMod Channel::getMode() const {
 }
 void Channel::setMode(ChanMod m) {
 	this->mode_ = m;
+}
+void Channel::unsetMode(const ChanMod m) {
+	this->mode_ = static_cast< ChanMod >(static_cast< int >(this->mode_) &
+										 ~static_cast< int >(m));
+}
+
+const std::string &Channel::getKey() const {
+	return (this->key_);
+}
+void Channel::setKey(const std::string &k) {
+	this->key_ = k;
 }

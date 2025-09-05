@@ -12,6 +12,7 @@
 
 #include "ICmd.hpp"
 
+#include <cstdlib>
 #include <vector>
 
 #include "Channel.hpp"
@@ -20,23 +21,6 @@
 #include "IRPL.hpp"
 #include "IRPL_populated.hpp"
 #include "smart_ptr.hpp"
-
-// -----------
-// sanity checks
-// -----------
-
-std::vector< IRPL * > CMD_PING::execute(Server &s, Client &client) {
-	(void)client;
-
-	std::vector< IRPL * > ret;
-
-	if (_args.size() < 2)
-		return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
-	if (_args[1].empty() || _args[1].compare(s.getServerState().getName()) != 0)
-		return (ret.push_back(new ERR_NOORIGIN()), ret);
-	ret.push_back(new RPL_CUSTOM("PONG :" + _args[1]));
-	return (ret);
-}
 
 // ------------
 // registration core
@@ -217,7 +201,6 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 	ch_name = _args[1];
 	ch = s.getServerState().getChannel(ch_name);
 	if (ch != NULLPTR) { // chanel exists
-		std::cerr << "Channel " << ch_name << " exists" << std::endl;
 		if (ch->hasMember(client) == true) {
 			ret.push_back(new ERR_USERONCHANNEL(client.getNick(), ch_name));
 			return ret;
@@ -252,7 +235,6 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		ch->broadcast(ret.back()->toString(s, client), client, s);
 
 	} else { // create channel
-		std::cerr << "Channel " << ch_name << " created" << std::endl;
 		Channel new_ch(ch_name, client);
 
 		s.getServerState().getChannels().push_back(new_ch);
@@ -351,12 +333,8 @@ std::vector< IRPL * > CMD_PART::execute(Server &s, Client &client) {
 	ch->broadcast(ret.back()->toString(s, client), client, s);
 
 	ch->removeMember(client);
-	try {
-		if (ch->isOperator(client))
-			ch->removeOperator(client);
-	} catch (...) {
-		// do nothing, cannot remove owner from operators
-	}
+	if (ch->isOperator(client))
+		ch->removeOperator(client);
 	if (ch->isEmpty())
 		s.getServerState().getChannels().remove(*ch);
 	return ret;
@@ -447,6 +425,19 @@ std::vector< IRPL * > CMD_WHOWAS::execute(Server &s, Client &client) {
 	return ret;
 }
 
+std::vector< IRPL * > CMD_PING::execute(Server &s, Client &client) {
+	(void)client;
+
+	std::vector< IRPL * > ret;
+
+	if (_args.size() < 2)
+		return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
+	if (_args[1].empty() || _args[1].compare(s.getServerState().getName()) != 0)
+		return (ret.push_back(new ERR_NOORIGIN()), ret);
+	ret.push_back(new RPL_CUSTOM("PONG :" + _args[1]));
+	return (ret);
+}
+
 std::vector< IRPL * > CMD_VERSION::execute(Server &s, Client &client) {
 	(void)s;
 	std::vector< IRPL * > ret;
@@ -477,6 +468,14 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		return ret;
 	std::string ch_name = _args[1];
 	std::string target_name = _args[2];
+	std::string msg = "";
+	if (_args.size() >= 4) {
+		if (_raw.find_last_of(":") != std::string::npos)
+			msg = _raw.substr(_raw.find_last_of(":") + 1);
+		else
+			msg = _args[3];
+	} else
+		msg = "you got too silly"; // default message if none provided
 
 	Channel *ch = s.getServerState().getChannel(ch_name);
 	if (ch == NULLPTR)
@@ -495,15 +494,209 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_USERNOTINCHANNEL(target_name, ch_name));
 	if (ret.size() > 0)
 		return ret;
-	try {
-		ch->removeOperator(*target);
-		ch->removeMember(*target);
-		ch->broadcast(":" + client.infostr() + " KICK " + ch_name + " " +
-						  target_name + "\r\n", client, s);
-	} catch (...) {
-		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch_name, "you cannot kick chanel owner"));
-	}
+	ch->broadcast_full(":" + client.infostr() + " KICK " + ch_name + " " +
+						   target_name + ":" + msg + "\r\n",
+					   s);
+	ch->removeOperator(*target);
+	ch->removeMember(*target);
 	return ret;
 }
 
+// std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {}
+// std::vector< IRPL * > CMD_TOPIC::execute(Server &s, Client &client) {}
 
+// params:
+// <channel> {+|-}<modes> {<mode params>}
+// ||
+// <client> {+|-}<modes> {<mode params>}
+
+static void
+args_to_pairs(std::vector< std::pair< ChanMod, std::string > > &mode_changes,
+			  const std::vector< std::string > &args, int start) {
+	unsigned int offset_arg = start + 1;
+	ChanMod		 md;
+	std::string	 param;
+	bool		 set = (args[start][0] == '+');
+
+	for (unsigned int i = 1; i < args[start].length(); i++) {
+		param = "";
+		switch (args[start][i]) {
+		case 'i':
+			md = MODE_I;
+			break;
+		case 'k':
+			md = MODE_K;
+			break;
+		case 'l':
+			md = MODE_L;
+			break;
+		case 't':
+			md = MODE_T;
+			break;
+		case 'o':
+			md = MODE_O;
+			break;
+		default:
+			md = MODE_UNKNOWN;
+			break;
+		}
+		if (set &&
+			(md == MODE_L || md == MODE_K || md == MODE_O || md == MODE_T)) {
+			if (offset_arg < args.size())
+				param = args[offset_arg++];
+			else
+				throw std::runtime_error("Not enough parameters for " +
+										 args[i]);
+		}
+		if (md == MODE_UNKNOWN)
+			throw std::runtime_error("Unknown mode " + args[i]);
+		mode_changes.push_back(std::make_pair(md, param));
+	}
+}
+
+std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
+	std::vector< IRPL * >							 ret;
+	std::vector< std::pair< ChanMod, std::string > > mode_changes;
+
+	if (client.getConState() != REGISTERED) // fast check
+		ret.push_back(new ERR_NOTREGISTERED());
+	else if (_args.size() < CMD_MODE::minArg)
+		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
+	else if (_args[1].empty())
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
+	if (ret.size() > 0)
+		return ret;
+
+	Channel *ch = s.getServerState().getChannel(_args[1]);
+	Client	*target = s.getServerState().getClient(_args[1]);
+	mode_changes.reserve(MODE_NUMBER);
+
+	try {
+		if (_args.size() > 2)
+			args_to_pairs(mode_changes, _args, 2);
+	} catch (std::exception &e) {
+		return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
+	}
+	if (ch == NULLPTR && target == NULLPTR) {
+		ret.push_back(new ERR_NOSUCHNICK(_args[1]));
+	} else if (ch != NULLPTR) {
+		if (_args.size() == 2) {
+			std::string params = "";
+			std::string modes = ch->getModeStrFormat(&params);
+
+			ret.push_back(new RPL_CHANNELMODEIS(ch->getName(), modes, params));
+		} else {
+
+			if (_args[2][0] != '+' && _args[2][0] != '-')
+				return (ret.push_back(new ERR_UNKNOWNMODE(_args[2])), ret);
+			if (ch->hasMember(client) == false)
+				return (ret.push_back(new ERR_NOTONCHANNEL(ch->getName())),
+						ret);
+			if (ch->isOperator(client) == false)
+				return (ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName())),
+						ret);
+			// move to internal PRIVATE function
+			bool		tpc_change = false;
+			bool		set = (_args[2][0] == '+');
+			std::string resp_modes = (set ? "+" : "-");
+			std::string resp_params = "";
+
+			for (std::vector< std::pair< ChanMod, std::string > >::iterator it =
+					 mode_changes.begin();
+				 it != mode_changes.end() && ret.size() == 0; it++) {
+				switch (it->first) {
+				case MODE_I:
+					if (set)
+						ch->setMode(ch->getMode() | MODE_I);
+					else
+						ch->unsetMode(MODE_I);
+					resp_modes += "i";
+					break;
+				case MODE_T:
+					if (set) {
+						ch->setMode(ch->getMode() | MODE_T);
+						ch->setTopic(it->second);
+						if (!resp_params.empty())
+							resp_params += " ";
+						resp_params += it->second;
+					} else {
+						ch->unsetMode(MODE_T);
+						ch->setTopic("");
+					}
+					tpc_change = true;
+					resp_modes += "t";
+					break;
+				case MODE_K:
+					if (set) {
+						ch->setMode(ch->getMode() | MODE_K);
+						ch->setKey(it->second);
+						if (!resp_params.empty())
+							resp_params += " ";
+						resp_params += it->second;
+					} else {
+						ch->unsetMode(MODE_K);
+						ch->setKey("");
+					}
+					resp_modes += "k";
+					break;
+				case MODE_L:
+					if (set) {
+						ch->setMode(ch->getMode() | MODE_L);
+						ch->setUserLimit(atoi(it->second.c_str()));
+						if (!resp_params.empty())
+							resp_params += " ";
+						resp_params += it->second;
+					} else {
+						ch->unsetMode(MODE_L);
+						ch->setUserLimit(0);
+					}
+					resp_modes += "l";
+					break;
+				case MODE_O:
+					try {
+						Client &cl = ch->getMember(it->second);
+						if (set)
+							ch->addOperator(cl);
+						else
+							ch->removeOperator(cl);
+						resp_modes += "o";
+						if (!resp_params.empty())
+							resp_params += " ";
+						resp_params += it->second;
+					} catch (...) {
+						ret.push_back(new ERR_NOSUCHNICK(it->second));
+					}
+					break;
+				case MODE_NUMBER:
+				case MODE_UNKNOWN:
+				default:
+					ret.push_back(new ERR_UNKNOWNMODE(_args[2]));
+					break;
+				}
+			} // end for
+			if (ret.size() > 0)
+				return ret;
+			if (tpc_change) {
+				if (!ch->getTopic().empty())
+					ch->broadcast_full(":" + client.infostr() + " TOPIC " +
+										   ch->getName() + " :" +
+										   ch->getTopic() + "\r\n",
+									   s);
+				else
+					ch->broadcast_full(":" + client.infostr() + " TOPIC " +
+										   ch->getName() + " :\r\n",
+									   s);
+			}
+			ch->broadcast_full(
+				":" + client.infostr() + " MODE " + ch->getName() + " " +
+					resp_modes +
+					(resp_params.empty() ? "" : " " + resp_params) + "\r\n",
+				s);
+
+		} // end set/unset
+	} else { // target is a client
+		// unsupported
+		ret.push_back(new ERR_UMODEUNKNOWNFLAG());
+	}
+	return ret;
+}

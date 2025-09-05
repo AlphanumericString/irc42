@@ -614,7 +614,10 @@ RPL_LISTEND::~RPL_LISTEND(void) {};
 // nb:324
 // short for:RPL_CHANNELMODEIS
 // desc:RFC1459 	<channel> <mode> <mode_params>
-RPL_CHANNELMODEIS::RPL_CHANNELMODEIS() : IRPL(324, "...") {};
+RPL_CHANNELMODEIS::RPL_CHANNELMODEIS(std::string const &ch_name,
+									 std::string const &modes,
+									 std::string const &mode_params)
+	: IRPL(324, ch_name + " " + modes + " " + mode_params) {};
 RPL_CHANNELMODEIS::~RPL_CHANNELMODEIS(void) {};
 
 // nb:325
@@ -738,19 +741,21 @@ RPL_WHOREPLY::~RPL_WHOREPLY(void) {};
 // short for:RPL_NAMREPLY
 // desc:RFC1459 	( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *(
 // ' ' [ '@' / '+' ] <nick> ) 	Reply to NAMES (See RFC)
+// '=' = public channel, '*' = private channel, '@' = secret channel
+// chan with +ki modes shows as '@' too
+// chan with +i mode shows as '*'
+// '@' = chan op, ' ' = normal user
+//
 RPL_NAMREPLY::RPL_NAMREPLY(const std::string		 &ch_name,
 						   const std::list< Client > &cl_list,
 						   const std::list< Client > &ops, const ChanMod cm)
 	: IRPL(353, "...") {
 
-	std::cerr << "DBG::" << __FILE__ << ":" << __LINE__
-			  << " RPL_NAMREPLY constructor called\n";
-	std::cerr << "mode:" << cm << std::endl;
 	IRPL::string = "";
-	if (cm & MODE_I)
+	if (cm & MODE_I && cm & MODE_K)
+		IRPL::string += "@ ";
+	else if (cm & MODE_I)
 		IRPL::string += "* ";
-	else if (cm & MODE_S)
-		IRPL::string += "@";
 	else
 		IRPL::string += "= ";
 

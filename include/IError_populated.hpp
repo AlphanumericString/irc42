@@ -463,7 +463,7 @@ class ERR_CHANNELISFULL : public IError {
 class ERR_UNKNOWNMODE : public IError {
   public:
 	ERR_UNKNOWNMODE(const std::string &mode_char,
-					const std::string &reason = "is unknown mode char to me");
+					const std::string &reason = "is/contain unknown or unsuported mode char");
 	virtual ~ERR_UNKNOWNMODE(void) throw();
 };
 

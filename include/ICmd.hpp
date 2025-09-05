@@ -101,14 +101,15 @@ class CMD_NICK : public ICmd {
 };
 
 // msg core : [JOIN, PART, PRIVMSG]
-// TODO: [NOTICE, AWAY]
+
+// TODO: [NOTICE, AWAY] (not mandatory but completionist (will drop if no time))
 
 class CMD_JOIN : public ICmd {
   private:
 	static const int minArg = 2;
 
   public:
-	// FIX:
+	// TODO: do when modes is implemented
 	// JOIN [add-checks]-> invite only, key, limit
 	CMD_JOIN(const std::string &s) : ICmd(s) {}
 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
@@ -215,10 +216,45 @@ class CMD_KICK : public ICmd {
 };
 
 // [INVITE] - invite user to channel
+// class CMD_INVITE : public ICmd {
+//   private:
+// 	static const int minArg = 3;
+//
+//   public:
+// 	CMD_INVITE(const std::string &s) : ICmd(s) {}
+// 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
+// 	static const std::string	  predicate() {
+// 		 return std::string("INVITE");
+// 	}
+// };
+
 // [TOPIC] - set or view topic of channel
+// class CMD_TOPIC : public ICmd {
+//   private:
+// 	static const int minArg = 2;
+//
+//   public:
+// 	CMD_TOPIC(const std::string &s) : ICmd(s) {}
+// 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
+// 	static const std::string	  predicate() {
+// 		 return std::string("TOPIC");
+// 	}
+// };
+
 // [MODE] not implemented {i, t, k, o, l}
 // i-> invite only
 // t-> topic set by ops only
 // k-> key (password)
 // o-> give/take channel operator privilege
 // l-> user limit
+class CMD_MODE : public ICmd {
+  private:
+	static const int minArg = 2;
+
+  public:
+	CMD_MODE(const std::string &s) : ICmd(s) {}
+	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
+	static const std::string	  predicate() {
+		 return std::string("MODE");
+	}
+};

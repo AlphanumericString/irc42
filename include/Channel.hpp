@@ -26,8 +26,8 @@
 
 #include <exception>
 #include <list>
-#include <string>
 #include <ostream>
+#include <string>
 
 class Client;
 class Server;
@@ -35,35 +35,42 @@ class Server;
 #define MAX_CHAN_NAME_LEN 200
 #define PREFIX_CHARS	  "#&"
 #define DEFAULT_PREFIX	  PREFIX_CHARS[0]
-#define UNUSED __attribute__((unused))
+#define UNUSED			  __attribute__((unused))
 
 typedef enum {		  // need to read doc, make these more explicit
 	MODE_UNKNOWN = 0, ///< Unknown mode (default).
 	MODE_L = 1 << 0,  ///< User limit for the channel.
 	MODE_T = 1 << 1,  ///< Channel topic.
 	MODE_I = 1 << 2,  ///< Invite-only channel.
-	MODE_S = 1 << 3,  ///< Secret channel.
+	MODE_K = 1 << 4,  ///< Password-protected channel.
+	MODE_O = 1 << 5,  ///< Channel operator status.
+	MODE_DEFAULT = MODE_UNKNOWN,
+	MODE_NUMBER = 6
 } ChanMod;
+
+void	operator|=(ChanMod &a, ChanMod b);
+ChanMod operator|(const ChanMod a, const ChanMod b);
+ChanMod operator&(const ChanMod a, const ChanMod b);
 
 std::ostream &operator<<(std::ostream &os, ChanMod m);
 
 class Channel {
   public:
-	Channel(std::string const &name, Client &owner);
+	Channel(std::string const &name, Client &creator);
 	Channel(Channel const &original);
 	~Channel();
 	Channel &operator=(Channel const &original);
 
 	// broadcast message to all members except the origin
+	void broadcast_full(const std::string &s, Server &ser);
 	void broadcast(const std::string &s, const Client &c, Server &ser);
 	void updateNick(const Client &c, const std::string &newNick, Server &ser);
 
 	// [checks]
 	bool isFull() const;
 	bool isEmpty() const;
-	bool operator==(Channel const &other) const ;
-	bool operator==(std::string const &name) const ;
-
+	bool operator==(Channel const &other) const;
+	bool operator==(std::string const &name) const;
 
 	// [members] {has, add, remove, get}
 	bool					   hasMember(const Client &client) const;
@@ -73,6 +80,8 @@ class Channel {
 	const std::list< Client > &getMembers() const;
 	const Client			  &getMember(const std::string &nick) const;
 	Client					  &getMember(const std::string &nick);
+	const Client			  &getMember(const Client &c) const;
+	Client					  &getMember(const Client &c);
 
 	// [operators] {is, add, remove, get}
 	bool					   isOperator(const Client &client) const;
@@ -96,33 +105,36 @@ class Channel {
 	// [name]
 	void			   setName(const std::string &t);
 	std::string const &getName() const;
-	// [owner]
-	Client		 &getOwner();
-	const Client &getOwner() const;
-	void		  setOwner(Client &c);
+
 	// [topic]
 	void			   setTopic(const std::string &t);
 	std::string const &getTopic() const;
-	bool			   isTopicProtected() const;
-	void			   setTopicProtected(bool b);
-	// [other] {user limit, mode}
-	unsigned int getUserLimit() const;
-	void		 setUserLimit(unsigned int limit);
-	ChanMod		 getMode() const;
-	void		 setMode(ChanMod m);
+
+	// [mode-stuff] {user limit, mode, key}
+	//
+	std::string getModeStrFormat(std::string *mode_params) const;
+	int			getUserLimit() const;
+	void		setUserLimit(int limit);
+
+	ChanMod getMode() const;
+	void	setMode(ChanMod m);
+	void	unsetMode(const ChanMod m);
+
+	const std::string &getKey() const;
+	void			   setKey(const std::string &k);
 
   private:
 	Channel();
 
-	Client			   &owner_;
 	std::list< Client > operators_;
 	std::list< Client > invited_;
 	std::list< Client > members_;
 
-	std::string	 name_;
-	std::string	 topic_;
-	bool		 topicProtected_;
-	unsigned int userLimit_;
+	std::string name_;
+	std::string topic_;
+	std::string key_;
+
+	int userLimit_;
 
 	ChanMod mode_;
 };

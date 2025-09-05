@@ -715,7 +715,8 @@ class RPL_LISTEND : public IRPL {
 // desc:RFC1459 	<channel> <mode> <mode_params>
 class RPL_CHANNELMODEIS : public IRPL {
   public:
-	RPL_CHANNELMODEIS(/* Channel *? */);
+	RPL_CHANNELMODEIS(const std::string &ch_name, const std::string &modes,
+					  const std::string &mode_params = "");
 	virtual ~RPL_CHANNELMODEIS(void);
 };
 
@@ -727,6 +728,12 @@ class RPL_UNIQOPIS : public IRPL {
 	RPL_UNIQOPIS();
 	virtual ~RPL_UNIQOPIS(void);
 };
+
+// nb:329
+// short for:RPL_CREATIONTIME
+// desc:RFC2812		<channel> <timestamp>
+// Indicates the time the channel was created. The timestamp is in
+// seconds since the epoch (1970)
 
 // nb:331
 // short for:RPL_NOTOPIC

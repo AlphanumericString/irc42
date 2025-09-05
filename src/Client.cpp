@@ -63,8 +63,9 @@ Client::Client() : sockFD_(-1) {
 }
 Client::Client(int fd, char *ipAddress, Server *server)
 	: sockFD_(fd), serv_(server), ipAddress_(ipAddress) {
-	std::cerr << "New client[" << "fd:" << this->sockFD_ << "|"
-			  << "ip:" << this->ipAddress_ << "]" << std::endl;
+	// TODO: check serverstate, if monitor : print
+	// std::cout << "New client[" << "fd:" << this->sockFD_ << "|"
+	// 	  << "ip:" << this->ipAddress_ << "]" << std::endl;
 	nick_ = "*";
 	connectionState_ = NOT_LOGGED;
 	hasNick = false;
@@ -177,13 +178,13 @@ static std::vector< IRPL * > try_create(const std::string &line, Client &client,
 		// operator core
 		if (CHECKCMD(line, CMD_KICK))
 			return (CMD_KICK(line).execute(s, client));
+		if (CHECKCMD(line, CMD_MODE))
+			return (CMD_MODE(line).execute(s, client));
 		// TODO:
 		// if (CHECKCMD(line, CMD_INVITE))
 		// 	return (CMD_INVITE(line).execute(s, client));
 		// if (CHECKCMD(line, CMD_TOPIC))
 		// 	return (CMD_TOPIC(line).execute(s, client));
-		// if (CHECKCMD(line, CMD_MODE))
-		// 	return (CMD_MODE(line).execute(s, client));
 
 
 		// unknown command
