@@ -21,7 +21,9 @@
 
 void ShellServerHandler::cmdHandler(Server &server, std::string line) {
 	ShellServerHandler::strToCmd(line, server);
-	std::cout << "$> " << std::flush;
+	if (server.getServerState().isDebug() == false &&
+		server.getServerState().getStatus() == ServerState::RUNNING)
+		std::cout << "$> " << std::flush;
 }
 
 /// @todo Implement this function.
@@ -66,13 +68,29 @@ int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	return (0);
 }
 
+int ShellServerHandler::handle_dbg(std::string s, Server &serv) {
+	(void)s; // maybe use to get level of dbg?
+	serv.getServerState().setDebug(!serv.getServerState().isDebug());
+	if (!serv.getServerState().isDebug())
+		return (0);
+	std::cout << "Debug mode enabled" << std::endl;
+	std::cout << "feel free to disable it again with 'dbg' or 'debug' command"
+			  << std::endl;
+	return (0);
+}
+
 ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 																Server &serv) {
+	if (serv.getServerState().isDebug() && s != "dbg" && s != "debug")
+		return (ShellServerHandler::UNKNOWN);
 	if (!s.compare("test") || !s.compare("t"))
 		return (ShellServerHandler::handle_test(s, serv),
 				ShellServerHandler::DISPLAY_INFO);
 	if (!s.compare("monitor") || !s.compare("mon"))
 		return (ShellServerHandler::handle_monitor(s, serv),
+				ShellServerHandler::DISPLAY_INFO);
+	if (!s.compare("debug") || !s.compare("dbg"))
+		return (ShellServerHandler::handle_dbg(s, serv),
 				ShellServerHandler::DISPLAY_INFO);
 	if (!s.compare("quit") || !s.compare("exit"))
 		return (ShellServerHandler::handle_quit(s, serv),

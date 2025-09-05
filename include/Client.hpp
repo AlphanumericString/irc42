@@ -46,6 +46,9 @@ class Client {
 	~Client();
 	Client &operator=(Client const &original);
 
+	// [print]
+	friend std::ostream &operator<<(std::ostream &o, const Client &c);
+
 	// [ buffers ]
 	// ibuf
 	void		 appendInputBuffer(const char *str, unsigned int length);

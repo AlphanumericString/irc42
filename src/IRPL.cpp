@@ -653,6 +653,14 @@ std::string RPL_NOTOPIC::toString(const Server &s, const Client &c) {
 RPL_TOPIC::RPL_TOPIC(const std::string &ch_name, const std::string &topic)
 	: IRPL(332, ch_name + " :" + topic) {};
 RPL_TOPIC::~RPL_TOPIC(void) {};
+std::string RPL_TOPIC::toString(const Server &s, const Client &c) {
+	(void)s;
+	std::stringstream ss;
+
+	ss << ":" << c.infostr() << " TOPIC ";
+	ss << string << "\r\n";
+	return ss.str();
+};
 
 // nb:341
 // short for:RPL_INVITING

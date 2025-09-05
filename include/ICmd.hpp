@@ -216,30 +216,30 @@ class CMD_KICK : public ICmd {
 };
 
 // [INVITE] - invite user to channel
-// class CMD_INVITE : public ICmd {
-//   private:
-// 	static const int minArg = 3;
-//
-//   public:
-// 	CMD_INVITE(const std::string &s) : ICmd(s) {}
-// 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
-// 	static const std::string	  predicate() {
-// 		 return std::string("INVITE");
-// 	}
-// };
+class CMD_INVITE : public ICmd {
+  private:
+	static const int minArg = 3;
+
+  public:
+	CMD_INVITE(const std::string &s) : ICmd(s) {}
+	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
+	static const std::string	  predicate() {
+		 return std::string("INVITE");
+	}
+};
 
 // [TOPIC] - set or view topic of channel
-// class CMD_TOPIC : public ICmd {
-//   private:
-// 	static const int minArg = 2;
-//
-//   public:
-// 	CMD_TOPIC(const std::string &s) : ICmd(s) {}
-// 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
-// 	static const std::string	  predicate() {
-// 		 return std::string("TOPIC");
-// 	}
-// };
+class CMD_TOPIC : public ICmd {
+  private:
+	static const int minArg = 2;
+
+  public:
+	CMD_TOPIC(const std::string &s) : ICmd(s) {}
+	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
+	static const std::string	  predicate() {
+		 return std::string("TOPIC");
+	}
+};
 
 // [MODE] not implemented {i, t, k, o, l}
 // i-> invite only

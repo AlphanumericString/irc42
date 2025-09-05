@@ -61,6 +61,9 @@ class Channel {
 	~Channel();
 	Channel &operator=(Channel const &original);
 
+	// [print]
+	friend std::ostream &operator<<(std::ostream &o, const Channel &c);
+
 	// broadcast message to all members except the origin
 	void broadcast_full(const std::string &s, Server &ser);
 	void broadcast(const std::string &s, const Client &c, Server &ser);

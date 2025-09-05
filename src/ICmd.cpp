@@ -205,12 +205,24 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 			ret.push_back(new ERR_USERONCHANNEL(client.getNick(), ch_name));
 			return ret;
 		}
-
-		// TODO:
-		// check max users
-		// check invite only
-		// check password
-		// check when doing mode
+		if (ch->getMode() & MODE_L) {
+			if (ch->isFull() == true) {
+				ret.push_back(new ERR_CHANNELISFULL(ch_name));
+				return ret;
+			}
+		}
+		if (ch->getMode() & MODE_I) {
+			if (ch->isInvited(client) == false)
+				return (ret.push_back(new ERR_INVITEONLYCHAN(ch_name)), ret);
+			else
+				ch->removeInvite(client);
+		}
+		if (ch->getMode() & MODE_K) {
+			if (_args.size() < 3 || ch->getKey().compare(_args[2]) != 0) {
+				ret.push_back(new ERR_BADCHANNELKEY(ch_name));
+				return ret;
+			}
+		}
 
 		try {
 			ch->addMember(client);
@@ -235,6 +247,10 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		ch->broadcast(ret.back()->toString(s, client), client, s);
 
 	} else { // create channel
+		if (s.getServerState().isDebug())
+			std::cout << "Creating channel " << ch_name << " for "
+					  << client.getNick() << "[" << client.getSockFD() << "]"
+					  << std::endl;
 		Channel new_ch(ch_name, client);
 
 		s.getServerState().getChannels().push_back(new_ch);
@@ -446,8 +462,7 @@ std::vector< IRPL * > CMD_VERSION::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_NOTREGISTERED());
 	if (ret.size() > 0)
 		return ret;
-
-	ret.push_back(new RPL_VERSION("ft_irc", "bgoulard", "v1.0"));
+	ret.push_back(new RPL_VERSION("ft_irc", "bgoulard & apetitco", "v0.09"));
 	return ret;
 }
 
@@ -502,8 +517,92 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 	return ret;
 }
 
-// std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {}
-// std::vector< IRPL * > CMD_TOPIC::execute(Server &s, Client &client) {}
+std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {
+	std::vector< IRPL * > ret;
+
+	if (client.getConState() != REGISTERED) // fast check
+		ret.push_back(new ERR_NOTREGISTERED());
+	else if (_args.size() < CMD_INVITE::minArg)
+		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
+	else if (_args[1].empty())
+		ret.push_back(new ERR_NONICKNAMEGIVEN());
+	else if (_args[2].empty() || _args[2][0] != '#')
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
+	if (ret.size() > 0)
+		return ret;
+
+	Client *target = s.getServerState().getClient(_args[1]);
+	if (target == NULLPTR)
+		ret.push_back(new ERR_NOSUCHNICK(_args[1]));
+	else {
+		Channel *ch = s.getServerState().getChannel(_args[2]);
+		if (ch == NULLPTR)
+			ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
+		else if (ch->hasMember(client) == false)
+			ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
+		else if (ch->isOperator(client) == false)
+			ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
+		else if (ch->hasMember(*target) == true)
+			ret.push_back(
+				new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
+		else {
+			ch->addInvite(*target);
+			ret.push_back(new RPL_INVITING(target->getNick(), ch->getName()));
+			target->appendToOutputBuffer(":" + client.infostr() + " INVITE " +
+										 target->getNick() + " :" +
+										 ch->getName() + "\r\n");
+		}
+	}
+	return ret;
+}
+
+std::vector< IRPL * > CMD_TOPIC::execute(Server &s, Client &client) {
+	std::vector< IRPL * > ret;
+
+	if (client.getConState() != REGISTERED) // fast check
+		ret.push_back(new ERR_NOTREGISTERED());
+	else if (_args.size() < CMD_TOPIC::minArg)
+		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
+	else if (_args[1].empty() || _args[1][0] != '#')
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
+	if (ret.size() > 0)
+		return ret;
+
+	Channel *ch = s.getServerState().getChannel(_args[1]);
+	if (ch == NULLPTR)
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
+	else if (ch->hasMember(client) == false)
+		ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
+	else if (ch->getMode() & MODE_T && ch->isOperator(client) == false)
+		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
+	else if (ch->getMode() & MODE_T) { // mode +t only ops can set topic
+		if (_raw.find_last_of(":") == std::string::npos)
+			ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
+		else {
+			std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
+			ch->setTopic(new_topic);
+			ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
+			ch->broadcast(ret.back()->toString(s, client), client, s);
+		}
+	} else {
+		if (_args.size() == 2) {
+			if (ch->getTopic().empty())
+				ret.push_back(new RPL_NOTOPIC(ch->getName()));
+			else
+				ret.push_back(new RPL_TOPIC(ch->getName(), ch->getTopic()));
+		} else {
+			if (_raw.find_last_of(":") == std::string::npos)
+				ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
+			else {
+				std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
+				ch->setTopic(new_topic);
+				ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
+				ch->broadcast(ret.back()->toString(s, client), client, s);
+			}
+		}
+	}
+	return ret;
+}
 
 // params:
 // <channel> {+|-}<modes> {<mode params>}
@@ -621,7 +720,6 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 						resp_params += it->second;
 					} else {
 						ch->unsetMode(MODE_T);
-						ch->setTopic("");
 					}
 					tpc_change = true;
 					resp_modes += "t";

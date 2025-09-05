@@ -77,7 +77,16 @@ class ServerState {
 	const std::vector< PrevClients > &getPrevClients() const;
 	std::vector< PrevClients > getPrevClients(const std::string &name) const;
 
+	bool isDebug() const {
+		return dbg_;
+	}
+	void setDebug(bool dbg) {
+		dbg_ = dbg;
+	}
+
   private:
+	bool dbg_;
+
 	std::string			 desc;		///< Description of the Server.
 	bool				 stop_;		///< Flag indicating if server has to stop.
 	ServerState::Status	 status_;	///< Current status of the Server.

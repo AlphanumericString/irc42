@@ -752,6 +752,7 @@ class RPL_TOPIC : public IRPL {
   public:
 	RPL_TOPIC(const std::string &ch_name, const std::string &topic);
 	virtual ~RPL_TOPIC(void);
+	virtual std::string toString(const Server &s, const Client &c);
 };
 
 // nb:341
@@ -763,7 +764,7 @@ class RPL_TOPIC : public IRPL {
 // considered the standard reply above that given by RFC1459.
 class RPL_INVITING : public IRPL {
   public:
-	RPL_INVITING(const std::string &nick, const std::string &ch_name);
+	RPL_INVITING(const std::string &nick_invitee, const std::string &ch_name);
 	virtual ~RPL_INVITING(void);
 };
 

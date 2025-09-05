@@ -21,26 +21,26 @@
 
 std::ostream &operator<<(std::ostream &os, ChanMod m) {
 	switch (m) {
-		case MODE_L:
-			os << "l";
-			break;
-		case MODE_T:
-			os << "t";
-			break;
-		case MODE_I:
-			os << "i";
-			break;
-		case MODE_K:
-			os << "k";
-			break;
-		case MODE_O:
-			os << "o";
-			break;
-		case MODE_UNKNOWN:
-		case MODE_NUMBER:
-		default:
-			os << "?";
-			break;
+	case MODE_L:
+		os << "l";
+		break;
+	case MODE_T:
+		os << "t";
+		break;
+	case MODE_I:
+		os << "i";
+		break;
+	case MODE_K:
+		os << "k";
+		break;
+	case MODE_O:
+		os << "o";
+		break;
+	case MODE_UNKNOWN:
+	case MODE_NUMBER:
+	default:
+		os << "?";
+		break;
 	}
 	return (os);
 }
@@ -70,7 +70,6 @@ Channel::Channel(std::string const &name, Client &creator) : name_(name) {
 Channel::Channel(Channel const &original) {
 	*this = original;
 };
-
 Channel::~Channel() {};
 Channel &Channel::operator=(Channel const &original) {
 	if (this != &original) {
@@ -84,6 +83,16 @@ Channel &Channel::operator=(Channel const &original) {
 	}
 	return (*this);
 };
+
+// [print]
+std::ostream &operator<<(std::ostream &o, const Channel &c)
+{
+	o << "Channel[nick:" << c.getName() << "|MODE:" << c.getMode()
+	  << "|t:" << c.getTopic() << "|l:" << c.getUserLimit()
+	  << "|nb clients:" << c.getMembers().size()
+	  << "|nb operators:" << c.getOperators().size() << "]";
+	return (o);
+}
 
 // [broadcast]
 void Channel::broadcast_full(const std::string &s, Server &ser) {
@@ -176,6 +185,8 @@ bool Channel::hasMember(const Client &client) const {
 }
 void Channel::removeMember(const Client &c) {
 	members_.remove(c);
+	if (isOperator(c))
+		removeOperator(c);
 }
 void Channel::addMember(Client &c) {
 	if (this->hasMember(c))

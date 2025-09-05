@@ -144,7 +144,10 @@ void ServerState::setStatus(ServerState::Status status) {
 }
 
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
-	os << sst.getMinimalInfo();
+	os << sst.getMinimalInfo() << std::endl;
+	os << sst.getClients().size() << " client(s) connected."
+	   << std::endl;
+	os << sst.getChannels().size() << " channel(s) created.";
 	return (os);
 }
 

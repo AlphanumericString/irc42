@@ -154,7 +154,9 @@ void Server::handleNewConnection() {
 		throw std::runtime_error("accept() error");
 	}
 	char *ip_str = inet_ntoa(peerSockAddr.sin_addr);
-	// std::cout << "NEW CONNECTION from: " << ip_str << std::endl;
+	if (this->serverState_.isDebug())
+		std::cout << "New connection from " << ip_str << " fd: " << new_clientFD
+				  << std::endl;
 	this->serverState_.newClient(new_clientFD, ip_str);
 }
 
@@ -240,6 +242,32 @@ void Server::handleStdinInput() {
 	}
 }
 
+void Server::handleClientDisconnecting() {
+	for (std::list< Client >::iterator it = serverState_.getClients().begin();
+		 it != serverState_.getClients().end(); it++) {
+		if (it->getConState() == DISCONNECTING) {
+			it->setConState(DISCONNECTED); // *ork* jobdone
+			if (getServerState().isDebug())
+				std::cout << *it << "\tDISCONNECT" << std::endl;
+			this->getServerState().addPrevClient(*it);
+			serverState_.getClients().remove(*it);
+			it = serverState_.getClients().begin();
+		}
+	}
+}
+
+void Server::handleEmptyChannels() {
+	for (std::list< Channel >::iterator it = serverState_.getChannels().begin();
+		 it != serverState_.getChannels().end(); it++) {
+		if (it->isEmpty()) {
+			if (getServerState().isDebug())
+				std::cout << *it << "\tEMPTY" << std::endl;
+			serverState_.getChannels().remove(*it);
+			it = serverState_.getChannels().begin();
+		}
+	}
+}
+
 void Server::mainLoop(void) {
 	int flags;
 
@@ -280,18 +308,8 @@ void Server::mainLoop(void) {
 			it->processInput(*this);
 		}
 
-		// push to a function -> handleDisconnections()
-		for (std::list< Client >::iterator it =
-				 serverState_.getClients().begin();
-			 it != serverState_.getClients().end(); it++) {
-			if (it->getConState() == DISCONNECTING) {
-
-				it->setConState(DISCONNECTED); // jobdone
-				this->getServerState().addPrevClient(*it);
-				serverState_.getClients().remove(*it);
-				it = serverState_.getClients().begin();
-			}
-		}
+		handleClientDisconnecting();
+		handleEmptyChannels();
 
 		if (*sig::stop) {
 			setServerState(ServerState::STOPPING);

@@ -107,6 +107,14 @@ Client &Client::operator=(Client const &original) {
 	return (*this);
 }
 
+std::ostream &operator<<(std::ostream &o, const Client &c) {
+	o << "Client[fd:" << c.getSockFD() << "|ip:" << c.getIPAddress()
+	  << "|nname:" << c.getNick() << "|uname:" << c.getUserName()
+	  << "|hname:" << c.getHost() << "|rname:" << c.getRealName()
+	  << "|state:" << c.getConState() << "]";
+	return (o);
+}
+
 std::string Client::infostr(void) const {
 	return (this->nick_ + "!" + this->username_ + "@" + this->host_);
 }
@@ -180,20 +188,18 @@ static std::vector< IRPL * > try_create(const std::string &line, Client &client,
 			return (CMD_KICK(line).execute(s, client));
 		if (CHECKCMD(line, CMD_MODE))
 			return (CMD_MODE(line).execute(s, client));
-		// TODO:
-		// if (CHECKCMD(line, CMD_INVITE))
-		// 	return (CMD_INVITE(line).execute(s, client));
-		// if (CHECKCMD(line, CMD_TOPIC))
-		// 	return (CMD_TOPIC(line).execute(s, client));
-
+		if (CHECKCMD(line, CMD_INVITE))
+			return (CMD_INVITE(line).execute(s, client));
+		if (CHECKCMD(line, CMD_TOPIC))
+			return (CMD_TOPIC(line).execute(s, client));
 
 		// unknown command
 		ret.push_back(new ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
 		return (ret);
 	} catch (IError *ir) { // in case of known error we just forward it to
 		ret.push_back(ir); // the client to put in the output buffer
-	} catch (std::exception &e) {	// in case of unknown exception we just
-									// pretend the command is unknown
+	} catch (std::exception &e) { // in case of unknown exception we just
+								  // pretend the command is unknown
 		std::cerr << "Exception in try_create: " << e.what() << std::endl;
 		ret.push_back(new ERR_UNKNOWNCOMMAND(line.substr(0, line.find(" "))));
 	}
