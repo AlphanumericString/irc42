@@ -14,10 +14,14 @@
 
 #include <cerrno>
 #include <iostream>
+#include <ostream>
 #include <string>
 
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "ConnectionState.hpp"
+#include "generics.hpp"
+#include "smart_ptr.hpp"
 
 void ShellServerHandler::cmdHandler(Server &server, std::string line) {
 	ShellServerHandler::strToCmd(line, server);
@@ -26,44 +30,88 @@ void ShellServerHandler::cmdHandler(Server &server, std::string line) {
 		std::cout << "$> " << std::flush;
 }
 
-/// @todo Implement this function.
 int ShellServerHandler::handle_monitor(std::string s, Server &serv) {
 	(void)s; // maybe flags to display chanels list + user lists ? idk
 	std::cout << serv.getServerState() << std::endl;
 	return (0);
 }
 
-/// @todo Implement this function.
 int ShellServerHandler::handle_quit(std::string s, Server &serv) {
 	(void)s;
 	serv.setServerState(ServerState::STOPPING);
 	return (0);
 }
 
-/// @todo Implement this function.
+static void dump_client(const Client *c) {
+	std::cout << "-------------------------[client]-" << std::endl;
+	if (c == NULLPTR)
+		return;
+	std::cout << *c << std::endl;
+}
+
+static void dump_channel(const Channel *ch_) {
+	std::cout << "------------------------[channel]-" << std::endl;
+	if (ch_ == NULLPTR)
+		return;
+	const Channel &ch = *ch_;
+
+	std::cout << ch << std::endl;
+	if (ch.getMode() & MODE_I) {
+		if (!ch.getInvited().size())
+			std::cout << "no invite on chan" << std::endl;
+		return;
+		std::cout << "Invited users:" << std::endl;
+		for (std::list< Client >::const_iterator it = ch.getInvited().begin();
+			 it != ch.getInvited().end(); it++) {
+			std::cout << "\t" << *it << std::endl;
+		}
+	}
+}
+
+int ShellServerHandler::handle_dump(std::string s, Server &serv) {
+
+	std::vector< std::string > args = split(s, " ");
+
+	if (args.size() < 2 || args.size() > 3) {
+		std::cout
+			<< "Usage: dump [channel|ch|client|c] <client nick|channel name>"
+			<< std::endl;
+		std::cout << serv.getServerState() << std::endl;
+		return (1);
+	} else if ((args[1] == "channel" || args[1] == "ch" || args[1] == "c" ||
+				args[1] == "client") &&
+			   args.size() < 3) {
+		std::cout << "Usage: dump ";
+		if (args[1] == "channel" || args[1] == "ch")
+			std::cout << "channel <channel";
+		else
+			std::cout << "client <client";
+		std::cout << " nick/name>" << std::endl;
+		return (1);
+	}
+
+	if (args[1] != "channel" && args[1] != "ch" && args[1] != "client" &&
+		args[1] != "c") {
+		std::cout
+			<< "Warning: dump target not specified, dumping any matching name"
+			<< std::endl;
+		dump_client(serv.getServerState().getClient(args[1]));
+		if (args[1][0] != '#')
+			args[1] = "#" + args[1];
+		dump_channel(serv.getServerState().getChannel(args[1]));
+	} else if (args[1] == "channel" || args[1] == "ch") {
+		if (args[1][0] != '#')
+			args[1] = "#" + args[1];
+		dump_channel(serv.getServerState().getChannel(args[1]));
+	} else {
+		dump_client(serv.getServerState().getClient(args[2]));
+	}
+	return (0);
+}
+
 int ShellServerHandler::handle_test(std::string s, Server &serv) {
 	(void)s;
 	(void)serv;
-
-	std::string test = "PASS toto42\r\n"
-					   "NICK testo\r\n"
-					   "USER test 0 * :test\r\n";
-	std::cout << "Testing msg with: " << std::endl;
-	std::cout << test << std::endl;
-	Client t_client = Client();
-
-	t_client.appendInputBuffer(test.c_str(), test.length());
-	t_client.processInput(serv);
-
-	std::cout << "Output buffer: " << t_client.getOutputBuffer() << std::endl;
-
-	// step 1:
-	//	create users and exit					- check no leaks + no mem errs
-	//	create channels and exit				- check no leaks + no mem errs
-	//	create users and push them to chanels	- ...
-	// step 2:
-	//	tests in cli with irssi?
-	//	idk too far atm
 
 	return (0);
 }
@@ -81,7 +129,11 @@ int ShellServerHandler::handle_dbg(std::string s, Server &serv) {
 
 ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 																Server &serv) {
+	std::vector< std::string > args = split(s, " ");
+
 	if (serv.getServerState().isDebug() && s != "dbg" && s != "debug")
+		return (ShellServerHandler::UNKNOWN);
+	if (s.empty())
 		return (ShellServerHandler::UNKNOWN);
 	if (!s.compare("test") || !s.compare("t"))
 		return (ShellServerHandler::handle_test(s, serv),
@@ -95,6 +147,9 @@ ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 	if (!s.compare("quit") || !s.compare("exit"))
 		return (ShellServerHandler::handle_quit(s, serv),
 				ShellServerHandler::QUIT);
+	if (!args[0].compare("dump") || !args[0].compare("d"))
+		return (ShellServerHandler::handle_dump(s, serv),
+				ShellServerHandler::DISPLAY_INFO);
 	std::cout << "Error:Unknown command:" << s << std::endl;
 	return (ShellServerHandler::UNKNOWN);
 }

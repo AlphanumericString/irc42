@@ -617,7 +617,7 @@ RPL_LISTEND::~RPL_LISTEND(void) {};
 RPL_CHANNELMODEIS::RPL_CHANNELMODEIS(std::string const &ch_name,
 									 std::string const &modes,
 									 std::string const &mode_params)
-	: IRPL(324, ch_name + " " + modes + " " + mode_params) {};
+	: IRPL(324, ch_name + " :" + modes + " " + mode_params) {};
 RPL_CHANNELMODEIS::~RPL_CHANNELMODEIS(void) {};
 
 // nb:325
@@ -664,13 +664,13 @@ std::string RPL_TOPIC::toString(const Server &s, const Client &c) {
 
 // nb:341
 // short for:RPL_INVITING
-// desc:RFC1459 	<nick> <channel> 	Returned by the server to indicate that
+// desc:RFC1459 	<nick>: <channel> 	Returned by the server to indicate that
 // the attempted INVITE message was successful and is being passed onto the end
 // client. Note that RFC1459 documents the parameters in the reverse order. The
 // format given here is the format used on production servers, and should be
 // considered the standard reply above that given by RFC1459.
 RPL_INVITING::RPL_INVITING(const std::string &nick, const std::string &ch_name)
-	: IRPL(341, nick + " " + ch_name) {};
+	: IRPL(341, nick + " :" + ch_name) {};
 RPL_INVITING::~RPL_INVITING(void) {};
 
 // nb:342

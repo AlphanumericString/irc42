@@ -13,6 +13,8 @@
 #include "ICmd.hpp"
 
 #include <cstdlib>
+#include <list>
+#include <ostream>
 #include <vector>
 
 #include "Channel.hpp"
@@ -227,6 +229,9 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		try {
 			ch->addMember(client);
 		} catch (std::exception &e) {
+			if (s.getServerState().isDebug())
+				std::cerr << "Exception caught: on join call:" << e.what()
+						  << std::endl;
 			ret.push_back(new ERR_CANNOTSENDTOCHAN(ch_name));
 			return ret;
 		}
@@ -535,7 +540,9 @@ std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {
 	if (target == NULLPTR)
 		ret.push_back(new ERR_NOSUCHNICK(_args[1]));
 	else {
+		std::cout << "target to invite:" << *target << std::endl;
 		Channel *ch = s.getServerState().getChannel(_args[2]);
+
 		if (ch == NULLPTR)
 			ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
 		else if (ch->hasMember(client) == false)
@@ -546,6 +553,7 @@ std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {
 			ret.push_back(
 				new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
 		else {
+			std::cout << "ch to invite to:" << *ch << std::endl;
 			ch->addInvite(*target);
 			ret.push_back(new RPL_INVITING(target->getNick(), ch->getName()));
 			target->appendToOutputBuffer(":" + client.infostr() + " INVITE " +
@@ -786,7 +794,7 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 									   s);
 			}
 			ch->broadcast_full(
-				":" + client.infostr() + " MODE " + ch->getName() + " " +
+				":" + client.infostr() + " MODE " + ch->getName() + " :" +
 					resp_modes +
 					(resp_params.empty() ? "" : " " + resp_params) + "\r\n",
 				s);

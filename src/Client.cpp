@@ -108,7 +108,7 @@ Client &Client::operator=(Client const &original) {
 }
 
 std::ostream &operator<<(std::ostream &o, const Client &c) {
-	o << "Client[fd:" << c.getSockFD() << "|ip:" << c.getIPAddress()
+	o << c.getNick() << "\t[fd:" << c.getSockFD() << "|ip:" << c.getIPAddress()
 	  << "|nname:" << c.getNick() << "|uname:" << c.getUserName()
 	  << "|hname:" << c.getHost() << "|rname:" << c.getRealName()
 	  << "|state:" << c.getConState() << "]";

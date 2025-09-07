@@ -39,6 +39,7 @@ class ShellServerHandler {
 	/// @return
 	static int handle_monitor(std::string s, Server &serv);
 	static int handle_dbg(std::string s, Server &serv);
+	static int handle_dump(std::string s, Server &serv);
 
 	/// @brief Command to shut down the Server object.
 	/// @param s

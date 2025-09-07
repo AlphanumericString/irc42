@@ -85,12 +85,11 @@ Channel &Channel::operator=(Channel const &original) {
 };
 
 // [print]
-std::ostream &operator<<(std::ostream &o, const Channel &c)
-{
-	o << "Channel[nick:" << c.getName() << "|MODE:" << c.getMode()
-	  << "|t:" << c.getTopic() << "|l:" << c.getUserLimit()
-	  << "|nb clients:" << c.getMembers().size()
-	  << "|nb operators:" << c.getOperators().size() << "]";
+std::ostream &operator<<(std::ostream &o, const Channel &c) {
+	o << c.getName() << "\t[" << c.getName() << "\t+" << c.getMode() << "\t"
+	  << (c.getTopic() != "" ? c.getTopic() : "no topic")
+	  << "\tmax:" << c.getUserLimit() << "\tcurent:" << c.getMembers().size()
+	  << "\tops:" << c.getOperators().size() << "]";
 	return (o);
 }
 
@@ -191,12 +190,6 @@ void Channel::removeMember(const Client &c) {
 void Channel::addMember(Client &c) {
 	if (this->hasMember(c))
 		return;
-	if (this->mode_ & MODE_L &&
-		(getUserLimit() <= 0 ||
-		 getMembers().size() >= static_cast< unsigned int >(getUserLimit())))
-		throw std::runtime_error("Channel is full");
-	if (this->mode_ & MODE_I && !this->isInvited(c))
-		throw std::runtime_error("You must be invited to join this channel");
 	members_.push_back(c);
 }
 std::list< Client > &Channel::getMembers() {
@@ -267,15 +260,16 @@ const std::list< Client > &Channel::getOperators() const {
 // [invites] {is, add, remove, get}
 bool Channel::isInvited(const Client &client) const {
 	try {
-		searchInList< Client >(this->invited_, client);
-		return (true);
+		searchInList(this->invited_, client);
+		return (false);
 	} catch (...) {
 		return (false);
 	}
 }
 void Channel::addInvite(const Client &c) {
-	if (this->isInvited(c))
+	if (this->isInvited(c) == true)
 		return;
+	std::cerr << "added invite!" << std::endl;
 	this->invited_.push_back(c);
 }
 void Channel::removeInvite(const Client &c) {

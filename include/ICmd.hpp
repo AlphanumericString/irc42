@@ -241,7 +241,7 @@ class CMD_TOPIC : public ICmd {
 	}
 };
 
-// [MODE] not implemented {i, t, k, o, l}
+// [MODE]
 // i-> invite only
 // t-> topic set by ops only
 // k-> key (password)
