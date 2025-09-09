@@ -119,15 +119,15 @@ const std::string &ServerState::getHostname(void) const {
 	return (hostname_);
 }
 
-ServerState &ServerState::operator=(const ServerState &st) {
-	this->stop_ = st.stop_;
-	this->master_ = st.master_;
-	this->status_ = st.status_;
-	this->name_ = st.name_;
-	this->password_ = st.password_;
-	this->port_ = st.port_;
-	this->clients_ = st.clients_;
-	this->channels_ = st.channels_;
+ServerState &ServerState::operator=(const ServerState &other) {
+	this->stop_ = other.stop_;
+	this->master_ = other.master_;
+	this->status_ = other.status_;
+	this->name_ = other.name_;
+	this->password_ = other.password_;
+	this->port_ = other.port_;
+	this->clients_ = other.clients_;
+	this->channels_ = other.channels_;
 	return (*this);
 }
 

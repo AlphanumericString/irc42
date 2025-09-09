@@ -288,9 +288,9 @@ std::vector< IRPL * > CMD_PRIVMSG::execute(Server &s, Client &client) {
 
 	if (target.empty())
 		ret.push_back(new ERR_NOSUCHNICK(target));
-	Channel *ch = NULLPTR;
 
-	ch = s.getServerState().getChannel(target);
+	Channel *ch = s.getServerState().getChannel(target);
+
 	if (target[0] == '#') {
 		if (ch == NULLPTR)
 			ret.push_back(new ERR_NOSUCHCHANNEL(target));
@@ -302,7 +302,8 @@ std::vector< IRPL * > CMD_PRIVMSG::execute(Server &s, Client &client) {
 						  client, s);
 			client.resetIdleSince(); // valid message, reset idle timer
 		}
-	} else if (ch == NULLPTR && !ret.size()) {
+	} else if (ch == NULLPTR && !ret.size()) { // client is target
+
 		Client *cl = NULLPTR;
 		cl = s.getServerState().getClient(target);
 		if (cl == NULLPTR)
@@ -356,8 +357,6 @@ std::vector< IRPL * > CMD_PART::execute(Server &s, Client &client) {
 	ch->removeMember(client);
 	if (ch->isOperator(client))
 		ch->removeOperator(client);
-	if (ch->isEmpty())
-		s.getServerState().getChannels().remove(*ch);
 	return ret;
 }
 
@@ -418,13 +417,10 @@ std::vector< IRPL * > CMD_WHOWAS::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
 	else if (_args[1].empty())
 		ret.push_back(new ERR_NONICKNAMEGIVEN());
+	else if (_args.size() == 3 && _args[1] != s.getServerState().getName())
+		ret.push_back(new ERR_NOSUCHSERVER(_args[1]));
 	if (ret.size() > 0)
 		return ret;
-
-	if (_args.size() == 3 && _args[1] != s.getServerState().getName()) {
-		ret.push_back(new ERR_NOSUCHSERVER(_args[1]));
-		return ret;
-	}
 
 	std::vector< PrevClients > prev_clients =
 		s.getServerState().getPrevClients(_args[1]);
@@ -486,6 +482,7 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
 	if (ret.size() > 0)
 		return ret;
+
 	std::string ch_name = _args[1];
 	std::string target_name = _args[2];
 	std::string msg = "";
@@ -506,6 +503,7 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch_name));
 	if (ret.size() > 0)
 		return ret;
+
 	Client *target = s.getServerState().getClient(target_name);
 
 	if (target == NULLPTR)
@@ -514,6 +512,7 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_USERNOTINCHANNEL(target_name, ch_name));
 	if (ret.size() > 0)
 		return ret;
+
 	ch->broadcast_full(":" + client.infostr() + " KICK " + ch_name + " " +
 						   target_name + ":" + msg + "\r\n",
 					   s);
@@ -538,28 +537,25 @@ std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {
 
 	Client *target = s.getServerState().getClient(_args[1]);
 	if (target == NULLPTR)
-		ret.push_back(new ERR_NOSUCHNICK(_args[1]));
-	else {
-		std::cout << "target to invite:" << *target << std::endl;
-		Channel *ch = s.getServerState().getChannel(_args[2]);
+		return (ret.push_back(new ERR_NOSUCHNICK(_args[1])), ret);
 
-		if (ch == NULLPTR)
-			ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
-		else if (ch->hasMember(client) == false)
-			ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
-		else if (ch->isOperator(client) == false)
-			ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
-		else if (ch->hasMember(*target) == true)
-			ret.push_back(
-				new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
-		else {
-			std::cout << "ch to invite to:" << *ch << std::endl;
-			ch->addInvite(*target);
-			ret.push_back(new RPL_INVITING(target->getNick(), ch->getName()));
-			target->appendToOutputBuffer(":" + client.infostr() + " INVITE " +
-										 target->getNick() + " :" +
-										 ch->getName() + "\r\n");
-		}
+	Channel *ch = s.getServerState().getChannel(_args[2]);
+
+	if (ch == NULLPTR)
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
+	else if (ch->hasMember(client) == false)
+		ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
+	else if (ch->isOperator(client) == false)
+		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
+	else if (ch->hasMember(*target) == true)
+		ret.push_back(
+			new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
+	else {
+		ch->addInvite(*target);
+		ret.push_back(new RPL_INVITING(target->getNick(), ch->getName()));
+		target->appendToOutputBuffer(":" + client.infostr() + " INVITE " +
+									 target->getNick() + " :" +
+									 ch->getName() + "\r\n");
 	}
 	return ret;
 }

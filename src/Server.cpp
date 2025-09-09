@@ -161,6 +161,8 @@ void Server::handleNewConnection() {
 }
 
 void Server::init(int *flgs) {
+	int tmp = 1;
+
 	*flgs = fcntl(STDIN_FILENO, F_GETFL);
 	fcntl(STDIN_FILENO, F_SETFL, *flgs | O_NONBLOCK);
 	sig::stop = this->serverState_.getStopPtr();
@@ -174,6 +176,7 @@ void Server::init(int *flgs) {
 		std::cerr << "Couldn't listen" << std::endl;
 		std::exit(1);
 	}
+	setsockopt(this->serverFD_, SOL_SOCKET, SO_REUSEADDR, &tmp, sizeof(tmp));
 	fcntl(this->serverFD_, F_SETFL, *flgs);
 	initiateMultiplexing();
 	setServerState(ServerState::RUNNING);

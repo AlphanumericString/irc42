@@ -57,18 +57,6 @@ class ERR_CANNOTSENDTOCHAN : public IError {
 	virtual ~ERR_CANNOTSENDTOCHAN(void) throw();
 };
 
-// nb:405
-// short for:ERR_TOOMANYCHANNELS
-// desc:RFC1459 	<channel> :<reason> 	Sent to a user when they have joined
-// the maximum number of allowed channels and they tried to join another channel
-class ERR_TOOMANYCHANNELS : public IError {
-  public:
-	ERR_TOOMANYCHANNELS(
-		const std::string &channel,
-		const std::string &reason = "You have joined too many channels");
-	virtual ~ERR_TOOMANYCHANNELS(void) throw();
-};
-
 // nb:406
 // short for:ERR_WASNOSUCHNICK
 // desc:RFC1459 	<nick> :<reason> 	Returned by WHOWAS to indicate there was
@@ -78,30 +66,6 @@ class ERR_WASNOSUCHNICK : public IError {
 	ERR_WASNOSUCHNICK(const std::string &nick,
 					  const std::string &reason = "There was no such nickname");
 	virtual ~ERR_WASNOSUCHNICK(void) throw();
-};
-
-// nb:407
-// short for:ERR_TOOMANYTARGETS
-// desc:RFC1459 	<target> :<reason> 	The given target(s) for a command are
-// ambiguous in that they relate to too many targets
-class ERR_TOOMANYTARGETS : public IError {
-  public:
-	ERR_TOOMANYTARGETS(const std::string &target,
-					   const std::string &reason =
-						   "Duplicate recipients. No message delivered");
-	virtual ~ERR_TOOMANYTARGETS(void) throw();
-};
-
-// nb:408
-// short for:ERR_NOSUCHSERVICE
-// desc:RFC2812 	<service_name> :<reason> 	Returned to a client which is
-// attempting to send an SQUERY (or other message) to a service which does not
-// exist
-class ERR_NOSUCHSERVICE : public IError {
-  public:
-	ERR_NOSUCHSERVICE(const std::string &service_name,
-					  const std::string &reason = "No such service");
-	virtual ~ERR_NOSUCHSERVICE(void) throw();
 };
 
 // nb:409
@@ -115,27 +79,6 @@ class ERR_NOORIGIN : public IError {
 	virtual ~ERR_NOORIGIN(void) throw();
 };
 
-// nb:410
-// short for:ERR_UNKNOWNCAPCMD
-// desc:RFC2812		<capability> :<reason>	Returned when a client tries to
-// use a CAP subcommand that the server doesn't support
-class ERR_UNKNOWNCAPCMD : public IError {
-  public:
-	ERR_UNKNOWNCAPCMD(const std::string &capability,
-					  const std::string &reason = "Unknown CAP command");
-	virtual ~ERR_UNKNOWNCAPCMD(void) throw();
-};
-
-// nb:411
-// short for:ERR_NORECIPIENT
-// desc:RFC1459 	:<reason> 	Returned when no recipient is given with a
-// command
-class ERR_NORECIPIENT : public IError {
-  public:
-	ERR_NORECIPIENT(const std::string &reason = "No recipient given");
-	virtual ~ERR_NORECIPIENT(void) throw();
-};
-
 // nb:412
 // short for:ERR_NOTEXTTOSEND
 // desc:RFC1459 	:<reason> 	Returned when NOTICE/PRIVMSG is used with no
@@ -144,17 +87,6 @@ class ERR_NOTEXTTOSEND : public IError {
   public:
 	ERR_NOTEXTTOSEND(const std::string &reason = "No text to send");
 	virtual ~ERR_NOTEXTTOSEND(void) throw();
-};
-
-// nb:413
-// short for:ERR_NOTOPLEVEL
-// desc:RFC1459 	<mask> :<reason> 	Used when a message is being sent to a
-// mask without being limited to a top-level domain (i.e. * instead of *.au)
-class ERR_NOTOPLEVEL : public IError {
-  public:
-	ERR_NOTOPLEVEL(const std::string &mask,
-				   const std::string &reason = "No toplevel domain specified");
-	virtual ~ERR_NOTOPLEVEL(void) throw();
 };
 
 // nb:414
@@ -168,30 +100,6 @@ class ERR_WILDTOPLEVEL : public IError {
 	virtual ~ERR_WILDTOPLEVEL(void) throw();
 };
 
-// nb:415
-// short for:ERR_BADMASK
-// desc:RFC2812 	<mask> :<reason> 	Used when a message is being sent to a
-// mask with an invalid syntax
-class ERR_BADMASK : public IError {
-  public:
-	ERR_BADMASK(const std::string &mask,
-				const std::string &reason = "Bad Mask");
-	virtual ~ERR_BADMASK(void) throw();
-};
-
-// nb:416
-// short for:ERR_TOOMANYMATCHES
-// desc:IRCnet 	<command> [<mask>] :<info> 	Returned when too many matches have
-// been found for a command and the output has been truncated. An example would
-// be the WHO command, where by the mask '*' would match everyone on the
-// network! Ouch!
-class ERR_TOOMANYMATCHES : public IError {
-  public:
-	ERR_TOOMANYMATCHES(const std::string &command, std::string const &mask = "",
-					   const std::string &reason = "Too many matches");
-	virtual ~ERR_TOOMANYMATCHES(void) throw();
-};
-
 // nb:421
 // short for:ERR_UNKNOWNCOMMAND
 // desc:RFC1459 	<command> :<reason> 	Returned when the given command is
@@ -201,39 +109,6 @@ class ERR_UNKNOWNCOMMAND : public IError {
 	ERR_UNKNOWNCOMMAND(const std::string &cmd_predicate,
 					   const std::string &reason = "Unknown command");
 	virtual ~ERR_UNKNOWNCOMMAND(void) throw();
-};
-
-// nb:422
-// short for:ERR_NOMOTD
-// desc:RFC1459 	:<reason> 	Sent when there is no MOTD to send the client
-class ERR_NOMOTD : public IError {
-  public:
-	ERR_NOMOTD(const std::string &reason = "MOTD File is missing");
-	virtual ~ERR_NOMOTD(void) throw();
-};
-
-// nb:423
-// short for:ERR_NOADMININFO
-// desc:RFC1459 	<server> :<reason> 	Returned by a server in response to an
-// ADMIN request when no information is available. RFC1459 mentions this in the
-// list of numerics. While it's not listed as a valid reply in section 4.3.7
-// ('Admin command'), it's confirmed to exist in the real world.
-class ERR_NOADMININFO : public IError {
-  public:
-	ERR_NOADMININFO(
-		const std::string &server,
-		const std::string &reason = "No administrative info available");
-	virtual ~ERR_NOADMININFO(void) throw();
-};
-
-// nb:424
-// short for:ERR_FILEERROR
-// desc:RFC1459 	:<reason> 	Generic error message used to report a failed
-// file operation during the processing of a command
-class ERR_FILEERROR : public IError {
-  public:
-	ERR_FILEERROR(const std::string &reason = "File error doing operation");
-	virtual ~ERR_FILEERROR(void) throw();
 };
 
 // nb:431
@@ -270,30 +145,6 @@ class ERR_NICKNAMEINUSE : public IError {
 	virtual ~ERR_NICKNAMEINUSE(void) throw();
 };
 
-// nb:436
-// short for:ERR_NICKCOLLISION
-// desc:RFC1459 	<nick> :<reason> 	Returned by a server to a client when it
-// detects a nickname collision
-class ERR_NICKCOLLISION : public IError {
-  public:
-	ERR_NICKCOLLISION(const std::string &nick,
-					  const std::string &reason = "Nickname collision");
-	virtual ~ERR_NICKCOLLISION(void) throw();
-};
-
-// nb:437
-// short for:ERR_UNAVAILRESOURCE
-// desc:RFC2812 	<nick/channel/service> :<reason> 	Return when the target
-// is unable to be reached temporarily, eg. a delay mechanism in play, or a
-// service being offline
-class ERR_UNAVAILRESOURCE : public IError {
-  public:
-	ERR_UNAVAILRESOURCE(
-		const std::string &target,
-		const std::string &reason = "Resource temporarily unavailable");
-	virtual ~ERR_UNAVAILRESOURCE(void) throw();
-};
-
 // nb:441
 // short for:ERR_USERNOTINCHANNEL
 // desc:RFC1459 	<nick> <channel> :<reason> 	Returned by the server to
@@ -328,39 +179,6 @@ class ERR_USERONCHANNEL : public IError {
 	virtual ~ERR_USERONCHANNEL(void) throw();
 };
 
-// nb:444
-// short for:ERR_NOLOGIN
-// desc:RFC1459 	<user> :<reason> 	Returned by the SUMMON command if a
-// given user was not logged in and could not be summoned
-class ERR_NOLOGIN : public IError {
-  public:
-	ERR_NOLOGIN(const std::string &user,
-				const std::string &reason = "User not logged in");
-	virtual ~ERR_NOLOGIN(void) throw();
-};
-
-// nb:445
-// short for:ERR_SUMMONDISABLED
-// desc:RFC1459 	:<reason> 	Returned by SUMMON when it has been disabled or
-// not implemented
-class ERR_SUMMONDISABLED : public IError {
-  public:
-	ERR_SUMMONDISABLED(
-		const std::string &reason = "SUMMON command has been disabled");
-	virtual ~ERR_SUMMONDISABLED(void) throw();
-};
-
-// nb:446
-// short for:ERR_USERSDISABLED
-// desc:RFC1459 	:<reason> 	Returned by USERS when it has been disabled or
-// not implemented
-class ERR_USERSDISABLED : public IError {
-  public:
-	ERR_USERSDISABLED(
-		const std::string &reason = "USERS command has been disabled");
-	virtual ~ERR_USERSDISABLED(void) throw();
-};
-
 // nb:451
 // short for:ERR_NOTREGISTERED
 // desc:RFC1459 	:<reason> 	Returned by the server to indicate that the
@@ -393,17 +211,6 @@ class ERR_ALREADYREGISTERED : public IError {
 	virtual ~ERR_ALREADYREGISTERED(void) throw();
 };
 
-// nb:463
-// short for:ERR_NOPERMFORHOST
-// desc:RFC1459 	:<reason> 	Returned to a client which attempts to register
-// with a server which has been configured to refuse connections from the
-// client's host
-class ERR_NOPERMFORHOST : public IError {
-  public:
-	ERR_NOPERMFORHOST(const std::string &reason = "No permission for host");
-	virtual ~ERR_NOPERMFORHOST(void) throw();
-};
-
 // nb:464
 // short for:ERR_PASSWDMISMATCH
 // desc:RFC1459 	:<reason> 	Returned by the PASS command to indicate the
@@ -412,38 +219,6 @@ class ERR_PASSWDMISMATCH : public IError {
   public:
 	ERR_PASSWDMISMATCH(const std::string &reason = "Password incorrect");
 	virtual ~ERR_PASSWDMISMATCH(void) throw();
-};
-
-// nb:465
-// short for:ERR_YOUREBANNEDCREEP
-// desc:RFC1459 	:<reason> 	Returned to a client after an attempt to
-// register on a server configured to ban connections from that client
-class ERR_YOUREBANNEDCREEP : public IError {
-  public:
-	ERR_YOUREBANNEDCREEP(
-		const std::string &reason = "You are banned from this server");
-	virtual ~ERR_YOUREBANNEDCREEP(void) throw();
-};
-
-// nb:466
-// short for:ERR_YOUWILLBEBANNED
-// desc:RFC1459 		Sent by a server to a user to inform that access to the
-// server will soon be denied
-class ERR_YOUWILLBEBANNED : public IError {
-  public:
-	ERR_YOUWILLBEBANNED(const std::string &reason = "You will be banned");
-	virtual ~ERR_YOUWILLBEBANNED(void) throw();
-};
-
-// nb:467
-// short for:ERR_KEYSET
-// desc:RFC1459 	<channel> :<reason> 	Returned when the channel key for a
-// channel has already been set
-class ERR_KEYSET : public IError {
-  public:
-	ERR_KEYSET(const std::string &channel,
-			   const std::string &reason = "Channel key already set");
-	virtual ~ERR_KEYSET(void) throw();
 };
 
 // nb:471
@@ -463,7 +238,8 @@ class ERR_CHANNELISFULL : public IError {
 class ERR_UNKNOWNMODE : public IError {
   public:
 	ERR_UNKNOWNMODE(const std::string &mode_char,
-					const std::string &reason = "is/contain unknown or unsuported mode char");
+					const std::string &reason =
+						"is/contain unknown or unsuported mode char");
 	virtual ~ERR_UNKNOWNMODE(void) throw();
 };
 
@@ -478,17 +254,6 @@ class ERR_INVITEONLYCHAN : public IError {
 	virtual ~ERR_INVITEONLYCHAN(void) throw();
 };
 
-// nb:474
-// short for:ERR_BANNEDFROMCHAN
-// desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
-// channel a user is banned from
-class ERR_BANNEDFROMCHAN : public IError {
-  public:
-	ERR_BANNEDFROMCHAN(const std::string &channel,
-					   const std::string &reason = "Cannot join channel (+b)");
-	virtual ~ERR_BANNEDFROMCHAN(void) throw();
-};
-
 // nb:475
 // short for:ERR_BADCHANNELKEY
 // desc:RFC1459 	<channel> :<reason> 	Returned when attempting to join a
@@ -498,51 +263,6 @@ class ERR_BADCHANNELKEY : public IError {
 	ERR_BADCHANNELKEY(const std::string &channel,
 					  const std::string &reason = "Cannot join channel (+k)");
 	virtual ~ERR_BADCHANNELKEY(void) throw();
-};
-
-// nb:476
-// short for:ERR_BADCHANMASK
-// desc:RFC2812 	<channel> :<reason> 	The given channel mask was invalid
-class ERR_BADCHANMASK : public IError {
-  public:
-	ERR_BADCHANMASK(const std::string &channel,
-					const std::string &reason = "Bad Channel Mask");
-	virtual ~ERR_BADCHANMASK(void) throw();
-};
-
-// nb:477
-// short for:ERR_NOCHANMODES
-// desc:RFC2812 	<channel> :<reason> 	Returned when attempting to set a
-// mode on a channel which does not support channel modes, or channel mode
-// changes. Also known as ERR_MODELESS
-class ERR_NOCHANMODES : public IError {
-  public:
-	ERR_NOCHANMODES(
-		const std::string &channel,
-		const std::string &reason = "Channel doesn't support modes");
-	virtual ~ERR_NOCHANMODES(void) throw();
-};
-
-// nb:478
-// short for:ERR_BANLISTFULL
-// desc:RFC2812 	<channel> <char> :<reason> 	Returned when a channel access
-// list (i.e. ban list etc) is full and cannot be added to
-class ERR_BANLISTFULL : public IError {
-  public:
-	ERR_BANLISTFULL(const std::string &channel, char mode_char,
-					const std::string &reason = "Channel ban list is full");
-	virtual ~ERR_BANLISTFULL(void) throw();
-};
-
-// nb:481
-// short for:ERR_NOPRIVILEGES
-// desc:RFC1459 	:<reason> 	Returned by any command requiring special
-// privileges (eg. IRC operator) to indicate the operation was unsuccessful
-class ERR_NOPRIVILEGES : public IError {
-  public:
-	ERR_NOPRIVILEGES(const std::string &reason =
-						 "Permission Denied- You're not an IRC operator");
-	virtual ~ERR_NOPRIVILEGES(void) throw();
 };
 
 // nb:482
@@ -558,58 +278,6 @@ class ERR_CHANOPRIVSNEEDED : public IError {
 	virtual ~ERR_CHANOPRIVSNEEDED(void) throw();
 };
 
-// nb:483
-// short for:ERR_CANTKILLSERVER
-// desc:RFC1459 	:<reason> 	Returned by KILL to anyone who tries to kill a
-// server
-class ERR_CANTKILLSERVER : public IError {
-  public:
-	ERR_CANTKILLSERVER(const std::string &reason = "You can't kill a server");
-	virtual ~ERR_CANTKILLSERVER(void) throw();
-};
-
-// nb:484
-// short for:ERR_RESTRICTED
-// desc:RFC2812 	:<reason> 	Sent by the server to a user upon connection to
-// indicate the restricted nature of the connection (i.e. usermode +r)
-class ERR_RESTRICTED : public IError {
-  public:
-	ERR_RESTRICTED(const std::string &reason = "Your connection is restricted");
-	virtual ~ERR_RESTRICTED(void) throw();
-};
-
-// nb:485
-// short for:ERR_UNIQOPRIVSNEEDED
-// desc:RFC2812 	:<reason> 	Any mode requiring 'channel creator' privileges
-// returns this error if the client is attempting to use it while not a channel
-// creator on the given channel
-class ERR_UNIQOPRIVSNEEDED : public IError {
-  public:
-	ERR_UNIQOPRIVSNEEDED(
-		const std::string &reason = "You're not the channel creator");
-	virtual ~ERR_UNIQOPRIVSNEEDED(void) throw();
-};
-
-// nb:491
-// short for:ERR_NOOPERHOST
-// desc:RFC1459 	:<reason> 	Returned by OPER to a client who cannot become
-// an IRC operator because the server has been configured to disallow the
-// client's host
-class ERR_NOOPERHOST : public IError {
-  public:
-	ERR_NOOPERHOST(const std::string &reason = "No O-lines for your host");
-	virtual ~ERR_NOOPERHOST(void) throw();
-};
-
-// nb:492
-// short for:ERR_NOSERVICEHOST
-// desc:RFC1459
-class ERR_NOSERVICEHOST : public IError {
-  public:
-	ERR_NOSERVICEHOST(const std::string &reason = "No service host");
-	virtual ~ERR_NOSERVICEHOST(void) throw();
-};
-
 // nb:501
 // short for:ERR_UMODEUNKNOWNFLAG
 // desc:RFC1459 	:<reason> 	Returned by the server to indicate that a MODE
@@ -619,15 +287,4 @@ class ERR_UMODEUNKNOWNFLAG : public IError {
   public:
 	ERR_UMODEUNKNOWNFLAG(const std::string &reason = "Unknown MODE flag");
 	virtual ~ERR_UMODEUNKNOWNFLAG(void) throw();
-};
-
-// nb:502
-// short for:ERR_USERSDONTMATCH
-// desc:RFC1459 	:<reason> 	Error sent to any user trying to view or change
-// the user mode for a user other than themselves
-class ERR_USERSDONTMATCH : public IError {
-  public:
-	ERR_USERSDONTMATCH(
-		const std::string &reason = "Cannot change mode for other users");
-	virtual ~ERR_USERSDONTMATCH(void) throw();
 };

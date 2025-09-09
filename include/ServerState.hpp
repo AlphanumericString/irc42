@@ -35,6 +35,7 @@ class ServerState {
 	} Status;
 
 	ServerState(int port, const std::string password, Server &master);
+	ServerState &operator=(const ServerState &original);
 	~ServerState();
 
 	std::list< Client >		  &getClients();
@@ -61,7 +62,6 @@ class ServerState {
 	void	deleteClient(Client &client);
 	Client *idClient(int fd);
 
-	ServerState &operator=(const ServerState &original);
 	bool		 operator==(const ServerState &original) const;
 	bool		 operator!=(const ServerState &original) const;
 

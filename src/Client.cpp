@@ -63,9 +63,9 @@ Client::Client() : sockFD_(-1) {
 }
 Client::Client(int fd, char *ipAddress, Server *server)
 	: sockFD_(fd), serv_(server), ipAddress_(ipAddress) {
-	// TODO: check serverstate, if monitor : print
-	// std::cout << "New client[" << "fd:" << this->sockFD_ << "|"
-	// 	  << "ip:" << this->ipAddress_ << "]" << std::endl;
+	if (server->getServerState().isDebug())
+		std::cout << "New client[" << "fd:" << this->sockFD_ << "|"
+			<< "ip:" << this->ipAddress_ << "]" << std::endl;
 	nick_ = "*";
 	connectionState_ = NOT_LOGGED;
 	hasNick = false;
@@ -74,9 +74,6 @@ Client::Client(int fd, char *ipAddress, Server *server)
 	resetIdleSince();
 	realname_ = "unknown";
 	host_ = ipAddress_;
-
-	// try to resolve hostname from ip address (we could get smthg better with
-	// getnameinfo/gethostbyname but it's not a big deal for now)
 	if (ipAddress_ == "127.0.0.1" || ipAddress_ == "localhost") {
 		host_ = "localhost";
 	}
@@ -208,10 +205,10 @@ static std::vector< IRPL * > try_create(const std::string &line, Client &client,
 
 // process input buffer, execute commands and fill output buffer
 void Client::processInput(Server &s) {
+	std::vector< IRPL * > resp;
 	try {
 		while (1) {
-			std::string			  line;
-			std::vector< IRPL * > resp;
+			std::string line;
 
 			if (this->inputBuffer_.find("\r\n") == std::string::npos)
 				return;
@@ -229,6 +226,9 @@ void Client::processInput(Server &s) {
 		}
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
+		for (std::vector< IRPL * >::iterator it = resp.begin();
+			 it != resp.end(); it++)
+			delete (*it);
 	}
 }
 

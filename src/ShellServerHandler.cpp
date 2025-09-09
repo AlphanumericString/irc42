@@ -100,9 +100,9 @@ int ShellServerHandler::handle_dump(std::string s, Server &serv) {
 			args[1] = "#" + args[1];
 		dump_channel(serv.getServerState().getChannel(args[1]));
 	} else if (args[1] == "channel" || args[1] == "ch") {
-		if (args[1][0] != '#')
-			args[1] = "#" + args[1];
-		dump_channel(serv.getServerState().getChannel(args[1]));
+		if (args[2][0] != '#')
+			args[2] = "#" + args[2];
+		dump_channel(serv.getServerState().getChannel(args[2]));
 	} else {
 		dump_client(serv.getServerState().getClient(args[2]));
 	}
