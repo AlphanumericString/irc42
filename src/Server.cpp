@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/08 18:45:02 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/10 17:54:31 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,12 +171,12 @@ void Server::init(int *flgs) {
 	signal(SIGQUIT, sig_hdl);
 
 	this->serverFD_ = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(this->serverFD_, SOL_SOCKET, SO_REUSEADDR, &tmp, sizeof(tmp));
 	bindSocket();
 	if (listen(this->serverFD_, 10) == -1) {
 		std::cerr << "Couldn't listen" << std::endl;
 		std::exit(1);
 	}
-	setsockopt(this->serverFD_, SOL_SOCKET, SO_REUSEADDR, &tmp, sizeof(tmp));
 	fcntl(this->serverFD_, F_SETFL, *flgs);
 	initiateMultiplexing();
 	setServerState(ServerState::RUNNING);
