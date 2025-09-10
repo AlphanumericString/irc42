@@ -14,6 +14,7 @@
 
 #include <cstdlib>
 #include <list>
+#include <netdb.h>
 #include <ostream>
 #include <vector>
 
@@ -67,7 +68,6 @@ std::vector< IRPL * > CMD_NICK::execute(Server &s, Client &client) {
 		 it != s.getServerState().getClients().end() && ret.size() == 0; it++)
 		if (it->getNick().compare(_args[1]) == 0)
 			ret.push_back(new ERR_NICKNAMEINUSE(_args[1]));
-
 	if (ret.size() > 0)
 		return ret;
 
@@ -84,7 +84,10 @@ std::vector< IRPL * > CMD_NICK::execute(Server &s, Client &client) {
 						   "\r\n");
 		client.setNickname(_args[1]); // change self at end
 		ret.push_back(new RPL_FULLCUSTOM(rpl));
-	} catch (...) {
+		client.resetIdleSince(); // reset idle at valid cmd
+	} catch (std::exception	&e) {
+		if (s.getServerState().isDebug())
+			std::cerr << "Exception caught: cmd_nick :" << e.what() << std::endl;
 		ret.push_back(new ERR_ERRONEUSNICKNAME(_args[1]));
 		return ret;
 	}
@@ -136,6 +139,7 @@ std::vector< IRPL * > CMD_USER::execute(Server &s, Client &client) {
 		ret.push_back(new RPL_MYINFO());
 		client.setConState(REGISTERED);
 	}
+	client.resetIdleSince(); // reset idle at valid cmd
 	return ret;
 }
 
@@ -188,7 +192,6 @@ std::vector< IRPL * > CMD_QUIT::execute(Server &s, Client &client) {
 
 std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 	std::vector< IRPL * > ret;
-	std::string			  ch_name;
 	Channel				 *ch;
 
 	if (client.getConState() != REGISTERED) {
@@ -196,11 +199,20 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 	} else if (_args.size() < 2)
 		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
 	else if (_args[1][0] != '#')
-		ret.push_back(new ERR_NOSUCHCHANNEL(ch_name));
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
+	else if (_args[1].find_first_of(" ,*?!@.") != std::string::npos ||
+			 _args[1].length() > MAX_CHAN_NAME_LEN)
+		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
 	if (ret.size() > 0)
 		return ret;
 
+	std::string		ch_name;
+	std::string		key;
+
 	ch_name = _args[1];
+	if (_args.size() >= 3)
+		key = _args[2];
+
 	ch = s.getServerState().getChannel(ch_name);
 	if (ch != NULLPTR) { // chanel exists
 		if (ch->hasMember(client) == true) {
@@ -219,8 +231,8 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 			else
 				ch->removeInvite(client);
 		}
-		if (ch->getMode() & MODE_K) {
-			if (_args.size() < 3 || ch->getKey().compare(_args[2]) != 0) {
+		if (ch->getMode() & MODE_K && !(ch->getMode() & MODE_I)) {
+			if (_args.size() < 3 || ch->getKey().compare(key) != 0) {
 				ret.push_back(new ERR_BADCHANNELKEY(ch_name));
 				return ret;
 			}
@@ -250,6 +262,7 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 
 		ret.push_back(new RPL_ENDOFNAMES(ch_name));
 		ch->broadcast(ret.back()->toString(s, client), client, s);
+		client.resetIdleSince(); // valid message, reset idle timer
 
 	} else { // create channel
 		if (s.getServerState().isDebug())
@@ -267,6 +280,7 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		ret.push_back(new RPL_NAMREPLY(ch_name, ch->getMembers(),
 									   ch->getOperators(), ch->getMode()));
 		ret.push_back(new RPL_ENDOFNAMES(ch_name));
+		client.resetIdleSince(); // valid message, reset idle timer
 	}
 	return ret;
 }
@@ -354,6 +368,7 @@ std::vector< IRPL * > CMD_PART::execute(Server &s, Client &client) {
 									 ch_name + " :" + reason + "\r\n"));
 	ch->broadcast(ret.back()->toString(s, client), client, s);
 
+	client.resetIdleSince(); // valid message, reset idle timer
 	ch->removeMember(client);
 	if (ch->isOperator(client))
 		ch->removeOperator(client);

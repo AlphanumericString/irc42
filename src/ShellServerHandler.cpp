@@ -58,8 +58,7 @@ static void dump_channel(const Channel *ch_) {
 	std::cout << ch << std::endl;
 	if (ch.getMode() & MODE_I) {
 		if (!ch.getInvited().size())
-			std::cout << "no invite on chan" << std::endl;
-		return;
+			return (std::cout << "no invite on chan" << std::endl, (void)0);
 		std::cout << "Invited users:" << std::endl;
 		for (std::list< Client >::const_iterator it = ch.getInvited().begin();
 			 it != ch.getInvited().end(); it++) {

@@ -278,9 +278,14 @@ const std::string &Client::getNick() const { // nick
 	return this->nick_;
 }
 void Client::setNickname(std::string const &newNickname) {
-	if (newNickname.length() > MAX_NICKNAME_LENGTH) {
+	if (newNickname.length() > MAX_NICKNAME_LENGTH)
 		throw std::runtime_error("Nickname too long");
-	}
+	if (newNickname.empty())
+		throw std::runtime_error("Nickname cannot be empty");
+	if (newNickname.find_first_of(" ,*?!@.") != std::string::npos)
+		throw std::runtime_error(
+			"Nickname contains invalid characters (space , * ? ! @ .)");
+
 	this->nick_ = newNickname;
 }
 const std::string &Client::getUserName(void) const { // user
@@ -304,7 +309,7 @@ void Client::setIdleSince(clock_t t) {
 	this->idleSince_ = t;
 }
 void Client::resetIdleSince() {
-	this->idleSince_ = clock();
+	this->idleSince_ = std::time(NULL);
 }
 
 // [server]

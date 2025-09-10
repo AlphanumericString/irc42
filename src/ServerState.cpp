@@ -21,7 +21,9 @@
 
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "PrevClients.hpp"
 #include "Server.hpp"
+#include "generics.hpp"
 
 ServerState::ServerState(int p, const std::string pwd, Server &m)
 	: password_(pwd), port_(p), hostname_("localhost") {
@@ -217,7 +219,16 @@ const std::string &ServerState::getDescription() const {
 }
 
 void ServerState::addPrevClient(const Client &c) {
-	this->prevClients_.push_back(c);
+	PrevClients p(c);
+	std::vector < PrevClients >::iterator it;
+
+	it = std::find(this->prevClients_.begin(), this->prevClients_.end(), p);
+	if (it != this->prevClients_.end()) { // was found
+		*it = p; // update
+		return;
+	}
+	this->prevClients_.push_back(p);
+	return;
 }
 const std::vector< PrevClients > &ServerState::getPrevClients() const {
 	return (this->prevClients_);

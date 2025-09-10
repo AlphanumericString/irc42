@@ -20,28 +20,18 @@
 #include "generics.hpp"
 
 std::ostream &operator<<(std::ostream &os, ChanMod m) {
-	switch (m) {
-	case MODE_L:
-		os << "l";
-		break;
-	case MODE_T:
+	if (m & MODE_T)
 		os << "t";
-		break;
-	case MODE_I:
+	if (m & MODE_I)
 		os << "i";
-		break;
-	case MODE_K:
+	if (m & MODE_K)
 		os << "k";
-		break;
-	case MODE_O:
+	if (m & MODE_L)
+		os << "l";
+	if (m & MODE_O)
 		os << "o";
-		break;
-	case MODE_UNKNOWN:
-	case MODE_NUMBER:
-	default:
+	if (m == MODE_UNKNOWN || m == MODE_DEFAULT)
 		os << "?";
-		break;
-	}
 	return (os);
 }
 
@@ -80,6 +70,8 @@ Channel &Channel::operator=(Channel const &original) {
 		this->topic_ = original.topic_;
 		this->userLimit_ = original.userLimit_;
 		this->mode_ = original.mode_;
+		this->key_ = original.key_;
+		this->invited_ = original.invited_;
 	}
 	return (*this);
 };
@@ -261,7 +253,7 @@ const std::list< Client > &Channel::getOperators() const {
 bool Channel::isInvited(const Client &client) const {
 	try {
 		searchInList(this->invited_, client);
-		return (false);
+		return (true);
 	} catch (...) {
 		return (false);
 	}
@@ -269,7 +261,6 @@ bool Channel::isInvited(const Client &client) const {
 void Channel::addInvite(const Client &c) {
 	if (this->isInvited(c) == true)
 		return;
-	std::cerr << "added invite!" << std::endl;
 	this->invited_.push_back(c);
 }
 void Channel::removeInvite(const Client &c) {
