@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 15:04:59 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 16:27:36 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/10 17:28:26 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,15 @@ int ShellServerHandler::handle_quit(std::string s, Server &serv) {
 }
 
 static void dump_client(const Client *c) {
-	std::cout << "-------------------------[client]-" << std::endl;
+	std::cout << BBLU "-------------------------[client]-" WHT << std::endl;
 	if (c == NULLPTR)
 		return;
 	std::cout << *c << std::endl;
 }
 
+/// @todo Prettify
 static void dump_channel(const Channel *ch_) {
-	std::cout << "------------------------[channel]-" << std::endl;
+	std::cout << BBLU "------------------------[channel]-" WHT << std::endl;
 	if (ch_ == NULLPTR)
 		return;
 	const Channel &ch = *ch_;

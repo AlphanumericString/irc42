@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/12 15:22:53 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/10 17:49:38 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "ServerState.hpp"
+#include "ansi.h"
 #include "generics.hpp"
 
 std::ostream &operator<<(std::ostream &os, ChanMod m) {
@@ -76,12 +77,15 @@ Channel &Channel::operator=(Channel const &original) {
 	return (*this);
 };
 
-// [print]
+/// @todo Prettify
 std::ostream &operator<<(std::ostream &o, const Channel &c) {
-	o << c.getName() << "\t[" << c.getName() << "\t+" << c.getMode() << "\t"
-	  << (c.getTopic() != "" ? c.getTopic() : "no topic")
-	  << "\tmax:" << c.getUserLimit() << "\tcurent:" << c.getMembers().size()
-	  << "\tops:" << c.getOperators().size() << "]";
+	o << c.getName() << "\t[" << 
+		HGRN << c.getName() << WHT <<
+		YEL "\t+" WHT << c.getMode() << "\t" <<
+		(c.getTopic() != "" ? c.getTopic() : "no topic") <<
+		MAG "\tmax:" WHT << c.getUserLimit() <<
+		MAG "\tcurent:" WHT << c.getMembers().size() <<
+		RED "\tops:" WHT << c.getOperators().size() << "]";
 	return (o);
 }
 

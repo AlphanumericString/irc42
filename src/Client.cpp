@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 18:42:12 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/10 17:23:18 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,11 +104,16 @@ Client &Client::operator=(Client const &original) {
 	return (*this);
 }
 
+/// @todo Prettify
 std::ostream &operator<<(std::ostream &o, const Client &c) {
-	o << c.getNick() << "\t[fd:" << c.getSockFD() << "|ip:" << c.getIPAddress()
-	  << "|nname:" << c.getNick() << "|uname:" << c.getUserName()
-	  << "|hname:" << c.getHost() << "|rname:" << c.getRealName()
-	  << "|state:" << c.getConState() << "]";
+	o << c.getNick() << "\t[" <<
+		GRN "fd:" WHT << c.getSockFD() << "|" <<
+		CYN "ip:" WHT << c.getIPAddress() << "|" <<
+		MAG "nname:" WHT << c.getNick() << "|" <<
+		YEL "uname:" WHT << c.getUserName() << "|" <<
+		BLU "hname:" WHT << c.getHost() << "|" <<
+		RED "rname:" WHT << c.getRealName() << "| " <<
+		WHT "state:" WHT << c.getConState() << "]";
 	return (o);
 }
 
