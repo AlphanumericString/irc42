@@ -54,7 +54,7 @@ int	const&	Server::getServerFD() const
 }
 
 ServerState*	Server::getServerState() const {
-	if (this->_serverState == NULL) /// @todo Exception
+	if (this->_serverState == NULL)
 		std::cerr << "Warning, this->_serverState == NULL" << std::endl;
 	return (this->_serverState);
 }

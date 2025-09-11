@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/10 17:54:31 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/11 10:22:49 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,6 @@ vecEvent Server::collectReadyEvents() {
 
 	int nfds = epoll_wait(this->epollFD_, events, MAX_BACKLOG, 1000);
 	if (nfds == -1 && errno != EINTR) {
-		/// @todo throw specific error ?
 		throw std::runtime_error("epoll_wait");
 	}
 	vecEvent ret;
@@ -123,9 +122,6 @@ vecEvent Server::collectReadyEvents() {
 }
 
 int Server::exit_state(void) {
-	// todo :: not impl ->
-	// _serverState -> get_status
-	//	-> set status when parsing commands ?
 	return (serverState_.getStatus() == ServerState::STOPPING ? 0 : 1);
 }
 
@@ -288,8 +284,6 @@ void Server::mainLoop(void) {
 			if (fd == this->serverFD_ && ev == EVENT_READ) {
 				handleNewConnection();
 			} else if (fd == STDIN_FILENO && ev == EVENT_READ) {
-				/// @todo Handle STDI stop at null byteN -> Not sure still
-				/// relevant
 				handleStdinInput();
 			} else {
 				Client *client = this->serverState_.idClient(fd);

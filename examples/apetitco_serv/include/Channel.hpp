@@ -25,7 +25,7 @@ class Channel
   public:
 	/// @brief
 	Channel();
-	Channel(Channel const &original); // when are we gonna use this ?!
+	Channel(Channel const &original);
 	/// @brief
 	~Channel();
 	/// @brief

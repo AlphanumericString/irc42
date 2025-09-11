@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/10 17:23:18 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/11 10:22:08 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,6 @@ Client &Client::operator=(Client const &original) {
 	return (*this);
 }
 
-/// @todo Prettify
 std::ostream &operator<<(std::ostream &o, const Client &c) {
 	o << c.getNick() << "\t[" <<
 		GRN "fd:" WHT << c.getSockFD() << "|" <<

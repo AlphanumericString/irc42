@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 15:04:59 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/10 17:28:26 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/11 10:22:19 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ static void dump_client(const Client *c) {
 	std::cout << *c << std::endl;
 }
 
-/// @todo Prettify
 static void dump_channel(const Channel *ch_) {
 	std::cout << BBLU "------------------------[channel]-" WHT << std::endl;
 	if (ch_ == NULLPTR)

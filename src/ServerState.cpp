@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 16:25:37 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/11 10:22:25 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 
 ServerState::~ServerState() {}
 
-/// @todo Implement function
 void ServerState::deleteClient(Client &client) {
 	std::cout << "Client " << client.getHost() << " [" << client.getIPAddress()
 			  << "]: has disconnected." << std::endl;

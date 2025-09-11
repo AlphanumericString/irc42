@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/10 17:49:38 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/11 10:22:04 by apetitco         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ ChanMod operator&(const ChanMod a, const ChanMod b) {
 		static_cast< ChanMod >(static_cast< int >(a) & static_cast< int >(b)));
 }
 
-/// @todo Exception handling
 Channel::Channel(std::string const &name, Client &creator) : name_(name) {
 	members_.push_back(creator);
 	invited_.clear();
@@ -77,7 +76,6 @@ Channel &Channel::operator=(Channel const &original) {
 	return (*this);
 };
 
-/// @todo Prettify
 std::ostream &operator<<(std::ostream &o, const Channel &c) {
 	o << c.getName() << "\t[" << 
 		HGRN << c.getName() << WHT <<

@@ -16,7 +16,7 @@ class Client
 	Client();
 	/// @brief
 	/// @param original
-	Client(Client const &original); // when are we gonna use this ?!
+	Client(Client const &original);
 	/// @brief
 	~Client();
 	/// @brief
