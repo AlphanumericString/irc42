@@ -59,7 +59,7 @@ class ServerState {
 	Status getStatus(void) const;
 
 	void	newClient(int fd, char *ipAddress);
-	void	deleteClient(Client &client);
+	void	deleteClient(Client &client, Server &s);
 	Client *idClient(int fd);
 
 	bool		 operator==(const ServerState &original) const;

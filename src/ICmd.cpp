@@ -85,9 +85,10 @@ std::vector< IRPL * > CMD_NICK::execute(Server &s, Client &client) {
 		client.setNickname(_args[1]); // change self at end
 		ret.push_back(new RPL_FULLCUSTOM(rpl));
 		client.resetIdleSince(); // reset idle at valid cmd
-	} catch (std::exception	&e) {
+	} catch (std::exception &e) {
 		if (s.getServerState().isDebug())
-			std::cerr << "Exception caught: cmd_nick :" << e.what() << std::endl;
+			std::cerr << "Exception caught: cmd_nick :" << e.what()
+					  << std::endl;
 		ret.push_back(new ERR_ERRONEUSNICKNAME(_args[1]));
 		return ret;
 	}
@@ -206,8 +207,8 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 	if (ret.size() > 0)
 		return ret;
 
-	std::string		ch_name;
-	std::string		key;
+	std::string ch_name;
+	std::string key;
 
 	ch_name = _args[1];
 	if (_args.size() >= 3)
@@ -550,27 +551,30 @@ std::vector< IRPL * > CMD_INVITE::execute(Server &s, Client &client) {
 	if (ret.size() > 0)
 		return ret;
 
-	Client *target = s.getServerState().getClient(_args[1]);
-	if (target == NULLPTR)
-		return (ret.push_back(new ERR_NOSUCHNICK(_args[1])), ret);
-
 	Channel *ch = s.getServerState().getChannel(_args[2]);
 
-	if (ch == NULLPTR)
+	if (ch == NULLPTR) // channel exist
 		ret.push_back(new ERR_NOSUCHCHANNEL(_args[2]));
-	else if (ch->hasMember(client) == false)
+	else if (ch->hasMember(client) ==
+			 false) // channel has member calling the /invite
 		ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
-	else if (ch->isOperator(client) == false)
+	else if (ch->isOperator(client) ==
+			 false) // member calling /invite is chan-op
 		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
-	else if (ch->hasMember(*target) == true)
-		ret.push_back(
-			new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
+	if (ret.size() > 0)
+		return (ret);
+
+	Client *target = s.getServerState().getClient(_args[1]);
+	if (target == NULLPTR) // there is such user to invite
+		ret.push_back(new ERR_NOSUCHNICK(_args[1]));
+	else if (ch->hasMember(*target) == true) // user is NOT on invited channel
+		ret.push_back(new ERR_USERONCHANNEL(target->getNick(), ch->getName()));
 	else {
 		ch->addInvite(*target);
 		ret.push_back(new RPL_INVITING(target->getNick(), ch->getName()));
 		target->appendToOutputBuffer(":" + client.infostr() + " INVITE " +
-									 target->getNick() + " :" +
-									 ch->getName() + "\r\n");
+									 target->getNick() + " :" + ch->getName() +
+									 "\r\n");
 	}
 	return ret;
 }
@@ -592,33 +596,26 @@ std::vector< IRPL * > CMD_TOPIC::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_NOSUCHCHANNEL(_args[1]));
 	else if (ch->hasMember(client) == false)
 		ret.push_back(new ERR_NOTONCHANNEL(ch->getName()));
-	else if (ch->getMode() & MODE_T && ch->isOperator(client) == false)
-		ret.push_back(new ERR_CHANOPRIVSNEEDED(ch->getName()));
-	else if (ch->getMode() & MODE_T) { // mode +t only ops can set topic
-		if (_raw.find_last_of(":") == std::string::npos)
-			ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
-		else {
-			std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
-			ch->setTopic(new_topic);
-			ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
-			ch->broadcast(ret.back()->toString(s, client), client, s);
-		}
+	if (ret.size() > 0)
+		return (ret);
+
+	if (_args.size() == 2) { // just a query?
+		if (ch->getTopic().empty())
+			ret.push_back(new RPL_NOTOPIC(ch->getName()));
+		else
+			ret.push_back(new RPL_TOPIC(ch->getName(), ch->getTopic()));
 	} else {
-		if (_args.size() == 2) {
-			if (ch->getTopic().empty())
-				ret.push_back(new RPL_NOTOPIC(ch->getName()));
-			else
-				ret.push_back(new RPL_TOPIC(ch->getName(), ch->getTopic()));
-		} else {
-			if (_raw.find_last_of(":") == std::string::npos)
-				ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
-			else {
-				std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
-				ch->setTopic(new_topic);
-				ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
-				ch->broadcast(ret.back()->toString(s, client), client, s);
-			}
-		}
+		// topic is locked and user is not chan-op
+		if (ch->getMode() & MODE_T && ch->isOperator(client) == false)
+			return (ret.push_back(new ERR_CHANOPRIVSNEEDED(
+						ch->getName(), "Topic is locked (+t).")),
+					ret);
+		if (_raw.find_last_of(":") == std::string::npos)
+			return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
+		std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
+		ch->setTopic(new_topic);
+		ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
+		ch->broadcast(ret.back()->toString(s, client), client, s);
 	}
 	return ret;
 }

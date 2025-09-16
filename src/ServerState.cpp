@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/11 10:22:25 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/16 17:50:55 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,31 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 	this->port_ = (p);
 	this->status_ = STARTING;
 	this->stop_ = false;
+	this->dbg_ = false;
 	setDescription("A simple IRC server made in the context of a school "
 				   "project at 42Paris.");
 }
 
 ServerState::~ServerState() {}
 
-void ServerState::deleteClient(Client &client) {
-	std::cout << "Client " << client.getHost() << " [" << client.getIPAddress()
-			  << "]: has disconnected." << std::endl;
+/// @todo Implement function
+void ServerState::deleteClient(Client &client, Server &serv) {
+	for (std::list< Channel >::iterator chn =this->getChannels().begin();
+			chn != this->getChannels().end(); chn++)
+	{
+		if (chn->hasMember(client))
+		{
+			chn->removeMember(client);
+			chn->removeOperator(client);
+			chn->broadcast(":" + client.infostr() + " QUIT :Disconnected." + "\r\n", client, serv);
+		}
+		if (chn->isInvited(client))
+			chn->removeInvite(client);
+	}
+	if (this->dbg_)
+		std::cout << "Client " << client.getHost() << " ["
+				  << client.getIPAddress() << "]: has disconnected."
+				  << std::endl;
 }
 
 std::list< Client > &ServerState::getClients() {
@@ -146,8 +162,7 @@ void ServerState::setStatus(ServerState::Status status) {
 
 std::ostream &operator<<(std::ostream &os, const ServerState sst) {
 	os << sst.getMinimalInfo() << std::endl;
-	os << sst.getClients().size() << " client(s) connected."
-	   << std::endl;
+	os << sst.getClients().size() << " client(s) connected." << std::endl;
 	os << sst.getChannels().size() << " channel(s) created.";
 	return (os);
 }
@@ -218,12 +233,12 @@ const std::string &ServerState::getDescription() const {
 }
 
 void ServerState::addPrevClient(const Client &c) {
-	PrevClients p(c);
-	std::vector < PrevClients >::iterator it;
+	PrevClients							 p(c);
+	std::vector< PrevClients >::iterator it;
 
 	it = std::find(this->prevClients_.begin(), this->prevClients_.end(), p);
 	if (it != this->prevClients_.end()) { // was found
-		*it = p; // update
+		*it = p;						  // update
 		return;
 	}
 	this->prevClients_.push_back(p);

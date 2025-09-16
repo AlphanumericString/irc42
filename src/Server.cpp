@@ -16,6 +16,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <errno.h>
+#include <exception>
 #include <fcntl.h>
 #include <iostream>
 #include <list>
@@ -180,18 +181,21 @@ void Server::init(int *flgs) {
 
 void Server::handleClientDisconnect(Client &client) {
 	int clientFD = client.getSockFD();
+
+	if (getServerState().isDebug())
+		std::cout << client << ": DISCONECT" << std::endl;
+	this->serverState_.deleteClient(client, *this);
+	this->getServerState().addPrevClient(client);
+	serverState_.getClients().remove(client);
 	epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
 	close(clientFD);
-	this->serverState_.deleteClient(client);
 }
 
 void Server::handleClientRead(Client &client) {
 	int clientFD = client.getSockFD();
 	int res = recv(clientFD, BUFFER, BUFFER_LEN, 0);
 	if (res < 0) {
-		epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
-		close(clientFD);
-		this->serverState_.deleteClient(client);
+		handleClientDisconnect(client);
 	}
 	client.appendInputBuffer(BUFFER, res);
 }
@@ -201,9 +205,7 @@ void Server::handleClientWrite(Client &client) {
 	int len = client.setOutputBuffer(BUFFER, BUFFER_LEN);
 	int res = send(clientFD, BUFFER, len, 0);
 	if (res < 0) {
-		epoll_ctl(this->epollFD_, EPOLL_CTL_DEL, clientFD, NULL);
-		close(clientFD);
-		this->serverState_.deleteClient(client);
+		handleClientDisconnect(client);
 	}
 	client.advanceOutputBuffer(res);
 }
