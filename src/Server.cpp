@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:33 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/11 10:22:49 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 10:37:57 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,7 @@ void Server::handleClientRead(Client &client) {
 	int res = recv(clientFD, BUFFER, BUFFER_LEN, 0);
 	if (res < 0) {
 		handleClientDisconnect(client);
+		return ;
 	}
 	client.appendInputBuffer(BUFFER, res);
 }
@@ -206,13 +207,15 @@ void Server::handleClientWrite(Client &client) {
 	int res = send(clientFD, BUFFER, len, 0);
 	if (res < 0) {
 		handleClientDisconnect(client);
+		return ;
 	}
 	client.advanceOutputBuffer(res);
 }
 
+// epoll_create(1) Passing 1 as size because parameter is ignored
 void Server::initiateMultiplexing() {
 	this->epollFD_ =
-		epoll_create(1); // Passing 1 as size because parameter is ignored
+		epoll_create(1);
 	if (this->epollFD_ == -1) {
 		return;
 	}
@@ -247,7 +250,7 @@ void Server::handleClientDisconnecting() {
 	for (std::list< Client >::iterator it = serverState_.getClients().begin();
 		 it != serverState_.getClients().end(); it++) {
 		if (it->getConState() == DISCONNECTING) {
-			it->setConState(DISCONNECTED); // *ork* jobdone
+			it->setConState(DISCONNECTED);
 			if (getServerState().isDebug())
 				std::cout << *it << "\tDISCONNECT" << std::endl;
 			this->getServerState().addPrevClient(*it);
@@ -315,7 +318,6 @@ void Server::mainLoop(void) {
 		}
 	}
 	std::cout << "Server is stopping..." << std::endl;
-	// Is this still relevant ? (apetitco)
 	fcntl(STDIN_FILENO, F_SETFL, flags);
 	return;
 }

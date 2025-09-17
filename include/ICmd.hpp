@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ISendable.hpp                                      :+:      :+:    :+:   */
+/*   ICmd.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 01:35:46 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/14 01:35:46 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/09/17 10:51:06 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,15 +102,11 @@ class CMD_NICK : public ICmd {
 
 // msg core : [JOIN, PART, PRIVMSG]
 
-// TODO: [NOTICE, AWAY] (not mandatory but completionist (will drop if no time))
-
 class CMD_JOIN : public ICmd {
   private:
 	static const int minArg = 2;
 
   public:
-	// TODO: do when modes is implemented
-	// JOIN [add-checks]-> invite only, key, limit
 	CMD_JOIN(const std::string &s) : ICmd(s) {}
 	virtual std::vector< IRPL * > execute(Server &s, Client &client_requesting);
 	static const std::string	  predicate() {

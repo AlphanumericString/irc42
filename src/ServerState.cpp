@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/16 17:50:55 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/09/17 10:35:08 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 
 ServerState::~ServerState() {}
 
-/// @todo Implement function
 void ServerState::deleteClient(Client &client, Server &serv) {
 	for (std::list< Channel >::iterator chn =this->getChannels().begin();
 			chn != this->getChannels().end(); chn++)
@@ -92,14 +91,13 @@ int const &ServerState::getPort() const {
 ServerState::Status ServerState::getStatus(void) const {
 	return (this->status_);
 }
-
+ // &(*it) :beurk:
 Client *ServerState::idClient(int fd) {
 	std::list< Client >::iterator nav = this->clients_.begin();
 
 	while (nav != this->clients_.end()) {
 		if (nav->getSockFD() == fd) {
-			return (&(
-				*nav)); // What the fuck is that ??? (I hate iterators so much).
+			return (&(*nav));
 		}
 		++nav;
 	}

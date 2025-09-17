@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:14:36 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/11 16:13:12 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 11:10:06 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,6 @@ static int help_handl(std::vector< std::string >::iterator *it) {
 	return (0);
 }
 
-// #define ALNUM
-// "qwertyuiplkjhgfdsazxcvbnm""QWERTYUIPLKJHGFDSAZXCVBNM""0123456789"
-//
 static bool parse_args(std::vector< std::string > &args, std::string *pwd,
 					   std::string *p) {
 	std::vector< std::string >::iterator it;
@@ -45,7 +42,6 @@ static bool parse_args(std::vector< std::string > &args, std::string *pwd,
 			std::make_pair("--help", help_handl),
 		};
 
-	// maybe in parse arg ? + what is the use of default values if this is here?
 	if (args.size() < 3)
 		return (std::cerr << "Use: ./ircserv <port> <password>" << std::endl,
 				false);
@@ -67,8 +63,18 @@ static bool parse_args(std::vector< std::string > &args, std::string *pwd,
 	*p = *(it++);
 	*pwd = *(it++);
 
-	//	check first char -> only ALPHA
-	//	-> check following char bellong to [printable set] && [ascii set]
+	if (std::atoi(p->c_str()) < 1024 || std::atoi(p->c_str()) > 49151)
+	{
+		std::cout << "port outside of accessible ranges. "
+			"[try standard IRC port such as 6667]" << std::endl;
+		return (false);
+	}
+	if (pwd->find_first_not_of(ALNUM, 0) != std::string::npos)
+	{
+		std::cout << "Password must be comprised only of alpha numeric characters."
+			"[try a standard Password such as `password`]." << std::endl;
+		return (false);
+	}
 	return (true);
 }
 
