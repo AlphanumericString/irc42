@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 16:08:31 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/15 16:08:31 by bgoulard         ###   ########.fr       */
+/*   Updated: 2025/09/17 12:13:19 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,6 +266,7 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		client.resetIdleSince(); // valid message, reset idle timer
 
 	} else { // create channel
+		try { // for bad chan names
 		if (s.getServerState().isDebug())
 			std::cout << "Creating channel " << ch_name << " for "
 					  << client.getNick() << "[" << client.getSockFD() << "]"
@@ -282,6 +283,14 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 									   ch->getOperators(), ch->getMode()));
 		ret.push_back(new RPL_ENDOFNAMES(ch_name));
 		client.resetIdleSince(); // valid message, reset idle timer
+		} catch (std::exception &e) {
+			if (s.getServerState().isDebug())
+				std::cerr << "Exception caught: on join call:" << e.what()
+						  << std::endl;
+			ret.clear();
+			ret.push_back(new ERR_CANNOTSENDTOCHAN(ch_name));
+			return ret;
+		}
 	}
 	return ret;
 }
@@ -305,6 +314,7 @@ std::vector< IRPL * > CMD_PRIVMSG::execute(Server &s, Client &client) {
 		ret.push_back(new ERR_NOSUCHNICK(target));
 
 	Channel *ch = s.getServerState().getChannel(target);
+	std::string Message = _raw.substr(_raw.find(":", 4) + 1);
 
 	if (target[0] == '#') {
 		if (ch == NULLPTR)
@@ -312,8 +322,7 @@ std::vector< IRPL * > CMD_PRIVMSG::execute(Server &s, Client &client) {
 		else if (ch->hasMember(client) == false)
 			ret.push_back(new ERR_CANNOTSENDTOCHAN(target));
 		else {
-			ch->broadcast(":" + client.infostr() + " PRIVMSG " + target + " :" +
-							  _raw.substr(_raw.find_last_of(":") + 1) + "\r\n",
+			ch->broadcast(":" + client.infostr() + " PRIVMSG " + target + " :" + Message + "\r\n",
 						  client, s);
 			client.resetIdleSince(); // valid message, reset idle timer
 		}
@@ -326,7 +335,7 @@ std::vector< IRPL * > CMD_PRIVMSG::execute(Server &s, Client &client) {
 		else {
 			cl->appendToOutputBuffer(
 				":" + client.infostr() + " PRIVMSG " + target + " :" +
-				_raw.substr(_raw.find_last_of(":") + 1) + "\r\n");
+				Message + "\r\n");
 			client.resetIdleSince(); // valid message, reset idle timer
 		}
 	}
@@ -655,8 +664,8 @@ args_to_pairs(std::vector< std::pair< ChanMod, std::string > > &mode_changes,
 			md = MODE_UNKNOWN;
 			break;
 		}
-		if (set &&
-			(md == MODE_L || md == MODE_K || md == MODE_O || md == MODE_T)) {
+		if ((set && (md == MODE_L || md == MODE_K || md == MODE_O )) ||
+				(!set && (md == MODE_O))) {
 			if (offset_arg < args.size())
 				param = args[offset_arg++];
 			else
@@ -768,7 +777,11 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 					break;
 				case MODE_O:
 					try {
+						std::cerr << *ch << std::endl;
+						std::cerr << it->second << std::endl;
 						Client &cl = ch->getMember(it->second);
+						std::cout << "set:" << set << "\tcl gotten :" << cl <<
+							std::endl;
 						if (set)
 							ch->addOperator(cl);
 						else
@@ -777,9 +790,14 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 						if (!resp_params.empty())
 							resp_params += " ";
 						resp_params += it->second;
-					} catch (...) {
+					} catch (std::exception &e) {
+						std::cerr << e.what() <<std::endl;
 						ret.push_back(new ERR_NOSUCHNICK(it->second));
 					}
+					if(s.getServerState().isDebug())
+						std::cout << "mode o called :" << resp_modes << " "
+								<< resp_params
+								<< std::endl;
 					break;
 				case MODE_NUMBER:
 				case MODE_UNKNOWN:

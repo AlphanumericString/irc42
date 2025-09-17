@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:52 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/11 10:22:04 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 11:42:10 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ ChanMod operator&(const ChanMod a, const ChanMod b) {
 		static_cast< ChanMod >(static_cast< int >(a) & static_cast< int >(b)));
 }
 
-Channel::Channel(std::string const &name, Client &creator) : name_(name) {
+Channel::Channel(std::string const &name, Client &creator) {
+	this->setName(name);
 	members_.push_back(creator);
 	invited_.clear();
 	operators_.push_back(creator);
@@ -77,7 +78,7 @@ Channel &Channel::operator=(Channel const &original) {
 };
 
 std::ostream &operator<<(std::ostream &o, const Channel &c) {
-	o << c.getName() << "\t[" << 
+	o << c.getName() << "\t[" <<
 		HGRN << c.getName() << WHT <<
 		YEL "\t+" WHT << c.getMode() << "\t" <<
 		(c.getTopic() != "" ? c.getTopic() : "no topic") <<
@@ -278,7 +279,7 @@ const std::list< Client > &Channel::getInvited() const {
 // get/set
 // [name]
 void Channel::setName(const std::string &n) {
-	if (n.empty() || n.length() > MAX_CHAN_NAME_LEN)
+	if (n.empty() || n.length() > MAX_CHAN_NAME_LEN || n.find(":") != std::string::npos)
 		throw std::runtime_error("Invalid channel name");
 	this->name_ = n;
 }

@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 12:58:32 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/11 10:22:08 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 11:20:45 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,8 @@ static std::vector< IRPL * > try_create(const std::string &line, Client &client,
 	std::vector< IRPL * > ret;
 
 	try {
+		if (s.getServerState().isDebug())
+			std::cout << client << "\t\t" <<  line << std::endl;
 		// registration core
 		if (CHECKCMD(line, CMD_CAP))
 			return (CMD_CAP(line).execute(s, client));
