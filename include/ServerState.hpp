@@ -12,13 +12,11 @@
 
 #pragma once
 
-#include <fstream>
 #include <list>
 #include <string>
 #include <vector>
 
 #include "PrevClients.hpp"
-#include "smart_ptr.hpp"
 
 class Client;
 class Channel;
@@ -84,8 +82,15 @@ class ServerState {
 		dbg_ = dbg;
 	}
 
+	std::time_t getstart() const {
+		return startTime_;
+	};
+
   private:
 	bool dbg_;
+
+	std::time_t startTime_; ///< Time when the server started.
+
 
 	std::string			 desc;		///< Description of the Server.
 	bool				 stop_;		///< Flag indicating if server has to stop.

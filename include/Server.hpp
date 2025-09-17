@@ -129,7 +129,6 @@ class Server {
 	void handleClientDisconnecting();
 	void handleEmptyChannels();
 
-
 	int			serverFD_;	  ///< File descriptor for te server socket.
 	int			epollFD_;	  ///< File descriptor for the multiplexing.
 	ServerState serverState_; ///< Self-explanatory

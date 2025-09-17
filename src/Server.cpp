@@ -16,7 +16,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <errno.h>
-#include <exception>
 #include <fcntl.h>
 #include <iostream>
 #include <list>

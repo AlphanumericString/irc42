@@ -13,7 +13,6 @@
 #pragma once
 
 #include <ctime>
-#include <iostream>
 #include <string>
 
 #include "Client.hpp"
@@ -63,5 +62,5 @@ class PrevClients {
 	std::string _username;
 	std::string _hostname;
 	std::string _realname;
-	clock_t	  _disconnectionTime;
+	std::time_t	_disconnectionTime;
 };

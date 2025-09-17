@@ -87,9 +87,9 @@ class Client {
 	const std::string &getNick() const;
 
 	// [idle/ time]
-	clock_t getIdleSince() const;
-	void	setIdleSince(clock_t t);
-	void	resetIdleSince();
+	std::time_t getIdleSince() const;
+	void		setIdleSince(std::time_t t);
+	void		resetIdleSince();
 
 	// [server]
 	Server *getServer() const;

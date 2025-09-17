@@ -23,7 +23,7 @@
 #include "Client.hpp"
 #include "PrevClients.hpp"
 #include "Server.hpp"
-#include "generics.hpp"
+#include "smart_ptr.hpp"
 
 ServerState::ServerState(int p, const std::string pwd, Server &m)
 	: password_(pwd), port_(p), hostname_("localhost") {
@@ -35,6 +35,7 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 	this->status_ = STARTING;
 	this->stop_ = false;
 	this->dbg_ = false;
+	this->startTime_ = std::time(NULL);
 	setDescription("A simple IRC server made in the context of a school "
 				   "project at 42Paris.");
 }
@@ -42,14 +43,14 @@ ServerState::ServerState(int p, const std::string pwd, Server &m)
 ServerState::~ServerState() {}
 
 void ServerState::deleteClient(Client &client, Server &serv) {
-	for (std::list< Channel >::iterator chn =this->getChannels().begin();
-			chn != this->getChannels().end(); chn++)
-	{
-		if (chn->hasMember(client))
-		{
+	for (std::list< Channel >::iterator chn = this->getChannels().begin();
+		 chn != this->getChannels().end(); chn++) {
+		if (chn->hasMember(client)) {
 			chn->removeMember(client);
 			chn->removeOperator(client);
-			chn->broadcast(":" + client.infostr() + " QUIT :Disconnected." + "\r\n", client, serv);
+			chn->broadcast(":" + client.infostr() + " QUIT :Disconnected." +
+							   "\r\n",
+						   client, serv);
 		}
 		if (chn->isInvited(client))
 			chn->removeInvite(client);
@@ -91,7 +92,7 @@ int const &ServerState::getPort() const {
 ServerState::Status ServerState::getStatus(void) const {
 	return (this->status_);
 }
- // &(*it) :beurk:
+// &(*it) :beurk:
 Client *ServerState::idClient(int fd) {
 	std::list< Client >::iterator nav = this->clients_.begin();
 

@@ -26,6 +26,7 @@
 #include "ICmd.hpp"
 #include "IError.hpp"
 #include "IRPL.hpp"
+#include "ansi.h"
 
 std::ostream &operator<<(std::ostream &o, const t_conState &c) {
 	switch (c) {
@@ -308,10 +309,10 @@ void Client::setRealname(const std::string &realname) {
 }
 
 // [idle/ time]
-clock_t Client::getIdleSince() const {
-	return (this->idleSince_);
+std::time_t Client::getIdleSince() const {
+	return (std::time(NULL) - this->idleSince_);
 }
-void Client::setIdleSince(clock_t t) {
+void Client::setIdleSince(std::time_t t) {
 	this->idleSince_ = t;
 }
 void Client::resetIdleSince() {

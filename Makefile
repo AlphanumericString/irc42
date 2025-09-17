@@ -14,7 +14,7 @@
 NAME		:=	ircserv
 VERSION		:= $(shell git describe --tags --dirty 2> /dev/null || echo "0.0.0")
 AUTHORS		:= "Baptiste GOULARD, Alessandro PETITCOLLIN"
-DEPLOYMENT	:=	dev
+DEPLOYMENT	:=	prod
 CXX			:=	c++
 
 .DEFAULT_GOAL	:= $(NAME)
