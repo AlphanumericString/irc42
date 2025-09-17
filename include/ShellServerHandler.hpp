@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 14:43:49 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/08/07 16:02:53 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 12:51:07 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class ShellServerHandler {
 	static int handle_monitor(std::string s, Server &serv);
 	static int handle_dbg(std::string s, Server &serv);
 	static int handle_dump(std::string s, Server &serv);
+	static int handle_help(std::string s, Server &serv);
 
 	/// @brief Command to shut down the Server object.
 	/// @param s

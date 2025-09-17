@@ -6,7 +6,7 @@
 /*   By: bgoulard <bgoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/08 15:04:59 by bgoulard          #+#    #+#             */
-/*   Updated: 2025/09/11 10:22:19 by apetitco         ###   ########.fr       */
+/*   Updated: 2025/09/17 12:57:03 by bgoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,23 @@ int ShellServerHandler::handle_dbg(std::string s, Server &serv) {
 	return (0);
 }
 
+int ShellServerHandler::handle_help(std::string s, Server &serv) {
+	(void)s;
+	(void)serv;
+
+	std::cout << "monitor" " -or- " "mon" << std::endl
+		<< "\tDisplays some genereal server infos." << std::endl
+	<< "debug" " -or- " "dbg" << std::endl
+		<< "\tEnable debug mode." <<std::endl
+	<< "quit" " -or- " "exit" << std::endl
+		<< "\tCloses shell." << std::endl
+	<< "dump" " -or- " "d" << std::endl
+		<< "\tDump info on channel or user."
+	<< "help" " -or- " "h" << std::endl
+		<< "\tPrint this message." <<std::endl;
+	return (0);
+}
+
 ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 																Server &serv) {
 	std::vector< std::string > args = split(s, " ");
@@ -134,9 +151,6 @@ ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 		return (ShellServerHandler::UNKNOWN);
 	if (s.empty())
 		return (ShellServerHandler::UNKNOWN);
-	if (!s.compare("test") || !s.compare("t"))
-		return (ShellServerHandler::handle_test(s, serv),
-				ShellServerHandler::DISPLAY_INFO);
 	if (!s.compare("monitor") || !s.compare("mon"))
 		return (ShellServerHandler::handle_monitor(s, serv),
 				ShellServerHandler::DISPLAY_INFO);
@@ -148,6 +162,9 @@ ShellServerHandler::ShellServerCmd ShellServerHandler::strToCmd(std::string s,
 				ShellServerHandler::QUIT);
 	if (!args[0].compare("dump") || !args[0].compare("d"))
 		return (ShellServerHandler::handle_dump(s, serv),
+				ShellServerHandler::DISPLAY_INFO);
+	if (!args[0].compare("help") || !args[0].compare("h"))
+		return (ShellServerHandler::handle_help(s, serv),
 				ShellServerHandler::DISPLAY_INFO);
 	std::cout << "Error:Unknown command:" << s << std::endl;
 	return (ShellServerHandler::UNKNOWN);
