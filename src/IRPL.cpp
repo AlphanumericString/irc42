@@ -143,8 +143,18 @@ RPL_WHOISCHANNELS::~RPL_WHOISCHANNELS(void) {};
 RPL_CHANNELMODEIS::RPL_CHANNELMODEIS(std::string const &ch_name,
 									 std::string const &modes,
 									 std::string const &mode_params)
-	: IRPL(324, ch_name + " :" + modes + " " + mode_params) {};
+	: IRPL(324, ch_name + " " + modes +
+					(mode_params.empty() ? "" : " " + mode_params)) {};
 RPL_CHANNELMODEIS::~RPL_CHANNELMODEIS(void) {};
+std::string RPL_CHANNELMODEIS::toString(const Server &s, const Client &c) {
+	std::stringstream ss;
+
+	ss << ":" << s.getServerState().getName() << " ";
+	ss << std::setw(3) << std::setfill('0') << _code;
+	ss << " " << c.getNick();
+	ss << " " << string << "\r\n";
+	return ss.str();
+};
 
 // nb:331
 // short for:RPL_NOTOPIC
@@ -173,11 +183,12 @@ RPL_TOPIC::RPL_TOPIC(const std::string &ch_name, const std::string &topic)
 	: IRPL(332, ch_name + " :" + topic) {};
 RPL_TOPIC::~RPL_TOPIC(void) {};
 std::string RPL_TOPIC::toString(const Server &s, const Client &c) {
-	(void)s;
 	std::stringstream ss;
 
-	ss << ":" << c.infostr() << " TOPIC ";
-	ss << string << "\r\n";
+	ss << ":" << s.getServerState().getName() << " ";
+	ss << std::setw(3) << std::setfill('0') << _code;
+	ss << " " << c.getNick();
+	ss << " " << string << "\r\n";
 	return ss.str();
 };
 

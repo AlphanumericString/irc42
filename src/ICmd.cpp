@@ -32,12 +32,16 @@
 std::vector< IRPL * > CMD_PASS::execute(Server &s, Client &client) {
 	std::vector< IRPL * > ret;
 
+	if (client.getConState() >= DISCONNECTING)
+		return ret;
 	if (_args.size() < CMD_PASS::minArg)
 		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
 	else if (client.getConState() >= REGISTERED)
 		ret.push_back(new ERR_ALREADYREGISTERED());
-	else if (s.getServerState().getPassword().compare(_args[1]) != 0)
+	else if (s.getServerState().getPassword().compare(_args[1]) != 0) {
 		ret.push_back(new ERR_PASSWDMISMATCH());
+		client.setConState(DISCONNECTING); // drop the client after the reply
+	}
 	if (ret.size() > 0)
 		return ret;
 
@@ -54,11 +58,14 @@ std::vector< IRPL * > CMD_PASS::execute(Server &s, Client &client) {
 		ret.push_back(new RPL_MYINFO());
 		client.setConState(REGISTERED);
 	}
-	return std::vector< IRPL * >(); // return empty aka no response
+	return ret;
 }
 
 std::vector< IRPL * > CMD_NICK::execute(Server &s, Client &client) {
 	std::vector< IRPL * > ret;
+
+	if (client.getConState() >= DISCONNECTING)
+		return ret;
 
 	// error checks
 	if (_args.size() < CMD_NICK::minArg)
@@ -111,6 +118,8 @@ std::vector< IRPL * > CMD_USER::execute(Server &s, Client &client) {
 	std::vector< IRPL * > ret;
 	std::string			  _real_name;
 
+	if (client.getConState() >= DISCONNECTING)
+		return ret;
 	if (_raw.find_last_of(":") == std::string::npos ||
 		_args.size() < CMD_USER::minArgs)
 		ret.push_back(new ERR_NEEDMOREPARAMS(_args[0]));
@@ -133,12 +142,18 @@ std::vector< IRPL * > CMD_USER::execute(Server &s, Client &client) {
 	}
 
 	if (client.getConState() == REGISTERING && client.hasNick == true &&
-		client.hasUser == true && client.hasPass == true) {
-		ret.push_back(new RPL_WELCOME(client.getNick(), c_hostname));
-		ret.push_back(new RPL_YOURHOST());
-		ret.push_back(new RPL_CREATED());
-		ret.push_back(new RPL_MYINFO());
-		client.setConState(REGISTERED);
+		client.hasUser == true) {
+		if (client.hasPass == false) {
+			// no PASS was ever sent, refuse the registration
+			client.setConState(DISCONNECTING);
+			ret.push_back(new ERR_PASSWDMISMATCH());
+		} else {
+			ret.push_back(new RPL_WELCOME(client.getNick(), c_hostname));
+			ret.push_back(new RPL_YOURHOST());
+			ret.push_back(new RPL_CREATED());
+			ret.push_back(new RPL_MYINFO());
+			client.setConState(REGISTERED);
+		}
 	}
 	client.resetIdleSince(); // reset idle at valid cmd
 	return ret;
@@ -251,18 +266,13 @@ std::vector< IRPL * > CMD_JOIN::execute(Server &s, Client &client) {
 		ret.push_back(new RPL_JOIN(client.infostr(), ch_name));
 		ch->broadcast(ret.back()->toString(s, client), client, s);
 
-		if (ch->getMode() & MODE_T)
+		if (!ch->getTopic().empty())
 			ret.push_back(new RPL_TOPIC(ch_name, ch->getTopic()));
 		else
 			ret.push_back(new RPL_NOTOPIC(ch_name));
-		ch->broadcast(ret.back()->toString(s, client), client, s);
-
 		ret.push_back(new RPL_NAMREPLY(ch_name, ch->getMembers(),
 									   ch->getOperators(), ch->getMode()));
-		ch->broadcast(ret.back()->toString(s, client), client, s);
-
 		ret.push_back(new RPL_ENDOFNAMES(ch_name));
-		ch->broadcast(ret.back()->toString(s, client), client, s);
 		client.resetIdleSince(); // valid message, reset idle timer
 
 	} else { // create channel
@@ -469,14 +479,19 @@ std::vector< IRPL * > CMD_WHOWAS::execute(Server &s, Client &client) {
 
 std::vector< IRPL * > CMD_PING::execute(Server &s, Client &client) {
 	(void)client;
+	(void)s;
 
 	std::vector< IRPL * > ret;
+	std::string			  origin;
 
-	if (_args.size() < 2)
-		return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
-	if (_args[1].empty() || _args[1].compare(s.getServerState().getName()) != 0)
+	if (_args.size() < 2 || _args[1].empty())
 		return (ret.push_back(new ERR_NOORIGIN()), ret);
-	ret.push_back(new RPL_CUSTOM("PONG :" + _args[1]));
+	origin = _args[1];
+	if (origin[0] == ':')
+		origin.erase(0, 1);
+	if (origin.empty())
+		return (ret.push_back(new ERR_NOORIGIN()), ret);
+	ret.push_back(new RPL_CUSTOM("PONG :" + origin));
 	return (ret);
 }
 
@@ -539,7 +554,7 @@ std::vector< IRPL * > CMD_KICK::execute(Server &s, Client &client) {
 		return ret;
 
 	ch->broadcast_full(":" + client.infostr() + " KICK " + ch_name + " " +
-						   target_name + ":" + msg + "\r\n",
+						   target_name + " :" + msg + "\r\n",
 					   s);
 	ch->removeOperator(*target);
 	ch->removeMember(*target);
@@ -619,12 +634,19 @@ std::vector< IRPL * > CMD_TOPIC::execute(Server &s, Client &client) {
 			return (ret.push_back(new ERR_CHANOPRIVSNEEDED(
 						ch->getName(), "Topic is locked (+t).")),
 					ret);
-		if (_raw.find_last_of(":") == std::string::npos)
+		std::string				new_topic;
+		std::string::size_type	sep = _raw.find(" :");
+
+		if (sep != std::string::npos)
+			new_topic = _raw.substr(sep + 2);
+		else if (_args.size() >= 3)
+			new_topic = _args[2];
+		else
 			return (ret.push_back(new ERR_NEEDMOREPARAMS(_args[0])), ret);
-		std::string new_topic = _raw.substr(_raw.find_last_of(":") + 1);
 		ch->setTopic(new_topic);
-		ret.push_back(new RPL_TOPIC(ch->getName(), new_topic));
-		ch->broadcast(ret.back()->toString(s, client), client, s);
+		ch->broadcast_full(":" + client.infostr() + " TOPIC " +
+							   ch->getName() + " :" + new_topic + "\r\n",
+						   s);
 	}
 	return ret;
 }
@@ -777,11 +799,7 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 					break;
 				case MODE_O:
 					try {
-						std::cerr << *ch << std::endl;
-						std::cerr << it->second << std::endl;
 						Client &cl = ch->getMember(it->second);
-						std::cout << "set:" << set << "\tcl gotten :" << cl <<
-							std::endl;
 						if (set)
 							ch->addOperator(cl);
 						else
@@ -791,13 +809,10 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 							resp_params += " ";
 						resp_params += it->second;
 					} catch (std::exception &e) {
-						std::cerr << e.what() <<std::endl;
+						if (s.getServerState().isDebug())
+							std::cerr << e.what() << std::endl;
 						ret.push_back(new ERR_NOSUCHNICK(it->second));
 					}
-					if(s.getServerState().isDebug())
-						std::cout << "mode o called :" << resp_modes << " "
-								<< resp_params
-								<< std::endl;
 					break;
 				case MODE_NUMBER:
 				case MODE_UNKNOWN:
@@ -820,7 +835,7 @@ std::vector< IRPL * > CMD_MODE::execute(Server &s, Client &client) {
 									   s);
 			}
 			ch->broadcast_full(
-				":" + client.infostr() + " MODE " + ch->getName() + " :" +
+				":" + client.infostr() + " MODE " + ch->getName() + " " +
 					resp_modes +
 					(resp_params.empty() ? "" : " " + resp_params) + "\r\n",
 				s);

@@ -125,6 +125,7 @@ class RPL_CHANNELMODEIS : public IRPL {
 	RPL_CHANNELMODEIS(const std::string &ch_name, const std::string &modes,
 					  const std::string &mode_params = "");
 	virtual ~RPL_CHANNELMODEIS(void);
+	virtual std::string toString(const Server &s, const Client &c);
 };
 
 // nb:331

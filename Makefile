@@ -73,7 +73,7 @@ $(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)								&& \
 	$(CXX) $(CXXFLAGS) -c $< -o $@					&& \
 	echo -e	"\tSuccess!"							|| \
-	echo	"Failure :("
+	(echo "Failure :("; rm -f $@; exit 1)
 
 
 -include $(OBJS:.o=.d)
@@ -81,7 +81,7 @@ $(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(NAME): $(OBJS)
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)	&&	\
 	echo	"Success!"	||	\
-	echo	"Failure :("
+	(echo "Failure :("; rm -f $(NAME); exit 1)
 
 # .clangd config file auto-gen - better diagnostics
 # 	- "fall back" config if compile_commands.json does not have current file

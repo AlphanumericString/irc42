@@ -13,6 +13,7 @@
 #include "Client.hpp"
 
 #include <arpa/inet.h>
+#include <cctype>
 #include <cstring>
 #include <exception>
 #include <iostream>
@@ -215,12 +216,14 @@ void Client::processInput(Server &s) {
 	std::vector< IRPL * > resp;
 	try {
 		while (1) {
-			std::string line;
-
-			if (this->inputBuffer_.find("\r\n") == std::string::npos)
+			std::string			   line;
+			std::string::size_type pos = this->inputBuffer_.find('\n');
+			if (pos == std::string::npos)
 				return;
-			line = inputBuffer_.substr(0, inputBuffer_.find("\r\n"));
-			this->inputBuffer_.erase(0, line.length() + 2);
+			line = inputBuffer_.substr(0, pos);
+			if (!line.empty() && line[line.length() - 1] == '\r')
+				line.erase(line.length() - 1);
+			this->inputBuffer_.erase(0, pos + 1);
 			resp = try_create(line, *this, s);
 			for (std::vector< IRPL * >::iterator it = resp.begin();
 				 it != resp.end(); ++it) {
@@ -284,14 +287,25 @@ void Client::setSockFD(int fd) {
 const std::string &Client::getNick() const { // nick
 	return this->nick_;
 }
+static bool isNickSpecial(char c) {
+	return (std::string("[]\\`_^{|}").find(c) != std::string::npos);
+}
+
 void Client::setNickname(std::string const &newNickname) {
 	if (newNickname.length() > MAX_NICKNAME_LENGTH)
 		throw std::runtime_error("Nickname too long");
 	if (newNickname.empty())
 		throw std::runtime_error("Nickname cannot be empty");
-	if (newNickname.find_first_of(" ,*?!@.") != std::string::npos)
+	if (!std::isalpha(static_cast< unsigned char >(newNickname[0])) &&
+		!isNickSpecial(newNickname[0]))
 		throw std::runtime_error(
-			"Nickname contains invalid characters (space , * ? ! @ .)");
+			"Nickname must start with a letter or one of []\\`_^{|}");
+	for (std::string::size_type i = 1; i < newNickname.length(); i++) {
+		char c = newNickname[i];
+		if (!std::isalnum(static_cast< unsigned char >(c)) &&
+			!isNickSpecial(c) && c != '-')
+			throw std::runtime_error("Nickname contains invalid characters");
+	}
 
 	this->nick_ = newNickname;
 }

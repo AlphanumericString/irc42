@@ -73,16 +73,15 @@ void Server::addStdInToMultiplexing() {
 	struct epoll_event currentEvent;
 
 	if (makeSocketNonBlocking(STDIN_FILENO) == -1) {
-		close(STDIN_FILENO);
-		throw std::runtime_error("couldn't make socket non blocking");
+		// stdin may be closed or redirected to an unpollable file (/dev/null,
+		// regular file). The server can still run without the shell.
+		return;
 	}
 	currentEvent.events = EPOLLIN;
 	currentEvent.data.fd = STDIN_FILENO;
-	if (epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent) ==
-		-1) {
-		close(STDIN_FILENO);
-		throw std::runtime_error("epoll_ctl");
-	}
+	// same here: epoll cannot watch regular files. Note: do NOT close
+	// STDIN_FILENO, otherwise accept() could reuse fd 0 for a client.
+	epoll_ctl(this->epollFD_, EPOLL_CTL_ADD, STDIN_FILENO, &currentEvent);
 }
 
 void Server::bindSocket() {
@@ -248,7 +247,9 @@ void Server::handleStdinInput() {
 void Server::handleClientDisconnecting() {
 	for (std::list< Client >::iterator it = serverState_.getClients().begin();
 		 it != serverState_.getClients().end(); it++) {
-		if (it->getConState() == DISCONNECTING) {
+		// let pending replies (e.g. 464) reach the client before dropping it
+		if (it->getConState() == DISCONNECTING &&
+			it->getOutputBuffer().empty()) {
 			it->setConState(DISCONNECTED);
 			if (getServerState().isDebug())
 				std::cout << *it << "\tDISCONNECT" << std::endl;

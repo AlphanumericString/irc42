@@ -302,11 +302,8 @@ std::string Channel::getModeStrFormat(std::string *mode_params_ret) const {
 
 	if (this->mode_ & MODE_I)
 		mode_str += "i";
-	if (this->mode_ & MODE_T) {
+	if (this->mode_ & MODE_T)
 		mode_str += "t";
-		if (!this->topic_.empty())
-			mode_params += this->topic_;
-	}
 	if (this->mode_ & MODE_K) {
 		mode_str += "k";
 		if (!this->key_.empty()) {
@@ -323,8 +320,6 @@ std::string Channel::getModeStrFormat(std::string *mode_params_ret) const {
 			mode_params += to_string(this->userLimit_);
 		}
 	}
-	if (mode_str == "+")
-		mode_str = "";
 	if (mode_params_ret)
 		*mode_params_ret = mode_params;
 	return (mode_str);
